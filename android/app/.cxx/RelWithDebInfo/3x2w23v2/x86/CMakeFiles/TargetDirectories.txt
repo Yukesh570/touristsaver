@@ -1,0 +1,2 @@
+C:/Users/MSii/Desktop/piiink_podamibe/Piiink-Member-App/android/app/.cxx/RelWithDebInfo/3x2w23v2/x86/CMakeFiles/edit_cache.dir
+C:/Users/MSii/Desktop/piiink_podamibe/Piiink-Member-App/android/app/.cxx/RelWithDebInfo/3x2w23v2/x86/CMakeFiles/rebuild_cache.dir

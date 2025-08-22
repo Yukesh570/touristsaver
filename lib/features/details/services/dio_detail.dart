@@ -1,0 +1,35 @@
+import 'package:dio/dio.dart';
+import 'package:new_piiink/common/app_variables.dart';
+import 'package:new_piiink/constants/helper.dart';
+import 'package:new_piiink/constants/url_end_point.dart';
+import 'package:new_piiink/models/response/detail_res.dart';
+
+import 'fav_or_not.dart';
+
+class DioDetail {
+  //Calling merchant Detail
+  Future<MerchantDetailResModel?> getMerchantDetail(
+      {required int id, required String day, required int hour}) async {
+    try {
+      Dio dio = await getClientNoToken();
+      Response<String> response = await dio.get(
+          '$merchantDetail/$id?day=$day&hour=$hour&lang=${AppVariables.selectedLanguageNow}');
+      // log(response.data!);
+      return merchantDetailResModelFromJson(response.data!);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  //Calling merchant is favourite or not
+  Future<FavOrNot?> getMerchnatFavOrNot({required String? merchantId}) async {
+    try {
+      Dio dio = await getClient();
+      Response<String> response =
+          await dio.get('$merchantFavOrNot/$merchantId');
+      return favOrNotFromJson(response.data!);
+    } catch (e) {
+      return null;
+    }
+  }
+}

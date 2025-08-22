@@ -1,0 +1,96 @@
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
+import 'package:new_piiink/common/app_variables.dart';
+import 'package:new_piiink/constants/helper.dart';
+import 'package:new_piiink/constants/pref.dart';
+import 'package:new_piiink/constants/pref_key.dart';
+import 'package:new_piiink/constants/url_end_point.dart';
+import 'package:new_piiink/models/error_res.dart';
+import 'package:new_piiink/models/request/confirm_piiink_req.dart';
+import 'package:new_piiink/models/request/sure_apply_piiink_req.dart';
+import 'package:new_piiink/models/response/confirm_piiink_res.dart';
+import 'package:new_piiink/models/response/is_pay_enable_res.dart';
+import 'package:new_piiink/models/response/sure_apply_piiink_res.dart';
+
+class DioPay {
+  // Confirm the Payment to apply piiink
+  Future<dynamic> confirmApplyPiiink(
+      {required ConfirmApplyPiiinkReqModel confirmApplyPiiinkReqModel}) async {
+    try {
+      Dio dio = await getClient();
+      // log(confirmApplyPiiinkReqModel.toJson().toString());
+      Response<String> response = await dio.post(
+        confirmApplyPiiinkURL,
+        data: confirmApplyPiiinkReqModel.toJson(),
+      );
+      // log(response.data!);
+      return confirmApplyPiiinkResModelFromJson(response.data!);
+    } on DioException catch (e) {
+      return errorResModelFromJson(e.response?.data);
+    } catch (err) {
+      // print("Error in confirmimg the payment: $err");
+      return null;
+    }
+  }
+
+  // Confirm the Payment to apply piiink
+  Future<dynamic> confirmTerminalApplyPiiink(
+      {required String transactionQrCode}) async {
+    try {
+      Dio dio = await getClient();
+      // log(transactionQrCode);
+      Response<String> response = await dio.post(
+        terminalConfirmApplyPiiinkURL,
+        data: {
+          "transactionQRCode": transactionQrCode,
+          "lang": AppVariables.selectedLanguageNow
+        },
+      );
+      // log(';;;;;;;;;;;;;;;;;;;;;${response.data}');
+      return confirmApplyPiiinkResModelFromJson(response.data!);
+    } on DioException catch (e) {
+      return errorResModelFromJson(e.response?.data);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  // Sure the Payment to apply piiink with the same response
+  Future<SureApplyPiiinkResModel?> sureApplyPiiink(
+      {required bool payToMainMerchant,
+      required SureApplyPiiinkReqModel sureApplyPiiinkReqModel}) async {
+    try {
+      Dio dio = await getClient();
+      log(sureApplyPiiinkReqModel.toJsonTerminalMerchant().toString());
+      log('Data: ${sureApplyPiiinkReqModel.toJsonMainMerchant().toString()}');
+      Response<String> response = await dio.post(
+        surApplyPiiink,
+        data: payToMainMerchant
+            ? sureApplyPiiinkReqModel.toJsonMainMerchant()
+            : sureApplyPiiinkReqModel.toJsonTerminalMerchant(),
+      );
+      return sureApplyPiiinkResModelFromJson(response.data!);
+    } catch (e) {
+      if (e is DioException) {
+        log(e.response!.data.toString());
+        log(e.response!.headers.toString());
+      }
+      return null;
+    }
+  }
+
+  // to check the pay enabled or not
+  Future<IsPayEnableResModel?> payEnabled() async {
+    String? countryId = await Pref().readData(key: saveCountryID);
+    try {
+      Dio dio = await getClient();
+      Response<String> response = await dio.get(
+        '$isPay$countryId',
+      );
+      return isPayEnableResModelFromJson(response.data!);
+    } catch (e) {
+      return null;
+    }
+  }
+}

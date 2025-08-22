@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+
+class GlobalColors {
+  // COLORS
+  static const appWhiteBackgroundColor = Color(0xffFFFFFF);
+  static const appGreyBackgroundColor = Color(0xffF6F6F6);
+  static const appColor = Color(0xffEC4785);
+  static const appColor1 = Color(0xff5FC0CD);
+  // static var tabbarColor = Colors.grey.withValues(alpha: 0.8);
+
+  static const textColor = Color(0xff757575);
+  // static const secondaryColor = Color.fromRGBO(255, 153, 0, 1);
+  // static const colorPrimary = Color(0xff008577);
+  // static const colorPrimaryDark = Color(0xff00574B);
+  // static const colorAccent = Color(0xffD81B60);
+  // static const regularFontColor = Color(0xffD81B60);
+  // static const skipColor = Color(0xff606060);
+  // static const searchBarHintColor = Color(0xff8a0000);
+  // static const dividerColor = Color(0xff333b3b);
+  // static const itemMerchantDiscountTextColor = Color(0xff3c8cd5);
+  // static const bottomMenuProdileTextColor = Color(0xff5c0000);
+  // static const gradientBottomMenuShadowStartColor = Color(0xffECF0F3);
+  // static const merchantItemDiscountBackgroundColor = Color(0xfff5f9fc);
+  // static const searchScreenSearchBarHintColor = Color(0xff4c0000);
+  // static const searchScreenSearchBarTextColor = Color(0xff3b3b3b);
+  // static const searchScreenCancelTextColor = Color(0xff8a0000);
+  // static const itemMerchantSearchScreenCardDistanceTextColor =
+  //     Color(0xff8a0000);
+  // static const itemMerchantSearchScreenDiscountTextColor = Color(0xff8a0000);
+  // static const searchScreenNoResultTextColor = Color(0xff8a0000);
+  // static const searchNoResultButtonBackgroundColor = Color(0xff00bfcd);
+  // static const searchNoResultButtonBackgroundColor50 = Color(0xff80BFCD);
+  // static const cardViewRegisteredMemberInfoTextColor = Color(0xffde0000);
+  // static const cardViewRegisteredInfoTextColor = Color(0xff8a0000);
+  // static const cardViewRegisteredMemberInfoBackground = Color(0xfff5f9fc);
+  // static const cardViewRegisteredMemberInfoBorderColor = Color(0xff3c8cd5);
+  // static const cardViewTopSliderColor = Color(0xff1e0000);
+  // static const profileViewPointsInfoViewBackgroundColor = Color(0xffB30000);
+  // static const profileViewPointsViewInfoTextColor = Color(0xff8a0000);
+  // static const recommendFormInputHintColor = Color(0xff4c0000);
+  // static const recommendFormInpputBackgroundColor = Color(0xffF5F9FC);
+  // static const incorrectValueTextColor = Color(0xffF04929);
+  // static const privacyPolicyVersionColor = Color(0xff2e3033);
+  // static const privacyPolicyBottomShadowEndColor = Color(0x00f6f6f6);
+  // static const privacyPolicyBottomShadowStartColor = Color(0xfff6f6f6);
+  // static const infoTextColor = Color(0xff8a0000);
+  // static const viewPagerIndicatorDotSelected = Color(0xffec4785);
+  // static const viewPagerIndicatorDotUnSelected = Color(0xff4D0000);
+  // static const middleGray = Color(0x8A000000);
+  // static const popUpMenuBackground = Color(0xff4D0000);
+  // static const lightBlue = Color(0xff3c8cd5);
+  // static const borderColor = Color(0xffc7c7c7);
+  // static const dividerHomeColor = Color(0xff193b3b);
+  // static const drawerNavigatorItem = Color(0xffb30000);
+  // static const accentPink = Color(0xffec4785);
+  // static const accentPink2 = Color(0x05EC4785);
+  // static const accentPink20 = Color(0x33EC4785);
+  // static const accentPink4 = Color(0x0AEC4785);
+  // static const accentBlue = Color(0xff00bfcd);
+  // static const accentBlue20 = Color(0x3300BFCD);
+  // static const accentBlue6 = Color(0x0F00BFCD);
+  static const gray = Color(0xff6e6e6e);
+  // static const scanQrBackground = Color(0xff222222);
+  static const paleGray = Color(0xfff5f9fc);
+  // static const lightGrey = Color(0x803B3B3B);
+  // static const red = Color(0xfff04929);
+  // static const darkGray = Color(0xff3B3B3B);
+  // static const rippleColor = Color(0xffF00000);
+  // static const veryLightPiiink = Color(0xffb7b7b7);
+  // static const editTextError = Color(0x33F04929);
+  // static const searchIcon = Color(0xffA1A1A1);
+}
