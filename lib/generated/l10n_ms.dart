@@ -43,8 +43,8 @@ class SMs extends S {
   String get noPremiumCodeHasBeenUsedYet => 'No Premium code has been used yet';
 
   @override
-  String get congratulationXPiiinksHasBeenAddedToYourWallet =>
-      'Congratulations! &X Piiinks has been added to your wallet';
+  String get congratulationXTouristSaversHasBeenAddedToYourWallet =>
+      'Congratulations! &X TouristSavers has been added to your wallet';
 
   @override
   String get premiumCodeUseHistory => 'Premium Code Use History';
@@ -56,7 +56,7 @@ class SMs extends S {
   String get package => 'Package';
 
   @override
-  String get receivedPiiinks => 'Received Piiinks';
+  String get receivedTouristSavers => 'Received TouristSavers';
 
   @override
   String get v3 => 'V3';
@@ -104,8 +104,8 @@ class SMs extends S {
   String get donateToCharity => 'Sumbang kepada amal';
 
   @override
-  String get shopAtPiiinkMerchantsAndGetGreatOffers =>
-      'Beli-belah di peniaga Piiink dan dapatkan tawaran hebat.';
+  String get shopAtTouristSaverMerchantsAndGetGreatOffers =>
+      'Beli-belah di peniaga TouristSaver dan dapatkan tawaran hebat.';
 
   @override
   String get goShopping => 'Pergi membeli-belah';
@@ -115,18 +115,18 @@ class SMs extends S {
       'Program Gaya Hidup Komuniti paling inovatif untuk pembelian harian anda.';
 
   @override
-  String get welcomeToPiiink => 'Selamat datang ke Piiink';
+  String get welcomeToTouristSaver => 'Selamat datang ke TouristSaver';
 
   @override
   String get claimNow => 'Tuntut sekarang';
 
   @override
   String get youHavenotClaimedYourUPFreeUniversalPiinksYet =>
-      'Anda belum menuntut *UP Piiinks Universal percuma anda lagi.';
+      'Anda belum menuntut *UP TouristSavers Universal percuma anda lagi.';
 
   @override
-  String get toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
-      'Untuk membeli-belah di peniaga Piiink, dapatkan diskaun hebat dan sumbang kepada amal kegemaran anda, daftarkan keahlian atau log masuk.';
+  String get toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
+      'Untuk membeli-belah di peniaga TouristSaver, dapatkan diskaun hebat dan sumbang kepada amal kegemaran anda, daftarkan keahlian atau log masuk.';
 
   @override
   String get youreCurrentlyOfflineCheckYourConnectionAndTryAgain =>
@@ -171,7 +171,7 @@ class SMs extends S {
       'Tiada Pakej Top-up Tersedia Untuk Sekarang';
 
   @override
-  String get claimFreePiiinks => 'Tuntut Piiinks Percuma';
+  String get claimFreeTouristSavers => 'Tuntut TouristSavers Percuma';
 
   @override
   String get linkCopiedToClipboard => 'Pautan disalin ke papan keratan';
@@ -186,12 +186,12 @@ class SMs extends S {
   String get shareThisQRToYourFriend => 'Kongsi QR ini kepada rakan anda';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB =>
-      'Rujuk Aplikasi Piiink kepada rakan anda dan peroleh *A Piiinks Universal apabila mereka melakukan transaksi yang sama dengan *B';
+  String get referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB =>
+      'Rujuk Aplikasi TouristSaver kepada rakan anda dan peroleh *A TouristSavers Universal apabila mereka melakukan transaksi yang sama dengan *B';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks =>
-      'Rujuk Aplikasi Piiink kepada rakan anda dan peroleh *P Piiinks Universal';
+  String get referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers =>
+      'Rujuk Aplikasi TouristSaver kepada rakan anda dan peroleh *P TouristSavers Universal';
 
   @override
   String get referAFriend => 'Rujuk rakan';
@@ -219,8 +219,8 @@ class SMs extends S {
   String get about => 'Tentang';
 
   @override
-  String get freePiiinksClaimedSuccessfully =>
-      'Piiinks Percuma Telah Dituntut Dengan Berjaya';
+  String get freeTouristSaversClaimedSuccessfully =>
+      'TouristSavers Percuma Telah Dituntut Dengan Berjaya';
 
   @override
   String get pleaseSearchByLocationOrSelectCategory =>
@@ -255,13 +255,13 @@ class SMs extends S {
   String get withInVKm => 'Dalam &V KM';
 
   @override
-  String get loadXPiiinks => 'Muatkan &L Piiinks';
+  String get loadXTouristSavers => 'Muatkan &L TouristSavers';
 
   @override
-  String get piiinksCreditAdded => 'Kredit Piiink Ditambah';
+  String get touristSaversCreditAdded => 'Kredit TouristSaver Ditambah';
 
   @override
-  String get congratulationNowYouHaveXPiiinks =>
+  String get congratulationNowYouHaveXTouristSavers =>
       'Tahniah sekarang anda mempunyai kredit &X&V';
 
   @override
@@ -272,7 +272,7 @@ class SMs extends S {
 
   @override
   String get weWillDeductCPiinksFromYourCredit =>
-      'Kami akan mengurangkan &C&X &CPiiinks dari Kredit Anda';
+      'Kami akan mengurangkan &C&X &CTouristSavers dari Kredit Anda';
 
   @override
   String get noNotificationFrom => 'Tiada pemberitahuan dari &S kepada &E';
@@ -292,7 +292,8 @@ class SMs extends S {
   String get accept => 'Terima';
 
   @override
-  String get acceptToUsePiiinks => 'Terima untuk menggunakan Piiinks';
+  String get acceptToUseTouristSavers =>
+      'Terima untuk menggunakan TouristSavers';
 
   @override
   String get addReview => 'Tambah Ulasan';
@@ -331,7 +332,8 @@ class SMs extends S {
       'Adakah anda pasti ingin memadam akaun anda?';
 
   @override
-  String get availableUniversalPiiinks => 'Piiinks Universal yang Tersedia';
+  String get availableUniversalTouristSavers =>
+      'TouristSavers Universal yang Tersedia';
 
   @override
   String get away => ' Jauh';
@@ -354,7 +356,8 @@ class SMs extends S {
   String get biometrics => 'Biometrik';
 
   @override
-  String get buyXUniversalPiiinkCredits => 'Beli &X Kredit Piiink Universal';
+  String get buyXUniversalTouristSaverCredits =>
+      'Beli &X Kredit TouristSaver Universal';
 
   @override
   String get byClicking => 'Dengan Mengklik';
@@ -446,8 +449,8 @@ class SMs extends S {
   String get continueL => 'Teruskan';
 
   @override
-  String get continueWithDefaultPiiinkCredits =>
-      'Teruskan dengan Kredit Piiink Lalai';
+  String get continueWithDefaultTouristSaverCredits =>
+      'Teruskan dengan Kredit TouristSaver Lalai';
 
   @override
   String get continueWithoutTopUp => 'Teruskan tanpa Top-up';
@@ -576,8 +579,8 @@ class SMs extends S {
   String get firstName => 'Nama Pertama *';
 
   @override
-  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks =>
-      'Cuba berbelanja dengan beberapa peniaga untuk mendapatkan dan memindahkan Merchant Piiinks';
+  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers =>
+      'Cuba berbelanja dengan beberapa peniaga untuk mendapatkan dan memindahkan Merchant TouristSavers';
 
   @override
   String get forRecommendingTheNewMerchantRegisterMembershipOrLogIn =>
@@ -611,7 +614,8 @@ class SMs extends S {
       'Jika kamera anda tidak berfungsi dengan betul ';
 
   @override
-  String get insufficientPiiinkCredits => 'Kredit Piiink Tidak Mencukupi';
+  String get insufficientTouristSaverCredits =>
+      'Kredit TouristSaver Tidak Mencukupi';
 
   @override
   String get invalidQrCode => 'Kod QR tidak sah';
@@ -790,7 +794,8 @@ class SMs extends S {
       'Tiada Peniaga tersedia pada masa ini. Kami akan memperbarui anda.';
 
   @override
-  String get noMerchantPiiinkAvailable => 'Tiada Piiink Peniaga Tersedia';
+  String get noMerchantTouristSaverAvailable =>
+      'Tiada TouristSaver Peniaga Tersedia';
 
   @override
   String get noNumber => 'Tiada Nombor';
@@ -831,7 +836,7 @@ class SMs extends S {
   String get noWebsiteLink => 'Tiada Pautan Laman Web';
 
   @override
-  String get notEnoughPiiinkCredits => 'Tidak Cukup Kredit Piiink';
+  String get notEnoughTouristSaverCredits => 'Tidak Cukup Kredit TouristSaver';
 
   @override
   String get notifications => 'Pemberitahuan';
@@ -841,8 +846,8 @@ class SMs extends S {
       'Pemberitahuan berjaya dipadam!';
 
   @override
-  String get numberOfPiiinksToBeTransferred =>
-      'Bilangan Piiinks yang Hendak Dipindahkan';
+  String get numberOfTouristSaversToBeTransferred =>
+      'Bilangan TouristSavers yang Hendak Dipindahkan';
 
   @override
   String get ok => 'Ok';
@@ -908,26 +913,27 @@ class SMs extends S {
       'Nombor telefon mesti sekurang-kurangnya 7 digit';
 
   @override
-  String get piiinkCredits => ' Kredit Piiink';
+  String get touristSaverCredits => ' Kredit TouristSaver';
 
   @override
-  String get piiinkCreditsInfo => 'Maklumat Kredit Piiink';
+  String get touristSaverCreditsInfo => 'Maklumat Kredit TouristSaver';
 
   @override
-  String get piiinkCreditsInfoD =>
-      'Kredit Piiink Universal membolehkan anda mendapat diskaun dengan mana-mana Peniaga kami. Setiap kali anda menggunakan Piiink, anda akan menerima kredit Piiink Peniaga untuk dibelanjakan semula dengan Peniaga penerbit.';
+  String get touristSaverCreditsInfoD =>
+      'Kredit TouristSaver Universal membolehkan anda mendapat diskaun dengan mana-mana Peniaga kami. Setiap kali anda menggunakan TouristSaver, anda akan menerima kredit TouristSaver Peniaga untuk dibelanjakan semula dengan Peniaga penerbit.';
 
   @override
-  String get piiinkTransferredSuccessfully => 'Piiink Berpindah Berjaya';
+  String get touristSaverTransferredSuccessfully =>
+      'TouristSaver Berpindah Berjaya';
 
   @override
-  String get piiinks => 'Piiinks';
+  String get touristSavers => 'TouristSavers';
 
   @override
-  String get piiinksLoaded => 'Piiinks Dimuatkan';
+  String get touristSaversLoaded => 'TouristSavers Dimuatkan';
 
   @override
-  String get piiinksOnHold => 'Piiinks Dalam Tahanan';
+  String get touristSaversOnHold => 'TouristSavers Dalam Tahanan';
 
   @override
   String get pleaseAcceptTermsConditions => 'Sila Terima Terma & Syarat';
@@ -967,8 +973,8 @@ class SMs extends S {
   String get pleaseEnterMobileNumber => 'Sila masukkan nombor telefon bimbit';
 
   @override
-  String get pleaseEnterNumberOfPiiinksToBeTransferred =>
-      'Sila masukkan bilangan Piiinks yang hendak dipindahkan.';
+  String get pleaseEnterNumberOfTouristSaversToBeTransferred =>
+      'Sila masukkan bilangan TouristSavers yang hendak dipindahkan.';
 
   @override
   String get pleaseEnterPassword => 'Sila masukkan kata laluan';
@@ -996,8 +1002,8 @@ class SMs extends S {
       'Sila masukkan e-mel peniaga yang sah';
 
   @override
-  String get pleaseEnterValidNumberOfPiiinksToBeTransferred =>
-      'Sila masukkan jumlah Piiinks yang betul untuk dipindahkan.';
+  String get pleaseEnterValidNumberOfTouristSaversToBeTransferred =>
+      'Sila masukkan jumlah TouristSavers yang betul untuk dipindahkan.';
 
   @override
   String get pleaseFillCorrectMobileNumber =>
@@ -1099,8 +1105,8 @@ class SMs extends S {
       'Daftarkan keahlian anda sekarang dan nikmati tawaran menarik kami.';
 
   @override
-  String get registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails =>
-      'Daftarkan keahlian anda atau log masuk untuk mengakses manfaat Piiink dan lihat butiran profil anda.';
+  String get registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails =>
+      'Daftarkan keahlian anda atau log masuk untuk mengakses manfaat TouristSaver dan lihat butiran profil anda.';
 
   @override
   String get registration => 'Pendaftaran';
@@ -1177,7 +1183,7 @@ class SMs extends S {
   String get selectDateTo => 'Pilih Tarikh Hingga';
 
   @override
-  String get selectMerchantPiiinks => 'Pilih Piiinks Peniaga';
+  String get selectMerchantTouristSavers => 'Pilih TouristSavers Peniaga';
 
   @override
   String get selectStateProvince => 'Pilih Negeri/Provinsi *';
@@ -1244,7 +1250,7 @@ class SMs extends S {
   String get sortByAlphabetical => 'Susun mengikut Abjad';
 
   @override
-  String get sortByPiiinkCredits => 'Susun mengikut Kredit Piiink';
+  String get sortByTouristSaverCredits => 'Susun mengikut Kredit TouristSaver';
 
   @override
   String get stripePaymentFail => 'Pembayaran Stripe Gagal';
@@ -1287,8 +1293,8 @@ class SMs extends S {
   String get to => ' kepada ';
 
   @override
-  String get toTransferPiiinksRegisterMembershipOrLogIn =>
-      'Untuk memindahkan Piiinks, daftar keahlian atau log masuk.';
+  String get toTransferTouristSaversRegisterMembershipOrLogIn =>
+      'Untuk memindahkan TouristSavers, daftar keahlian atau log masuk.';
 
   @override
   String get toUseTopUpFunctionRegisterMembershipOrLogIn =>
@@ -1311,16 +1317,16 @@ class SMs extends S {
   String get topUpHistory => 'Sejarah Top Up';
 
   @override
-  String get topUpUniversalPiiinkCredits =>
-      'Isi Semula Kredit Piiink Universal';
+  String get topUpUniversalTouristSaverCredits =>
+      'Isi Semula Kredit TouristSaver Universal';
 
   @override
-  String get topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant =>
-      'Isi Semula Kredit Piiink Universal untuk mendapatkan diskaun dengan mana-mana peniaga kami.';
+  String get topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant =>
+      'Isi Semula Kredit TouristSaver Universal untuk mendapatkan diskaun dengan mana-mana peniaga kami.';
 
   @override
-  String get topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
-      'Isi semula Piiinks Universal anda untuk mendapatkan kredit tambahan dan nikmati lebih banyak tawaran dari peniaga kegemaran anda.';
+  String get topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
+      'Isi semula TouristSavers Universal anda untuk mendapatkan kredit tambahan dan nikmati lebih banyak tawaran dari peniaga kegemaran anda.';
 
   @override
   String get transactionCode => 'Kod Transaksi*';
@@ -1335,7 +1341,7 @@ class SMs extends S {
   String get transactionId => 'ID Transaksi ';
 
   @override
-  String get transferPiiinks => 'Pindahkan Piiinks';
+  String get transferTouristSavers => 'Pindahkan TouristSavers';
 
   @override
   String get tryAgain => 'Cuba Lagi';
@@ -1427,15 +1433,15 @@ class SMs extends S {
   String get yesterday => 'Semalam';
 
   @override
-  String get youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits =>
-      'Anda tidak mempunyai Kredit Universal Piiink. Daftarkan keahlian anda atau log masuk untuk mengakses manfaat Piiink.';
+  String get youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits =>
+      'Anda tidak mempunyai Kredit Universal TouristSaver. Daftarkan keahlian anda atau log masuk untuk mengakses manfaat TouristSaver.';
 
   @override
   String get yourActiveMerchantWallets => 'Dompet Peniaga Aktif Anda';
 
   @override
   String get yourEmailIsNotActivatedYet =>
-      'E-mel anda belum diaktifkan.\nAnda perlu mengaktifkan e-mel anda untuk menukar negara dan mengesyorkan peniaga serta menerima e-mel penting dari Piiink.';
+      'E-mel anda belum diaktifkan.\nAnda perlu mengaktifkan e-mel anda untuk menukar negara dan mengesyorkan peniaga serta menerima e-mel penting dari TouristSaver.';
 
   @override
   String get yourEmailIsNotActivatedYetNPleaseVerifyYourEmailBeforeChangingCountry =>
@@ -1452,5 +1458,6 @@ class SMs extends S {
   String get yourQrCode => 'Kod QR Anda';
 
   @override
-  String get yourUniversalPiiinkCredits => 'Kredit Piiink Universal Anda';
+  String get yourUniversalTouristSaverCredits =>
+      'Kredit TouristSaver Universal Anda';
 }

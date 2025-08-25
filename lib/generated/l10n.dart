@@ -167,11 +167,11 @@ abstract class S {
   /// **'No Premium code has been used yet'**
   String get noPremiumCodeHasBeenUsedYet;
 
-  /// No description provided for @congratulationXPiiinksHasBeenAddedToYourWallet.
+  /// No description provided for @congratulationXTouristSaversHasBeenAddedToYourWallet.
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! &X Piiinks has been added to your wallet'**
-  String get congratulationXPiiinksHasBeenAddedToYourWallet;
+  /// **'Congratulations! &X TouristSavers has been added to your wallet'**
+  String get congratulationXTouristSaversHasBeenAddedToYourWallet;
 
   /// No description provided for @premiumCodeUseHistory.
   ///
@@ -191,11 +191,11 @@ abstract class S {
   /// **'Package'**
   String get package;
 
-  /// No description provided for @receivedPiiinks.
+  /// No description provided for @receivedTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Received Piiinks'**
-  String get receivedPiiinks;
+  /// **'Received TouristSavers'**
+  String get receivedTouristSavers;
 
   /// No description provided for @v3.
   ///
@@ -281,11 +281,11 @@ abstract class S {
   /// **'Donate to charity'**
   String get donateToCharity;
 
-  /// No description provided for @shopAtPiiinkMerchantsAndGetGreatOffers.
+  /// No description provided for @shopAtTouristSaverMerchantsAndGetGreatOffers.
   ///
   /// In en, this message translates to:
-  /// **'Shop at Piiink merchants and get great offers'**
-  String get shopAtPiiinkMerchantsAndGetGreatOffers;
+  /// **'Shop at TouristSaver merchants and get great offers'**
+  String get shopAtTouristSaverMerchantsAndGetGreatOffers;
 
   /// No description provided for @goShopping.
   ///
@@ -299,11 +299,11 @@ abstract class S {
   /// **'The most innovative Community Lifestyle Program for your everyday shopping'**
   String get theMostInnovativeCommunityLifestyleProgramForYourEverydayShopping;
 
-  /// No description provided for @welcomeToPiiink.
+  /// No description provided for @welcomeToTouristSaver.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Piiink'**
-  String get welcomeToPiiink;
+  /// **'Welcome to TouristSaver'**
+  String get welcomeToTouristSaver;
 
   /// No description provided for @claimNow.
   ///
@@ -317,12 +317,12 @@ abstract class S {
   /// **'You haven\'t claimed your *UP free Universal Piinks yet'**
   String get youHavenotClaimedYourUPFreeUniversalPiinksYet;
 
-  /// No description provided for @toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin.
+  /// No description provided for @toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin.
   ///
   /// In en, this message translates to:
-  /// **'To shop at Piiink merchants, get great discounts and donate to your favourite charity, register membership or login'**
+  /// **'To shop at TouristSaver merchants, get great discounts and donate to your favourite charity, register membership or login'**
   String
-      get toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin;
+      get toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin;
 
   /// No description provided for @youreCurrentlyOfflineCheckYourConnectionAndTryAgain.
   ///
@@ -397,11 +397,11 @@ abstract class S {
   /// **'No top-up pacakge available for now'**
   String get noTopupPacakgeAvailableForNow;
 
-  /// No description provided for @claimFreePiiinks.
+  /// No description provided for @claimFreeTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Claim Free Piiinks'**
-  String get claimFreePiiinks;
+  /// **'Claim Free TouristSavers'**
+  String get claimFreeTouristSavers;
 
   /// No description provided for @linkCopiedToClipboard.
   ///
@@ -427,18 +427,18 @@ abstract class S {
   /// **'Share this QR to your friends'**
   String get shareThisQRToYourFriend;
 
-  /// No description provided for @referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB.
+  /// No description provided for @referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB.
   ///
   /// In en, this message translates to:
-  /// **'Refer Piiink App to your friends and earn *A Universal Piiinks as they perform transaction equals to *B'**
+  /// **'Refer TouristSaver App to your friends and earn *A Universal TouristSavers as they perform transaction equals to *B'**
   String
-      get referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB;
+      get referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB;
 
-  /// No description provided for @referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks.
+  /// No description provided for @referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Refer Piiink App to your friends and earn *P Universal Piiinks'**
-  String get referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks;
+  /// **'Refer TouristSaver App to your friends and earn *P Universal TouristSavers'**
+  String get referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers;
 
   /// No description provided for @referAFriend.
   ///
@@ -488,11 +488,11 @@ abstract class S {
   /// **'About'**
   String get about;
 
-  /// No description provided for @freePiiinksClaimedSuccessfully.
+  /// No description provided for @freeTouristSaversClaimedSuccessfully.
   ///
   /// In en, this message translates to:
-  /// **'Free piiinks claimed successfully'**
-  String get freePiiinksClaimedSuccessfully;
+  /// **'Free touristSavers claimed successfully'**
+  String get freeTouristSaversClaimedSuccessfully;
 
   /// No description provided for @pleaseSearchByLocationOrSelectCategory.
   ///
@@ -554,23 +554,23 @@ abstract class S {
   /// **'With in &V KM'**
   String get withInVKm;
 
-  /// No description provided for @loadXPiiinks.
+  /// No description provided for @loadXTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Load &L Piiinks'**
-  String get loadXPiiinks;
+  /// **'Load &L TouristSavers'**
+  String get loadXTouristSavers;
 
-  /// No description provided for @piiinksCreditAdded.
+  /// No description provided for @touristSaversCreditAdded.
   ///
   /// In en, this message translates to:
-  /// **'Piiink Credits Added'**
-  String get piiinksCreditAdded;
+  /// **'TouristSaver Credits Added'**
+  String get touristSaversCreditAdded;
 
-  /// No description provided for @congratulationNowYouHaveXPiiinks.
+  /// No description provided for @congratulationNowYouHaveXTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! You now have &X Piiinks'**
-  String get congratulationNowYouHaveXPiiinks;
+  /// **'Congratulations! You now have &X TouristSavers'**
+  String get congratulationNowYouHaveXTouristSavers;
 
   /// No description provided for @topUpAndPayXY.
   ///
@@ -587,7 +587,7 @@ abstract class S {
   /// No description provided for @weWillDeductCPiinksFromYourCredit.
   ///
   /// In en, this message translates to:
-  /// **'We will deduct &C&X &CPiiinks from Your Credit'**
+  /// **'We will deduct &C&X &CTouristSavers from Your Credit'**
   String get weWillDeductCPiinksFromYourCredit;
 
   /// No description provided for @noNotificationFrom.
@@ -620,11 +620,11 @@ abstract class S {
   /// **'Accept'**
   String get accept;
 
-  /// No description provided for @acceptToUsePiiinks.
+  /// No description provided for @acceptToUseTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Accept to use Piiinks'**
-  String get acceptToUsePiiinks;
+  /// **'Accept to use TouristSavers'**
+  String get acceptToUseTouristSavers;
 
   /// No description provided for @addReview.
   ///
@@ -693,11 +693,11 @@ abstract class S {
   /// **'Are you sure you want to remove your account?'**
   String get areYouSureYouWantToRemoveYourAccount;
 
-  /// No description provided for @availableUniversalPiiinks.
+  /// No description provided for @availableUniversalTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Available Universal Piiinks'**
-  String get availableUniversalPiiinks;
+  /// **'Available Universal TouristSavers'**
+  String get availableUniversalTouristSavers;
 
   /// No description provided for @away.
   ///
@@ -735,11 +735,11 @@ abstract class S {
   /// **'Biometrics'**
   String get biometrics;
 
-  /// No description provided for @buyXUniversalPiiinkCredits.
+  /// No description provided for @buyXUniversalTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Buy &X Universal Piiink Credits'**
-  String get buyXUniversalPiiinkCredits;
+  /// **'Buy &X Universal TouristSaver Credits'**
+  String get buyXUniversalTouristSaverCredits;
 
   /// No description provided for @byClicking.
   ///
@@ -916,11 +916,11 @@ abstract class S {
   /// **'Continue'**
   String get continueL;
 
-  /// No description provided for @continueWithDefaultPiiinkCredits.
+  /// No description provided for @continueWithDefaultTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Continue with default Piiink credits'**
-  String get continueWithDefaultPiiinkCredits;
+  /// **'Continue with default TouristSaver credits'**
+  String get continueWithDefaultTouristSaverCredits;
 
   /// No description provided for @continueWithoutTopUp.
   ///
@@ -1156,11 +1156,12 @@ abstract class S {
   /// **'First Name *'**
   String get firstName;
 
-  /// No description provided for @firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks.
+  /// No description provided for @firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'First try shopping with some merchants to gain and transfer Merchant Piiinks'**
-  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks;
+  /// **'First try shopping with some merchants to gain and transfer Merchant TouristSavers'**
+  String
+      get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers;
 
   /// No description provided for @forRecommendingTheNewMerchantRegisterMembershipOrLogIn.
   ///
@@ -1217,11 +1218,11 @@ abstract class S {
   /// **'If your camera is not working properly '**
   String get ifYourCameraIsNotWorkingProperly;
 
-  /// No description provided for @insufficientPiiinkCredits.
+  /// No description provided for @insufficientTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Insufficient Piiink Credits'**
-  String get insufficientPiiinkCredits;
+  /// **'Insufficient TouristSaver Credits'**
+  String get insufficientTouristSaverCredits;
 
   /// No description provided for @invalidQrCode.
   ///
@@ -1559,11 +1560,11 @@ abstract class S {
   /// **'No merchant is available right now. We will keep you updated'**
   String get noMerchantIsAvailableRightNowWeWillKeepYouUpdated;
 
-  /// No description provided for @noMerchantPiiinkAvailable.
+  /// No description provided for @noMerchantTouristSaverAvailable.
   ///
   /// In en, this message translates to:
-  /// **'No Merchant Piiink Available'**
-  String get noMerchantPiiinkAvailable;
+  /// **'No Merchant TouristSaver Available'**
+  String get noMerchantTouristSaverAvailable;
 
   /// No description provided for @noNumber.
   ///
@@ -1637,11 +1638,11 @@ abstract class S {
   /// **'No Website Link'**
   String get noWebsiteLink;
 
-  /// No description provided for @notEnoughPiiinkCredits.
+  /// No description provided for @notEnoughTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Not enough Piiink credits'**
-  String get notEnoughPiiinkCredits;
+  /// **'Not enough TouristSaver credits'**
+  String get notEnoughTouristSaverCredits;
 
   /// No description provided for @notifications.
   ///
@@ -1655,11 +1656,11 @@ abstract class S {
   /// **'Notifications deleted successfully'**
   String get notificationsDeletedSuccessfully;
 
-  /// No description provided for @numberOfPiiinksToBeTransferred.
+  /// No description provided for @numberOfTouristSaversToBeTransferred.
   ///
   /// In en, this message translates to:
-  /// **'Number of Piiinks to be transferred'**
-  String get numberOfPiiinksToBeTransferred;
+  /// **'Number of TouristSavers to be transferred'**
+  String get numberOfTouristSaversToBeTransferred;
 
   /// No description provided for @ok.
   ///
@@ -1781,47 +1782,47 @@ abstract class S {
   /// **'Phone number should be at least 7 digits'**
   String get phoneNumberShouldBeAtLeast7Digits;
 
-  /// No description provided for @piiinkCredits.
+  /// No description provided for @touristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **' Piiink Credits'**
-  String get piiinkCredits;
+  /// **' TouristSaver Credits'**
+  String get touristSaverCredits;
 
-  /// No description provided for @piiinkCreditsInfo.
+  /// No description provided for @touristSaverCreditsInfo.
   ///
   /// In en, this message translates to:
-  /// **'Piiink Credits Info'**
-  String get piiinkCreditsInfo;
+  /// **'TouristSaver Credits Info'**
+  String get touristSaverCreditsInfo;
 
-  /// No description provided for @piiinkCreditsInfoD.
+  /// No description provided for @touristSaverCreditsInfoD.
   ///
   /// In en, this message translates to:
-  /// **'Universal Piiink Credits allow you to get a discount with any of our Merchants. Every time you use Piiink you will receive Merchant Piiink credits to spend back with the issuing Merchant'**
-  String get piiinkCreditsInfoD;
+  /// **'Universal TouristSaver Credits allow you to get a discount with any of our Merchants. Every time you use TouristSaver you will receive Merchant TouristSaver credits to spend back with the issuing Merchant'**
+  String get touristSaverCreditsInfoD;
 
-  /// No description provided for @piiinkTransferredSuccessfully.
+  /// No description provided for @touristSaverTransferredSuccessfully.
   ///
   /// In en, this message translates to:
-  /// **'Piiinks transferred successfully'**
-  String get piiinkTransferredSuccessfully;
+  /// **'TouristSavers transferred successfully'**
+  String get touristSaverTransferredSuccessfully;
 
-  /// No description provided for @piiinks.
+  /// No description provided for @touristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Piiinks'**
-  String get piiinks;
+  /// **'TouristSavers'**
+  String get touristSavers;
 
-  /// No description provided for @piiinksLoaded.
+  /// No description provided for @touristSaversLoaded.
   ///
   /// In en, this message translates to:
-  /// **'Piiinks Loaded'**
-  String get piiinksLoaded;
+  /// **'TouristSavers Loaded'**
+  String get touristSaversLoaded;
 
-  /// No description provided for @piiinksOnHold.
+  /// No description provided for @touristSaversOnHold.
   ///
   /// In en, this message translates to:
-  /// **'Piiinks On Hold'**
-  String get piiinksOnHold;
+  /// **'TouristSavers On Hold'**
+  String get touristSaversOnHold;
 
   /// No description provided for @pleaseAcceptTermsConditions.
   ///
@@ -1889,11 +1890,11 @@ abstract class S {
   /// **'Please enter mobile number'**
   String get pleaseEnterMobileNumber;
 
-  /// No description provided for @pleaseEnterNumberOfPiiinksToBeTransferred.
+  /// No description provided for @pleaseEnterNumberOfTouristSaversToBeTransferred.
   ///
   /// In en, this message translates to:
-  /// **'Please enter number of Piiinks to be transferred'**
-  String get pleaseEnterNumberOfPiiinksToBeTransferred;
+  /// **'Please enter number of TouristSavers to be transferred'**
+  String get pleaseEnterNumberOfTouristSaversToBeTransferred;
 
   /// No description provided for @pleaseEnterPassword.
   ///
@@ -1943,11 +1944,11 @@ abstract class S {
   /// **'Please enter valid merchant email'**
   String get pleaseEnterValidMerchantEmail;
 
-  /// No description provided for @pleaseEnterValidNumberOfPiiinksToBeTransferred.
+  /// No description provided for @pleaseEnterValidNumberOfTouristSaversToBeTransferred.
   ///
   /// In en, this message translates to:
-  /// **'Please enter valid number of Piiinks to be transferred'**
-  String get pleaseEnterValidNumberOfPiiinksToBeTransferred;
+  /// **'Please enter valid number of TouristSavers to be transferred'**
+  String get pleaseEnterValidNumberOfTouristSaversToBeTransferred;
 
   /// No description provided for @pleaseFillCorrectMobileNumber.
   ///
@@ -2135,12 +2136,12 @@ abstract class S {
   /// **'Register your membership now and enjoy our amazing offers'**
   String get registerYourMembershipNowAndEnjoyOurAmazingOffers;
 
-  /// No description provided for @registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails.
+  /// No description provided for @registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails.
   ///
   /// In en, this message translates to:
-  /// **'Register your membership or log in to access the Piiink benefits and view your profile details'**
+  /// **'Register your membership or log in to access the TouristSaver benefits and view your profile details'**
   String
-      get registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails;
+      get registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails;
 
   /// No description provided for @registration.
   ///
@@ -2287,11 +2288,11 @@ abstract class S {
   /// **'Select Date To'**
   String get selectDateTo;
 
-  /// No description provided for @selectMerchantPiiinks.
+  /// No description provided for @selectMerchantTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Select Merchant Piiinks'**
-  String get selectMerchantPiiinks;
+  /// **'Select Merchant TouristSavers'**
+  String get selectMerchantTouristSavers;
 
   /// No description provided for @selectStateProvince.
   ///
@@ -2409,11 +2410,11 @@ abstract class S {
   /// **'Sort by Alphabetical'**
   String get sortByAlphabetical;
 
-  /// No description provided for @sortByPiiinkCredits.
+  /// No description provided for @sortByTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Sort by Piiink Credits'**
-  String get sortByPiiinkCredits;
+  /// **'Sort by TouristSaver Credits'**
+  String get sortByTouristSaverCredits;
 
   /// No description provided for @stripePaymentFail.
   ///
@@ -2488,11 +2489,11 @@ abstract class S {
   /// **' To '**
   String get to;
 
-  /// No description provided for @toTransferPiiinksRegisterMembershipOrLogIn.
+  /// No description provided for @toTransferTouristSaversRegisterMembershipOrLogIn.
   ///
   /// In en, this message translates to:
-  /// **'To transfer Piiinks register membership or log in'**
-  String get toTransferPiiinksRegisterMembershipOrLogIn;
+  /// **'To transfer TouristSavers register membership or log in'**
+  String get toTransferTouristSaversRegisterMembershipOrLogIn;
 
   /// No description provided for @toUseTopUpFunctionRegisterMembershipOrLogIn.
   ///
@@ -2530,24 +2531,24 @@ abstract class S {
   /// **'Top Up History'**
   String get topUpHistory;
 
-  /// No description provided for @topUpUniversalPiiinkCredits.
+  /// No description provided for @topUpUniversalTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Top-up Universal Piiink Credits'**
-  String get topUpUniversalPiiinkCredits;
+  /// **'Top-up Universal TouristSaver Credits'**
+  String get topUpUniversalTouristSaverCredits;
 
-  /// No description provided for @topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant.
+  /// No description provided for @topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant.
   ///
   /// In en, this message translates to:
-  /// **'Top-up Universal Piiink Credits to get discount with any of our merchant'**
-  String get topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant;
+  /// **'Top-up Universal TouristSaver Credits to get discount with any of our merchant'**
+  String get topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant;
 
-  /// No description provided for @topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants.
+  /// No description provided for @topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants.
   ///
   /// In en, this message translates to:
-  /// **'Top-up your Universal Piiinks to gain extra credit and enjoy more offers from your favourite merchants'**
+  /// **'Top-up your Universal TouristSavers to gain extra credit and enjoy more offers from your favourite merchants'**
   String
-      get topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants;
+      get topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants;
 
   /// No description provided for @transactionCode.
   ///
@@ -2573,11 +2574,11 @@ abstract class S {
   /// **'Transaction ID '**
   String get transactionId;
 
-  /// No description provided for @transferPiiinks.
+  /// No description provided for @transferTouristSavers.
   ///
   /// In en, this message translates to:
-  /// **'Transfer Piiinks'**
-  String get transferPiiinks;
+  /// **'Transfer TouristSavers'**
+  String get transferTouristSavers;
 
   /// No description provided for @tryAgain.
   ///
@@ -2747,12 +2748,12 @@ abstract class S {
   /// **'Yesterday'**
   String get yesterday;
 
-  /// No description provided for @youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits.
+  /// No description provided for @youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits.
   ///
   /// In en, this message translates to:
-  /// **'You don\'t have any Piiink Universal credit. Register your membership or log in to access the Piiink benefits'**
+  /// **'You don\'t have any TouristSaver Universal credit. Register your membership or log in to access the TouristSaver benefits'**
   String
-      get youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits;
+      get youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits;
 
   /// No description provided for @yourActiveMerchantWallets.
   ///
@@ -2763,7 +2764,7 @@ abstract class S {
   /// No description provided for @yourEmailIsNotActivatedYet.
   ///
   /// In en, this message translates to:
-  /// **'Your email is not activated yet.\nYou need to activate your email to change country and recommend merchant as well as to receive important emails from Piiink'**
+  /// **'Your email is not activated yet.\nYou need to activate your email to change country and recommend merchant as well as to receive important emails from TouristSaver'**
   String get yourEmailIsNotActivatedYet;
 
   /// No description provided for @yourEmailIsNotActivatedYetNPleaseVerifyYourEmailBeforeChangingCountry.
@@ -2792,11 +2793,11 @@ abstract class S {
   /// **'Your QR Code'**
   String get yourQrCode;
 
-  /// No description provided for @yourUniversalPiiinkCredits.
+  /// No description provided for @yourUniversalTouristSaverCredits.
   ///
   /// In en, this message translates to:
-  /// **'Your Universal Piiink Credits'**
-  String get yourUniversalPiiinkCredits;
+  /// **'Your Universal TouristSaver Credits'**
+  String get yourUniversalTouristSaverCredits;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

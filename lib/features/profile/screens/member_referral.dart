@@ -111,14 +111,14 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
                             memRefKPI == 0
                                 ? S
                                     .of(context)
-                                    .referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks
+                                    .referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers
                                     .replaceAll(
                                         '*P',
                                         removeTrailingZero(numFormatter
                                             .format(piiinkUponMemberReferral)))
                                 : S
                                     .of(context)
-                                    .referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB
+                                    .referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB
                                     .replaceAll(
                                         '*A',
                                         removeTrailingZero(numFormatter

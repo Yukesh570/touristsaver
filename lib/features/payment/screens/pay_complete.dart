@@ -111,7 +111,7 @@ class _PaymentCompletedState extends State<PaymentCompleted> {
                             children: [
                               TextSpan(
                                 text:
-                                    '${numFormatter.format(universalWallet.data!.balance ?? 0)} ${S.of(context).piiinks}',
+                                    '${numFormatter.format(universalWallet.data!.balance ?? 0)} ${S.of(context).touristSavers}',
                                 style: transactionTextStyle.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: GlobalColors.appColor,
@@ -161,7 +161,7 @@ class _PaymentCompletedState extends State<PaymentCompleted> {
 
                   // Plus Piiink Point
                   AutoSizeText(
-                    "+ ${numFormatter.format(double.parse(widget.merchantRebateToMember))} ${S.of(context).piiinks}",
+                    "+ ${numFormatter.format(double.parse(widget.merchantRebateToMember))} ${S.of(context).touristSavers}",
                     style: transactionTextStyle.copyWith(
                       fontWeight: FontWeight.bold,
                       color: GlobalColors.appColor,

@@ -33,7 +33,7 @@ class IntroScreen extends StatelessWidget {
             pages: [
               // First
               PageViewModel(
-                title: S.of(context).welcomeToPiiink,
+                title: S.of(context).welcomeToTouristSaver,
                 // 'Welcome to Piiink',
                 body: S
                     .of(context)
@@ -43,26 +43,27 @@ class IntroScreen extends StatelessWidget {
                 //getPageDecoration, a method to customise the page style
                 decoration: getPageDecoration(),
               ),
-              //  Second
-              PageViewModel(
-                title: S.of(context).goShopping,
-                //'Go shopping',
-                body: S.of(context).shopAtPiiinkMerchantsAndGetGreatOffers,
-                // 'Shop at Piiink merchants and get great offers.',
-                image: buildImage("assets/images/shopping-bag.png", context),
-                decoration: getPageDecoration(),
-              ),
-              // Third
-              PageViewModel(
-                title: S.of(context).donateToCharity,
-                // 'Donate to charity',
-                body: S
-                    .of(context)
-                    .fromEveryTransactionCashGoesToYourNominatedCharity,
-                //  'From every transaction, cash goes to your nominated charity.',
-                image: buildImage("assets/images/charity.png", context),
-                decoration: getPageDecoration(),
-              ),
+              // //  Second
+              // PageViewModel(
+              //   title: S.of(context).goShopping,
+              //   //'Go shopping',
+              //   body:
+              //       S.of(context).shopAtTouristSaverMerchantsAndGetGreatOffers,
+              //   // 'Shop at Piiink merchants and get great offers.',
+              //   image: buildImage("assets/images/shopping-bag.png", context),
+              //   decoration: getPageDecoration(),
+              // ),
+              // // Third
+              // PageViewModel(
+              //   title: S.of(context).donateToCharity,
+              //   // 'Donate to charity',
+              //   body: S
+              //       .of(context)
+              //       .fromEveryTransactionCashGoesToYourNominatedCharity,
+              //   //  'From every transaction, cash goes to your nominated charity.',
+              //   image: buildImage("assets/images/charity.png", context),
+              //   decoration: getPageDecoration(),
+              // ),
             ],
             // onDone
             onDone: () {
@@ -74,7 +75,7 @@ class IntroScreen extends StatelessWidget {
               // }
             },
             //ClampingScrollPhysics prevent the scroll offset from exceeding the bounds of the content.
-            scrollPhysics: const ClampingScrollPhysics(),
+            // scrollPhysics: const ClampingScrollPhysics(),
 
             // Done
             showDoneButton: true,
@@ -126,7 +127,7 @@ class IntroScreen extends StatelessWidget {
                     color: GlobalColors.textColor,
                     fontSize: 15.sp)),
             // isBottomSafeArea: true,
-            dotsDecorator: getDotsDecorator(),
+            // dotsDecorator: getDotsDecorator(),
           ),
         ),
       ),
@@ -173,15 +174,4 @@ class IntroScreen extends StatelessWidget {
   }
 
   //method to customize the dots style
-  DotsDecorator getDotsDecorator() {
-    return const DotsDecorator(
-      spacing: EdgeInsets.symmetric(horizontal: 2),
-      activeColor: GlobalColors.appColor,
-      color: Colors.grey,
-      activeSize: Size(16, 8),
-      activeShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
-      ),
-    );
-  }
 }

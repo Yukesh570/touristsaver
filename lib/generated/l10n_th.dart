@@ -43,8 +43,8 @@ class STh extends S {
   String get noPremiumCodeHasBeenUsedYet => 'No Premium code has been used yet';
 
   @override
-  String get congratulationXPiiinksHasBeenAddedToYourWallet =>
-      'Congratulations! &X Piiinks has been added to your wallet';
+  String get congratulationXTouristSaversHasBeenAddedToYourWallet =>
+      'Congratulations! &X TouristSavers has been added to your wallet';
 
   @override
   String get premiumCodeUseHistory => 'Premium Code Use History';
@@ -56,7 +56,7 @@ class STh extends S {
   String get package => 'Package';
 
   @override
-  String get receivedPiiinks => 'Received Piiinks';
+  String get receivedTouristSavers => 'Received TouristSavers';
 
   @override
   String get v3 => 'V3';
@@ -104,8 +104,8 @@ class STh extends S {
   String get donateToCharity => 'บริจาคให้กับมูลนิธิ';
 
   @override
-  String get shopAtPiiinkMerchantsAndGetGreatOffers =>
-      'ช็อปที่ Piiink ร้านค้าและรับข้อเสนอที่ดี';
+  String get shopAtTouristSaverMerchantsAndGetGreatOffers =>
+      'ช็อปที่ TouristSaver ร้านค้าและรับข้อเสนอที่ดี';
 
   @override
   String get goShopping => 'ไปช้อปปิ้ง';
@@ -115,7 +115,7 @@ class STh extends S {
       'โปรแกรมรูปแบบไลฟ์สไตล์ชุมชนที่เป็นนวัตกรรมสำหรับช้อปปิ้งทุกวันของคุณ';
 
   @override
-  String get welcomeToPiiink => 'ยินดีต้อนรับสู่ Piiink';
+  String get welcomeToTouristSaver => 'ยินดีต้อนรับสู่ TouristSaver';
 
   @override
   String get claimNow => 'เรียกร้องเดี๋ยวนี้';
@@ -125,8 +125,8 @@ class STh extends S {
       'คุณยังไม่ได้เรียกร้อง *UP พี้นสิ้นสุดทั้งหมดของคุณ';
 
   @override
-  String get toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
-      'เพื่อช้อปที่ Piiink ร้านค้า รับส่วนลดที่ดี และบริจาคให้กับมูลนิธิโปรดลงทะเบียนสมาชิกหรือเข้าสู่ระบบ';
+  String get toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
+      'เพื่อช้อปที่ TouristSaver ร้านค้า รับส่วนลดที่ดี และบริจาคให้กับมูลนิธิโปรดลงทะเบียนสมาชิกหรือเข้าสู่ระบบ';
 
   @override
   String get youreCurrentlyOfflineCheckYourConnectionAndTryAgain =>
@@ -170,7 +170,7 @@ class STh extends S {
   String get noTopupPacakgeAvailableForNow => 'ไม่มีแพคเกจเติมเงินสำหรับขณะนี้';
 
   @override
-  String get claimFreePiiinks => 'เรียกร้องพี้นสิ้นสุดฟรี';
+  String get claimFreeTouristSavers => 'เรียกร้องพี้นสิ้นสุดฟรี';
 
   @override
   String get linkCopiedToClipboard => 'ลิงก์คัดลอกไปยังคลิปบอร์ดแล้ว';
@@ -185,12 +185,12 @@ class STh extends S {
   String get shareThisQRToYourFriend => 'แชร์ QR นี้ไปยังเพื่อนของคุณ';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB =>
-      'แนะนำแอป Piiink ให้กับเพื่อนและได้รับ *A Universal Piiinks เมื่อพวกเขาทำธุรกรรมเท่ากับ *B';
+  String get referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB =>
+      'แนะนำแอป TouristSaver ให้กับเพื่อนและได้รับ *A Universal TouristSavers เมื่อพวกเขาทำธุรกรรมเท่ากับ *B';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks =>
-      'แนะนำแอป Piiink ให้กับเพื่อนและได้รับ *P Universal Piiinks';
+  String get referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers =>
+      'แนะนำแอป TouristSaver ให้กับเพื่อนและได้รับ *P Universal TouristSavers';
 
   @override
   String get referAFriend => 'แนะนำเพื่อน';
@@ -218,7 +218,8 @@ class STh extends S {
   String get about => 'เกี่ยวกับ';
 
   @override
-  String get freePiiinksClaimedSuccessfully => 'เรียกร้องพี้นสิ้นสุดฟรีสำเร็จ';
+  String get freeTouristSaversClaimedSuccessfully =>
+      'เรียกร้องพี้นสิ้นสุดฟรีสำเร็จ';
 
   @override
   String get pleaseSearchByLocationOrSelectCategory =>
@@ -253,13 +254,13 @@ class STh extends S {
   String get withInVKm => 'ภายใน &V กิโลเมตร';
 
   @override
-  String get loadXPiiinks => 'โหลด &L พี้นสิ้นสุด';
+  String get loadXTouristSavers => 'โหลด &L พี้นสิ้นสุด';
 
   @override
-  String get piiinksCreditAdded => 'เพิ่มเครดิต Piiink แล้ว';
+  String get touristSaversCreditAdded => 'เพิ่มเครดิต TouristSaver แล้ว';
 
   @override
-  String get congratulationNowYouHaveXPiiinks =>
+  String get congratulationNowYouHaveXTouristSavers =>
       'ยินดีด้วยตอนนี้คุณมีเครดิต &X&V';
 
   @override
@@ -270,7 +271,7 @@ class STh extends S {
 
   @override
   String get weWillDeductCPiinksFromYourCredit =>
-      'เราจะหัก &C&X &CPiiinks จากเครดิตของคุณ';
+      'เราจะหัก &C&X &CTouristSavers จากเครดิตของคุณ';
 
   @override
   String get noNotificationFrom => 'ไม่มีการแจ้งเตือนจาก &S ถึง &E';
@@ -290,7 +291,7 @@ class STh extends S {
   String get accept => 'ยอมรับ';
 
   @override
-  String get acceptToUsePiiinks => 'ยอมรับเพื่อใช้ Piiinks';
+  String get acceptToUseTouristSavers => 'ยอมรับเพื่อใช้ TouristSavers';
 
   @override
   String get addReview => 'เพิ่มรีวิว';
@@ -331,7 +332,8 @@ class STh extends S {
       'คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีของคุณ?';
 
   @override
-  String get availableUniversalPiiinks => 'พี้นสิ้นสุดยูเนียวเวอร์ซัลทั้งหมด';
+  String get availableUniversalTouristSavers =>
+      'พี้นสิ้นสุดยูเนียวเวอร์ซัลทั้งหมด';
 
   @override
   String get away => ' ห่าง';
@@ -354,7 +356,7 @@ class STh extends S {
   String get biometrics => 'ชีวภาพ';
 
   @override
-  String get buyXUniversalPiiinkCredits =>
+  String get buyXUniversalTouristSaverCredits =>
       'ซื้อ &X เครดิตพี้นสิ้นสุดยูเนียวเวอร์ซัล';
 
   @override
@@ -447,7 +449,7 @@ class STh extends S {
   String get continueL => 'ดำเนินการต่อ';
 
   @override
-  String get continueWithDefaultPiiinkCredits =>
+  String get continueWithDefaultTouristSaverCredits =>
       'ดำเนินการต่อด้วยเครดิตพี้นสิ้นสุดเริ่มต้น';
 
   @override
@@ -575,9 +577,8 @@ class STh extends S {
   String get firstName => 'ชื่อจริง *';
 
   @override
-  String
-      get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks =>
-          'ลองซื้อของกับร้านค้าบางร้านก่อนเพื่อได้รับและโอน Merchant Piiinks';
+  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers =>
+      'ลองซื้อของกับร้านค้าบางร้านก่อนเพื่อได้รับและโอน Merchant TouristSavers';
 
   @override
   String get forRecommendingTheNewMerchantRegisterMembershipOrLogIn =>
@@ -611,7 +612,7 @@ class STh extends S {
       'หากกล้องของคุณไม่ทำงานอย่างเหมาะสม ';
 
   @override
-  String get insufficientPiiinkCredits => 'เครดิตพี้นสิ้นสุดไม่เพียงพอ';
+  String get insufficientTouristSaverCredits => 'เครดิตพี้นสิ้นสุดไม่เพียงพอ';
 
   @override
   String get invalidQrCode => 'รหัส QR ไม่ถูกต้อง';
@@ -787,7 +788,8 @@ class STh extends S {
       'ไม่มีร้านค้าที่ใช้ได้ในขณะนี้ เราจะแจ้งให้คุณทราบ';
 
   @override
-  String get noMerchantPiiinkAvailable => 'ไม่มี Merchant Piiink ที่ใช้ได้';
+  String get noMerchantTouristSaverAvailable =>
+      'ไม่มี Merchant TouristSaver ที่ใช้ได้';
 
   @override
   String get noNumber => 'ไม่มีหมายเลข';
@@ -826,7 +828,7 @@ class STh extends S {
   String get noWebsiteLink => 'ไม่มีลิงก์เว็บไซต์';
 
   @override
-  String get notEnoughPiiinkCredits => 'เครดิตพี้นสิ้นสุดไม่เพียงพอ';
+  String get notEnoughTouristSaverCredits => 'เครดิตพี้นสิ้นสุดไม่เพียงพอ';
 
   @override
   String get notifications => 'การแจ้งเตือน';
@@ -835,7 +837,8 @@ class STh extends S {
   String get notificationsDeletedSuccessfully => 'ลบการแจ้งเตือนเรียบร้อยแล้ว!';
 
   @override
-  String get numberOfPiiinksToBeTransferred => 'จำนวน Piiinks ที่จะโอน';
+  String get numberOfTouristSaversToBeTransferred =>
+      'จำนวน TouristSavers ที่จะโอน';
 
   @override
   String get ok => 'ตกลง';
@@ -901,26 +904,27 @@ class STh extends S {
       'หมายเลขโทรศัพท์ควรมีอย่างน้อย 7 หลัก';
 
   @override
-  String get piiinkCredits => ' เครดิตพี้นสิ้นสุด';
+  String get touristSaverCredits => ' เครดิตพี้นสิ้นสุด';
 
   @override
-  String get piiinkCreditsInfo => 'ข้อมูลเครดิตพี้นสิ้นสุด';
+  String get touristSaverCreditsInfo => 'ข้อมูลเครดิตพี้นสิ้นสุด';
 
   @override
-  String get piiinkCreditsInfoD =>
-      'เครดิตพี้นสิ้นสุดเป็นเครดิตพี้นสิ้นสุดสากลที่ช่วยให้คุณได้รับส่วนลดกับ Merchant ของเรา ทุกครั้งที่คุณใช้ Piiink คุณจะได้รับเครดิต Merchant Piiink เพื่อใช้ในการชำระคืนกับร้านค้าผู้ออก';
+  String get touristSaverCreditsInfoD =>
+      'เครดิตพี้นสิ้นสุดเป็นเครดิตพี้นสิ้นสุดสากลที่ช่วยให้คุณได้รับส่วนลดกับ Merchant ของเรา ทุกครั้งที่คุณใช้ TouristSaver คุณจะได้รับเครดิต Merchant TouristSaver เพื่อใช้ในการชำระคืนกับร้านค้าผู้ออก';
 
   @override
-  String get piiinkTransferredSuccessfully => 'โอน Piiink สำเร็จแล้ว';
+  String get touristSaverTransferredSuccessfully =>
+      'โอน TouristSaver สำเร็จแล้ว';
 
   @override
-  String get piiinks => 'Piiinks';
+  String get touristSavers => 'TouristSavers';
 
   @override
-  String get piiinksLoaded => 'โหลด Piiinks';
+  String get touristSaversLoaded => 'โหลด TouristSavers';
 
   @override
-  String get piiinksOnHold => 'Piiinks อยู่ในการถือครอง';
+  String get touristSaversOnHold => 'TouristSavers อยู่ในการถือครอง';
 
   @override
   String get pleaseAcceptTermsConditions => 'โปรดยอมรับข้อกำหนดและเงื่อนไข';
@@ -958,8 +962,8 @@ class STh extends S {
   String get pleaseEnterMobileNumber => 'โปรดป้อนหมายเลขโทรศัพท์มือถือ';
 
   @override
-  String get pleaseEnterNumberOfPiiinksToBeTransferred =>
-      'โปรดป้อนจำนวน Piiinks ที่จะโอน';
+  String get pleaseEnterNumberOfTouristSaversToBeTransferred =>
+      'โปรดป้อนจำนวน TouristSavers ที่จะโอน';
 
   @override
   String get pleaseEnterPassword => 'โปรดป้อนรหัสผ่าน';
@@ -986,8 +990,8 @@ class STh extends S {
   String get pleaseEnterValidMerchantEmail => 'โปรดป้อนอีเมลร้านค้าที่ถูกต้อง';
 
   @override
-  String get pleaseEnterValidNumberOfPiiinksToBeTransferred =>
-      'โปรดป้อนจำนวน Piiinks ที่จะโอนที่ถูกต้อง';
+  String get pleaseEnterValidNumberOfTouristSaversToBeTransferred =>
+      'โปรดป้อนจำนวน TouristSavers ที่จะโอนที่ถูกต้อง';
 
   @override
   String get pleaseFillCorrectMobileNumber =>
@@ -1088,8 +1092,8 @@ class STh extends S {
       'ลงทะเบียนสมาชิกของคุณเดี๋ยวนี้และเพลิดเพลินกับข้อเสนอที่น่าทึ่งของเรา';
 
   @override
-  String get registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails =>
-      'ลงทะเบียนสมาชิกหรือเข้าสู่ระบบเพื่อเข้าถึงประโยชน์ Piiink และดูรายละเอียดโปรไฟล์ของคุณ';
+  String get registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails =>
+      'ลงทะเบียนสมาชิกหรือเข้าสู่ระบบเพื่อเข้าถึงประโยชน์ TouristSaver และดูรายละเอียดโปรไฟล์ของคุณ';
 
   @override
   String get registration => 'การลงทะเบียน';
@@ -1166,7 +1170,7 @@ class STh extends S {
   String get selectDateTo => 'เลือกวันที่ถึง';
 
   @override
-  String get selectMerchantPiiinks => 'เลือก Merchant Piiinks';
+  String get selectMerchantTouristSavers => 'เลือก Merchant TouristSavers';
 
   @override
   String get selectStateProvince => 'เลือกรัฐ/จังหวัด *';
@@ -1234,7 +1238,7 @@ class STh extends S {
   String get sortByAlphabetical => 'เรียงตามตัวอักษร';
 
   @override
-  String get sortByPiiinkCredits => 'เรียงตามเครดิต Piiink';
+  String get sortByTouristSaverCredits => 'เรียงตามเครดิต TouristSaver';
 
   @override
   String get stripePaymentFail => 'การชำระเงินผ่าน Stripe ล้มเหลว';
@@ -1277,8 +1281,8 @@ class STh extends S {
   String get to => 'ถึง';
 
   @override
-  String get toTransferPiiinksRegisterMembershipOrLogIn =>
-      'เพื่อโอน Piiinks ลงทะเบียนสมาชิกหรือเข้าสู่ระบบ';
+  String get toTransferTouristSaversRegisterMembershipOrLogIn =>
+      'เพื่อโอน TouristSavers ลงทะเบียนสมาชิกหรือเข้าสู่ระบบ';
 
   @override
   String get toUseTopUpFunctionRegisterMembershipOrLogIn =>
@@ -1301,15 +1305,16 @@ class STh extends S {
   String get topUpHistory => 'ประวัติการเติมเงิน';
 
   @override
-  String get topUpUniversalPiiinkCredits => 'เติมเงินเครดิต Piiink สากล';
+  String get topUpUniversalTouristSaverCredits =>
+      'เติมเงินเครดิต TouristSaver สากล';
 
   @override
-  String get topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant =>
-      'เติมเงินเครดิต Piiink สากลเพื่อรับส่วนลดกับ Merchant ของเราใดก็ได้';
+  String get topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant =>
+      'เติมเงินเครดิต TouristSaver สากลเพื่อรับส่วนลดกับ Merchant ของเราใดก็ได้';
 
   @override
-  String get topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
-      'เติมเงิน Piiinks สากลของคุณเพื่อรับเครดิตเพิ่มเติมและเพลิดเพลินกับข้อเสนอจากร้านค้าที่คุณชื่นชอบมากขึ้น';
+  String get topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
+      'เติมเงิน TouristSavers สากลของคุณเพื่อรับเครดิตเพิ่มเติมและเพลิดเพลินกับข้อเสนอจากร้านค้าที่คุณชื่นชอบมากขึ้น';
 
   @override
   String get transactionCode => 'รหัสธุรกรรม*';
@@ -1324,7 +1329,7 @@ class STh extends S {
   String get transactionId => 'รหัสธุรกรรม ';
 
   @override
-  String get transferPiiinks => 'โอน Piiinks';
+  String get transferTouristSavers => 'โอน TouristSavers';
 
   @override
   String get tryAgain => 'ลองอีกครั้ง';
@@ -1416,15 +1421,15 @@ class STh extends S {
   String get yesterday => 'เมื่อวาน';
 
   @override
-  String get youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits =>
-      'คุณไม่มีเครดิต Piiink สากล ลงทะเบียนสมาชิกหรือเข้าสู่ระบบเพื่อเข้าถึงประโยชน์ Piiink';
+  String get youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits =>
+      'คุณไม่มีเครดิต TouristSaver สากล ลงทะเบียนสมาชิกหรือเข้าสู่ระบบเพื่อเข้าถึงประโยชน์ TouristSaver';
 
   @override
   String get yourActiveMerchantWallets => 'กระเป๋าเงินร้านค้าที่ทำงาน';
 
   @override
   String get yourEmailIsNotActivatedYet =>
-      'อีเมลของคุณยังไม่ได้เปิดใช้งาน\nคุณต้องเปิดใช้งานอีเมลของคุณเพื่อเปลี่ยนประเทศและแนะนำร้านค้า และรับอีเมลสำคัญจาก Piiink';
+      'อีเมลของคุณยังไม่ได้เปิดใช้งาน\nคุณต้องเปิดใช้งานอีเมลของคุณเพื่อเปลี่ยนประเทศและแนะนำร้านค้า และรับอีเมลสำคัญจาก TouristSaver';
 
   @override
   String get yourEmailIsNotActivatedYetNPleaseVerifyYourEmailBeforeChangingCountry =>
@@ -1442,5 +1447,6 @@ class STh extends S {
   String get yourQrCode => 'รหัส QR ของคุณ';
 
   @override
-  String get yourUniversalPiiinkCredits => 'เครดิต Piiink สากลของคุณ';
+  String get yourUniversalTouristSaverCredits =>
+      'เครดิต TouristSaver สากลของคุณ';
 }

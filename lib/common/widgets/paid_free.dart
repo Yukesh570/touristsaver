@@ -104,7 +104,7 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
                         AutoSizeText(
                           S
                               .of(context)
-                              .buyXUniversalPiiinkCredits
+                              .buyXUniversalTouristSaverCredits
                               .replaceAll('&X', '...'),
                           style: locationStyle,
                         ),
@@ -148,7 +148,7 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
                             AutoSizeText(
                               S
                                   .of(context)
-                                  .buyXUniversalPiiinkCredits
+                                  .buyXUniversalTouristSaverCredits
                                   .replaceAll(
                                       '&X',
                                       removeTrailingZero(numFormatter
@@ -308,7 +308,7 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
                                               context,
                                               S
                                                   .of(context)
-                                                  .freePiiinksClaimedSuccessfully);
+                                                  .freeTouristSaversClaimedSuccessfully);
                                         }
                                       } else if (result is ErrorResModel) {
                                         if (!mounted) return;

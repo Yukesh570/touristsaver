@@ -337,14 +337,14 @@ class _TopUpHistoryWidgetState extends State<TopUpHistoryWidget> {
                                                             Row(
                                                               children: [
                                                                 AutoSizeText(
-                                                                  "${S.of(context).receivedPiiinks}: ",
+                                                                  "${S.of(context).receivedTouristSavers}: ",
                                                                   style: transUni
                                                                       .copyWith(
                                                                           color:
                                                                               GlobalColors.gray),
                                                                 ),
                                                                 AutoSizeText(
-                                                                  "${removeTrailingZero(numFormatter.format(transactionData.piiinksProvided))} ${S.of(context).piiinks}",
+                                                                  "${removeTrailingZero(numFormatter.format(transactionData.piiinksProvided))} ${S.of(context).touristSavers}",
                                                                   overflow:
                                                                       TextOverflow
                                                                           .ellipsis,

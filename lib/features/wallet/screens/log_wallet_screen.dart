@@ -47,9 +47,9 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
   List<String> additionalList = [];
   buildAdditionalList() {
     additionalList.addAll([
-      S.of(context).topUpUniversalPiiinkCredits,
+      S.of(context).topUpUniversalTouristSaverCredits,
       S.of(context).changeCountry,
-      S.of(context).transferPiiinks,
+      S.of(context).transferTouristSavers,
       S.of(context).transactionHistory,
       S.of(context).topUpHistory,
     ]);
@@ -81,7 +81,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
     setState(() {
       isTopUpEnabled = isPayEnabledResModel?.data?.transactionIsEnabled;
       if (isTopUpEnabled == false) {
-        additionalList.remove(S.of(context).topUpUniversalPiiinkCredits);
+        additionalList.remove(S.of(context).topUpUniversalTouristSaverCredits);
       }
     });
   }
@@ -188,7 +188,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
                                           child: AutoSizeText(
                                             S
                                                 .of(context)
-                                                .yourUniversalPiiinkCredits,
+                                                .yourUniversalTouristSaverCredits,
                                             style: topicStyle,
                                           ),
                                         ),
@@ -235,7 +235,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
                                                         child: AutoSizeText(
                                                           S
                                                               .of(context)
-                                                              .claimFreePiiinks,
+                                                              .claimFreeTouristSavers,
                                                           //     'Claim Free Piiinks',
                                                           style:
                                                               notiHeaderTextStyle
@@ -343,7 +343,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
 
               // Piiinks
               AutoSizeText(
-                S.of(context).piiinks,
+                S.of(context).touristSavers,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -377,8 +377,8 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
                   return Align(
                     alignment: Alignment.center,
                     child: InfoPopUp(
-                      title: S.of(context).piiinkCreditsInfo,
-                      body: S.of(context).piiinkCreditsInfoD,
+                      title: S.of(context).touristSaverCreditsInfo,
+                      body: S.of(context).touristSaverCreditsInfoD,
                       onOk: () {
                         context.pop();
                       },
@@ -457,7 +457,8 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
         return InkWell(
           borderRadius: BorderRadius.circular(5.0),
           onTap: () {
-            additionalList[index] == S.of(context).topUpUniversalPiiinkCredits
+            additionalList[index] ==
+                    S.of(context).topUpUniversalTouristSaverCredits
                 ? context.pushNamed('top-up').then((value) => setState(() {
                       walletLoad = loadWallet();
                     }))
@@ -467,7 +468,8 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
                         .then((value) => setState(() {
                               walletLoad = loadWallet();
                             }))
-                    : additionalList[index] == S.of(context).transferPiiinks
+                    : additionalList[index] ==
+                            S.of(context).transferTouristSavers
                         ? context
                             .pushNamed('transfer-piiinks')
                             .then((value) => setState(() {

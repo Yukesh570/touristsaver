@@ -24,7 +24,7 @@ class CongratsScreen extends StatefulWidget {
 class _CongratsScreenState extends State<CongratsScreen> {
   @override
   Widget build(BuildContext context) {
-    List arr = S.of(context).congratulationNowYouHaveXPiiinks.split(" ");
+    List arr = S.of(context).congratulationNowYouHaveXTouristSavers.split(" ");
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),

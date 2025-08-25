@@ -403,7 +403,7 @@ class _CountryNumberChangedVerificationState
 
                   // title Text
                   AutoSizeText(
-                    S.of(context).piiinkCreditsInfo,
+                    S.of(context).touristSaverCreditsInfo,
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -418,7 +418,7 @@ class _CountryNumberChangedVerificationState
                     child: Text(
                       S
                           .of(context)
-                          .topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant,
+                          .topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant,
                       textAlign: TextAlign.center,
                       style: transactionTextStyle.copyWith(
                         color: Colors.black.withValues(alpha: 0.7),
@@ -524,7 +524,7 @@ class _CountryNumberChangedVerificationState
                   SizedBox(height: 20.h),
                   // Free Button
                   CustomButton(
-                    text: S.of(context).continueWithDefaultPiiinkCredits,
+                    text: S.of(context).continueWithDefaultTouristSaverCredits,
                     onPressed: () {
                       if (!mounted) return;
                       context.pushReplacementNamed('bottom-bar',

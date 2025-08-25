@@ -115,7 +115,7 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
                   } else {
                     GlobalSnackBar.showError(
                       context,
-                      S.of(context).notEnoughPiiinkCredits,
+                      S.of(context).notEnoughTouristSaverCredits,
                     );
                   }
                 },
@@ -157,7 +157,7 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
                         } else {
                           GlobalSnackBar.showError(
                             context,
-                            S.of(context).notEnoughPiiinkCredits,
+                            S.of(context).notEnoughTouristSaverCredits,
                           );
                         }
                       },
@@ -295,7 +295,7 @@ class SameContainer extends StatelessWidget {
                     children: [
                       TextSpan(
                         text:
-                            '${numFormatter.format(double.parse(piiinkBalance))} ${S.of(context).piiinks}',
+                            '${numFormatter.format(double.parse(piiinkBalance))} ${S.of(context).touristSavers}',
                         style: transactionTextStyle.copyWith(
                           fontWeight: FontWeight.bold,
                           color: GlobalColors.appColor,
@@ -313,7 +313,7 @@ class SameContainer extends StatelessWidget {
                     ? const SizedBox()
                     : AutoSizeText.rich(
                         TextSpan(
-                          text: '${S.of(context).piiinksOnHold}: ',
+                          text: '${S.of(context).touristSaversOnHold}: ',
                           style: transactionTextStyle.copyWith(
                             fontWeight: FontWeight.w500,
                             fontSize: 18.sp,
@@ -321,7 +321,7 @@ class SameContainer extends StatelessWidget {
                           children: [
                             TextSpan(
                               text:
-                                  '${numFormatter.format(double.parse(onHoldPiiink!))} ${S.of(context).piiinks}',
+                                  '${numFormatter.format(double.parse(onHoldPiiink!))} ${S.of(context).touristSavers}',
                               style: transactionTextStyle.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: GlobalColors.appColor,

@@ -246,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: AutoSizeText(
                   S
                       .of(context)
-                      .registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails,
+                      .registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails,
                   textAlign: TextAlign.center,
                   style: locationStyle.copyWith(fontSize: 18.sp),
                 ),

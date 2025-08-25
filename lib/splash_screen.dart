@@ -66,6 +66,12 @@ class _MySplashScreenState extends State<MySplashScreen> {
   // }
 
   // Navigator to intro screen
+  void showIntroVideo() {
+    context.pushReplacementNamed(
+      'video-screen',
+    );
+  }
+
   void showIntro() {
     context.pushReplacementNamed(
       'intro-screen',
@@ -96,7 +102,7 @@ class _MySplashScreenState extends State<MySplashScreen> {
         AppVariables.notificationLabel.value = notificationsCount;
       }
       Timer(Duration(seconds: splashtime),
-          () => acc == 'true' ? showBottomBar() : showIntro());
+          () => acc == 'true' ? showBottomBar() : showIntroVideo());
     });
 
     getAppSign(); //Calling to auto the SMS OTP

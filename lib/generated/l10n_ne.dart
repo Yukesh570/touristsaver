@@ -44,8 +44,8 @@ class SNe extends S {
       'अहिलेसम्म कुनै प्रिमियम कोड प्रयोग गरिएको छैन';
 
   @override
-  String get congratulationXPiiinksHasBeenAddedToYourWallet =>
-      'बधाई छ! &X Piiinks तपाईंको वालेटमा थपिएको छ';
+  String get congratulationXTouristSaversHasBeenAddedToYourWallet =>
+      'बधाई छ! &X TouristSavers तपाईंको वालेटमा थपिएको छ';
 
   @override
   String get premiumCodeUseHistory => 'प्रिमियम कोड प्रयोग इतिहास';
@@ -57,29 +57,29 @@ class SNe extends S {
   String get package => 'प्याकेज';
 
   @override
-  String get receivedPiiinks => 'Piiinks प्राप्त भयो';
+  String get receivedTouristSavers => 'TouristSavers प्राप्त भयो';
 
   @override
-  String get v3 => 'V3';
+  String get v3 => 'संस्करण ३';
 
   @override
   String get noCharityFoundForPleaseTryAgain =>
-      'No charity found for &V. Please try again';
+      '‘&V’ को लागि कुनै च्यारिटी भेटिएन। कृपया पुन: प्रयास गर्नुहोस्';
 
   @override
-  String get pleaseSelectCountryPrefix => 'Please select country prefix';
+  String get pleaseSelectCountryPrefix => 'देशको प्रिफिक्स चयन गर्नुहोस्';
 
   @override
-  String get emailA => 'Email';
+  String get emailA => 'इमेल';
 
   @override
-  String get instagram => 'Instagram';
+  String get instagram => 'इन्स्टाग्राम';
 
   @override
-  String get facebook => 'Facebook';
+  String get facebook => 'फेसबुक';
 
   @override
-  String get website => 'Website';
+  String get website => 'वेबसाइट';
 
   @override
   String get areYouSureYouWantToChooseThisCharity =>
@@ -92,10 +92,10 @@ class SNe extends S {
   String get yourCharity => 'तिम्रो परोपकार';
 
   @override
-  String get version2 => 'V2';
+  String get version2 => 'संस्करण २';
 
   @override
-  String get from => 'From';
+  String get from => 'बाट';
 
   @override
   String get fromEveryTransactionCashGoesToYourNominatedCharity =>
@@ -105,8 +105,8 @@ class SNe extends S {
   String get donateToCharity => 'परोपकारमा दान गर्नुहोस्';
 
   @override
-  String get shopAtPiiinkMerchantsAndGetGreatOffers =>
-      'Piiink व्यापारीहरूमा किनमेल गर्नुहोस् र उत्कृष्ट प्रस्तावहरू प्राप्त गर्नुहोस्।';
+  String get shopAtTouristSaverMerchantsAndGetGreatOffers =>
+      'TouristSaver व्यापारीहरूमा किनमेल गर्नुहोस् र उत्कृष्ट प्रस्तावहरू प्राप्त गर्नुहोस्।';
 
   @override
   String get goShopping => 'किनमेल गर्न जानुहोस्';
@@ -116,7 +116,7 @@ class SNe extends S {
       'तपाईको दैनिक किनमेलको लागि सबैभन्दा नवीन सामुदायिक जीवनशैली कार्यक्रम।';
 
   @override
-  String get welcomeToPiiink => 'Piiink मा स्वागत छ';
+  String get welcomeToTouristSaver => 'TouristSaver मा स्वागत छ';
 
   @override
   String get claimNow => 'अब दाबी गर्नुहोस्';
@@ -126,8 +126,8 @@ class SNe extends S {
       'तपाईंले अहिलेसम्म आफ्नो *UP फ्री युनिभर्सल पिंक्स दावी गर्नुभएको छैन।';
 
   @override
-  String get toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
-      'Piiink व्यापारीहरूमा किनमेल गर्न, ठूलो छुट पाउनुहोस् र आफ्नो मनपर्ने परोपकारमा दान गर्नुहोस्, सदस्यता दर्ता गर्नुहोस् वा लगइन गर्नुहोस्।';
+  String get toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
+      'TouristSaver व्यापारीहरूमा किनमेल गर्न, ठूलो छुट पाउनुहोस् र आफ्नो मनपर्ने परोपकारमा दान गर्नुहोस्, सदस्यता दर्ता गर्नुहोस् वा लगइन गर्नुहोस्।';
 
   @override
   String get youreCurrentlyOfflineCheckYourConnectionAndTryAgain =>
@@ -173,7 +173,7 @@ class SNe extends S {
       'अहिलेको लागि कुनै टप-अप प्याकेज उपलब्ध छैन';
 
   @override
-  String get claimFreePiiinks => 'दावी नि: शुल्क Piiinks';
+  String get claimFreeTouristSavers => 'दावी नि: शुल्क TouristSavers';
 
   @override
   String get linkCopiedToClipboard => 'लिंक क्लिपबोर्डमा प्रतिलिपि गरियो';
@@ -188,12 +188,12 @@ class SNe extends S {
   String get shareThisQRToYourFriend => 'यो QR आफ्ना साथीहरूलाई साझा गर्नुहोस्';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB =>
-      'आफ्ना साथीहरूलाई Piiink एप रेफर गर्नुहोस् र *B को बराबर लेनदेन गर्दा *A Universal Piiinks कमाउनुहोस्';
+  String get referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB =>
+      'आफ्ना साथीहरूलाई TouristSaver एप रेफर गर्नुहोस् र *B को बराबर लेनदेन गर्दा *A Universal TouristSavers कमाउनुहोस्';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks =>
-      'आफ्ना साथीहरूलाई Piiink एप रेफर गर्नुहोस् र *P Universal Piiinks कमाउनुहोस्';
+  String get referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers =>
+      'आफ्ना साथीहरूलाई TouristSaver एप रेफर गर्नुहोस् र *P Universal TouristSavers कमाउनुहोस्';
 
   @override
   String get referAFriend => 'एक साथीलाई सन्दर्भ गर्नुहोस्';
@@ -221,8 +221,8 @@ class SNe extends S {
   String get about => 'बारे';
 
   @override
-  String get freePiiinksClaimedSuccessfully =>
-      'नि: शुल्क Piiinks सफलतापूर्वक दावी गरियो';
+  String get freeTouristSaversClaimedSuccessfully =>
+      'नि: शुल्क TouristSavers सफलतापूर्वक दावी गरियो';
 
   @override
   String get pleaseSearchByLocationOrSelectCategory =>
@@ -257,13 +257,13 @@ class SNe extends S {
   String get withInVKm => '&V KM मा';
 
   @override
-  String get loadXPiiinks => 'लोड र एल Piiinks';
+  String get loadXTouristSavers => 'लोड र एल TouristSavers';
 
   @override
-  String get piiinksCreditAdded => 'Piiink क्रेडिटहरू थपियो';
+  String get touristSaversCreditAdded => 'TouristSaver क्रेडिटहरू थपियो';
 
   @override
-  String get congratulationNowYouHaveXPiiinks =>
+  String get congratulationNowYouHaveXTouristSavers =>
       'बधाई छ अब तपाईसँग &X&V क्रेडिट छ';
 
   @override
@@ -274,7 +274,7 @@ class SNe extends S {
 
   @override
   String get weWillDeductCPiinksFromYourCredit =>
-      'हामी तपाईंको क्रेडिटबाट &C&X &CPiiinks कटौती गर्नेछौं';
+      'हामी तपाईंको क्रेडिटबाट &C&X &CTouristSavers कटौती गर्नेछौं';
 
   @override
   String get noNotificationFrom => '&S बाट &E सम्म कुनै सूचना छैन';
@@ -294,7 +294,8 @@ class SNe extends S {
   String get accept => 'स्वीकार';
 
   @override
-  String get acceptToUsePiiinks => 'Piiinks प्रयोग गर्न स्वीकार गर्नुहोस्';
+  String get acceptToUseTouristSavers =>
+      'TouristSavers प्रयोग गर्न स्वीकार गर्नुहोस्';
 
   @override
   String get addReview => 'समीक्षा थप्नुहोस्';
@@ -334,7 +335,8 @@ class SNe extends S {
       'के तपाइँ निश्चित हुनुहुन्छ कि तपाइँ आफ्नो खाता हटाउन चाहनुहुन्छ?';
 
   @override
-  String get availableUniversalPiiinks => 'उपलब्ध विश्वव्यापी Piiinks';
+  String get availableUniversalTouristSavers =>
+      'उपलब्ध विश्वव्यापी TouristSavers';
 
   @override
   String get away => 'टाढा';
@@ -357,8 +359,8 @@ class SNe extends S {
   String get biometrics => 'बायोमेट्रिक्स';
 
   @override
-  String get buyXUniversalPiiinkCredits =>
-      '&X युनिभर्सल Piiink क्रेडिटहरू किन्नुहोस्';
+  String get buyXUniversalTouristSaverCredits =>
+      '&X युनिभर्सल TouristSaver क्रेडिटहरू किन्नुहोस्';
 
   @override
   String get byClicking => 'क्लिक गरेर';
@@ -451,8 +453,8 @@ class SNe extends S {
   String get continueL => 'जारी राख्नुहोस्';
 
   @override
-  String get continueWithDefaultPiiinkCredits =>
-      'पूर्वनिर्धारित Piiink क्रेडिटहरूसँग जारी राख्नुहोस्';
+  String get continueWithDefaultTouristSaverCredits =>
+      'पूर्वनिर्धारित TouristSaver क्रेडिटहरूसँग जारी राख्नुहोस्';
 
   @override
   String get continueWithoutTopUp => 'टप-अप बिना जारी राख्नुहोस्';
@@ -580,8 +582,8 @@ class SNe extends S {
   String get firstName => 'पहिलो नाम *';
 
   @override
-  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks =>
-      'पहिले व्यापारी Piiinks प्राप्त गर्न र स्थानान्तरण गर्न केही व्यापारीहरूसँग किनमेल गर्ने प्रयास गर्नुहोस्';
+  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers =>
+      'पहिले व्यापारी TouristSavers प्राप्त गर्न र स्थानान्तरण गर्न केही व्यापारीहरूसँग किनमेल गर्ने प्रयास गर्नुहोस्';
 
   @override
   String get forRecommendingTheNewMerchantRegisterMembershipOrLogIn =>
@@ -615,7 +617,8 @@ class SNe extends S {
       'यदि तपाईको क्यामेराले राम्रोसँग काम गरिरहेको छैन भने';
 
   @override
-  String get insufficientPiiinkCredits => 'अपर्याप्त Piiink क्रेडिटहरू';
+  String get insufficientTouristSaverCredits =>
+      'अपर्याप्त TouristSaver क्रेडिटहरू';
 
   @override
   String get invalidQrCode => 'अमान्य QR कोड';
@@ -792,7 +795,8 @@ class SNe extends S {
       'अहिले कुनै पनि व्यापारी उपलब्ध छैन। हामी तपाईंलाई अपडेट राख्नेछौं।';
 
   @override
-  String get noMerchantPiiinkAvailable => 'कुनै पनि व्यापारी Piiink उपलब्ध छैन';
+  String get noMerchantTouristSaverAvailable =>
+      'कुनै पनि व्यापारी TouristSaver उपलब्ध छैन';
 
   @override
   String get noNumber => 'नम्बर छैन';
@@ -832,7 +836,8 @@ class SNe extends S {
   String get noWebsiteLink => 'कुनै वेबसाइट लिङ्क छैन';
 
   @override
-  String get notEnoughPiiinkCredits => 'पर्याप्त Piiink क्रेडिटहरू छैनन्';
+  String get notEnoughTouristSaverCredits =>
+      'पर्याप्त TouristSaver क्रेडिटहरू छैनन्';
 
   @override
   String get notifications => 'सूचनाहरू';
@@ -842,8 +847,8 @@ class SNe extends S {
       'सूचनाहरू सफलतापूर्वक मेटाइयो!';
 
   @override
-  String get numberOfPiiinksToBeTransferred =>
-      'स्थानान्तरण गरिने Piiinks को संख्या';
+  String get numberOfTouristSaversToBeTransferred =>
+      'स्थानान्तरण गरिने TouristSavers को संख्या';
 
   @override
   String get ok => 'ठीक';
@@ -908,27 +913,27 @@ class SNe extends S {
       'फोन नम्बर कम्तीमा ७ अंकको हुनुपर्छ';
 
   @override
-  String get piiinkCredits => 'Piiink क्रेडिट';
+  String get touristSaverCredits => 'TouristSaver क्रेडिट';
 
   @override
-  String get piiinkCreditsInfo => 'Piiink क्रेडिट जानकारी';
+  String get touristSaverCreditsInfo => 'TouristSaver क्रेडिट जानकारी';
 
   @override
-  String get piiinkCreditsInfoD =>
-      'युनिभर्सल Piiink क्रेडिटहरूले तपाईंलाई हाम्रा कुनै पनि व्यापारीहरूसँग छुट प्राप्त गर्न अनुमति दिन्छ। प्रत्येक पटक तपाईंले Piiink प्रयोग गर्दा तपाईंले जारी गर्ने व्यापारीसँग फिर्ता खर्च गर्न व्यापारी Piiink क्रेडिटहरू प्राप्त गर्नुहुनेछ।';
+  String get touristSaverCreditsInfoD =>
+      'युनिभर्सल TouristSaver क्रेडिटहरूले तपाईंलाई हाम्रा कुनै पनि व्यापारीहरूसँग छुट प्राप्त गर्न अनुमति दिन्छ। प्रत्येक पटक तपाईंले TouristSaver प्रयोग गर्दा तपाईंले जारी गर्ने व्यापारीसँग फिर्ता खर्च गर्न व्यापारी TouristSaver क्रेडिटहरू प्राप्त गर्नुहुनेछ।';
 
   @override
-  String get piiinkTransferredSuccessfully =>
-      'Piiink सफलतापूर्वक स्थानान्तरण गरियो';
+  String get touristSaverTransferredSuccessfully =>
+      'TouristSaver सफलतापूर्वक स्थानान्तरण गरियो';
 
   @override
-  String get piiinks => 'पिइन्क्स';
+  String get touristSavers => 'पिइन्क्स';
 
   @override
-  String get piiinksLoaded => 'Piiinks लोड भयो';
+  String get touristSaversLoaded => 'TouristSavers लोड भयो';
 
   @override
-  String get piiinksOnHold => 'Piiinks अन होल्ड';
+  String get touristSaversOnHold => 'TouristSavers अन होल्ड';
 
   @override
   String get pleaseAcceptTermsConditions =>
@@ -973,8 +978,8 @@ class SNe extends S {
   String get pleaseEnterMobileNumber => 'कृपया मोबाइल नम्बर प्रविष्ट गर्नुहोस्';
 
   @override
-  String get pleaseEnterNumberOfPiiinksToBeTransferred =>
-      'कृपया स्थानान्तरण गर्न Piiinks को संख्या प्रविष्ट गर्नुहोस्।';
+  String get pleaseEnterNumberOfTouristSaversToBeTransferred =>
+      'कृपया स्थानान्तरण गर्न TouristSavers को संख्या प्रविष्ट गर्नुहोस्।';
 
   @override
   String get pleaseEnterPassword => 'कृपया पासवर्ड प्रविष्ट गर्नुहोस्';
@@ -1003,8 +1008,8 @@ class SNe extends S {
       'कृपया मान्य व्यापारी इमेल प्रविष्ट गर्नुहोस्';
 
   @override
-  String get pleaseEnterValidNumberOfPiiinksToBeTransferred =>
-      'कृपया स्थानान्तरण गर्न Piiinks को मान्य संख्या प्रविष्ट गर्नुहोस्।';
+  String get pleaseEnterValidNumberOfTouristSaversToBeTransferred =>
+      'कृपया स्थानान्तरण गर्न TouristSavers को मान्य संख्या प्रविष्ट गर्नुहोस्।';
 
   @override
   String get pleaseFillCorrectMobileNumber =>
@@ -1107,8 +1112,8 @@ class SNe extends S {
       'अहिले नै आफ्नो सदस्यता दर्ता गर्नुहोस् र हाम्रो अद्भुत प्रस्तावहरूको आनन्द लिनुहोस्।';
 
   @override
-  String get registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails =>
-      'आफ्नो सदस्यता दर्ता गर्नुहोस् वा Piiink लाभहरू पहुँच गर्न र आफ्नो प्रोफाइल विवरणहरू हेर्न लग इन गर्नुहोस्।';
+  String get registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails =>
+      'आफ्नो सदस्यता दर्ता गर्नुहोस् वा TouristSaver लाभहरू पहुँच गर्न र आफ्नो प्रोफाइल विवरणहरू हेर्न लग इन गर्नुहोस्।';
 
   @override
   String get registration => 'दर्ता';
@@ -1186,7 +1191,8 @@ class SNe extends S {
   String get selectDateTo => 'मिति चयन गर्नुहोस्';
 
   @override
-  String get selectMerchantPiiinks => 'व्यापारी Piiinks चयन गर्नुहोस्';
+  String get selectMerchantTouristSavers =>
+      'व्यापारी TouristSavers चयन गर्नुहोस्';
 
   @override
   String get selectStateProvince => 'राज्य/प्रान्त चयन गर्नुहोस् *';
@@ -1253,7 +1259,8 @@ class SNe extends S {
   String get sortByAlphabetical => 'अक्षर अनुसार क्रमबद्ध';
 
   @override
-  String get sortByPiiinkCredits => 'Piiink क्रेडिट द्वारा क्रमबद्ध';
+  String get sortByTouristSaverCredits =>
+      'TouristSaver क्रेडिट द्वारा क्रमबद्ध';
 
   @override
   String get stripePaymentFail => 'स्ट्राइप भुक्तानी असफल';
@@ -1296,8 +1303,8 @@ class SNe extends S {
   String get to => 'मा';
 
   @override
-  String get toTransferPiiinksRegisterMembershipOrLogIn =>
-      'Piiinks स्थानान्तरण गर्न सदस्यता दर्ता गर्नुहोस् वा लग इन गर्नुहोस्।';
+  String get toTransferTouristSaversRegisterMembershipOrLogIn =>
+      'TouristSavers स्थानान्तरण गर्न सदस्यता दर्ता गर्नुहोस् वा लग इन गर्नुहोस्।';
 
   @override
   String get toUseTopUpFunctionRegisterMembershipOrLogIn =>
@@ -1320,15 +1327,16 @@ class SNe extends S {
   String get topUpHistory => 'टप अप इतिहास';
 
   @override
-  String get topUpUniversalPiiinkCredits => 'टप-अप युनिभर्सल Piiink क्रेडिटहरू';
+  String get topUpUniversalTouristSaverCredits =>
+      'टप-अप युनिभर्सल TouristSaver क्रेडिटहरू';
 
   @override
-  String get topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant =>
-      'टप-अप युनिभर्सल Piiink क्रेडिटहरू हाम्रो कुनै पनि व्यापारीसँग छुट प्राप्त गर्न।';
+  String get topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant =>
+      'टप-अप युनिभर्सल TouristSaver क्रेडिटहरू हाम्रो कुनै पनि व्यापारीसँग छुट प्राप्त गर्न।';
 
   @override
-  String get topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
-      'अतिरिक्त क्रेडिट प्राप्त गर्न र आफ्नो मनपर्ने व्यापारीहरूबाट थप प्रस्तावहरूको आनन्द लिनको लागि तपाइँको युनिभर्सल Piiinks टप-अप गर्नुहोस्।';
+  String get topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
+      'अतिरिक्त क्रेडिट प्राप्त गर्न र आफ्नो मनपर्ने व्यापारीहरूबाट थप प्रस्तावहरूको आनन्द लिनको लागि तपाइँको युनिभर्सल TouristSavers टप-अप गर्नुहोस्।';
 
   @override
   String get transactionCode => 'लेनदेन कोड*';
@@ -1343,7 +1351,7 @@ class SNe extends S {
   String get transactionId => 'लेनदेन आईडी';
 
   @override
-  String get transferPiiinks => 'स्थानान्तरण Piiinks';
+  String get transferTouristSavers => 'स्थानान्तरण TouristSavers';
 
   @override
   String get tryAgain => 'फेरि प्रयास गर्नुहोस्';
@@ -1436,15 +1444,15 @@ class SNe extends S {
   String get yesterday => 'हिजो';
 
   @override
-  String get youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits =>
-      'तपाईसँग कुनै Piiink विश्वव्यापी क्रेडिट छैन। आफ्नो सदस्यता दर्ता गर्नुहोस् वा Piiink लाभहरू पहुँच गर्न लग इन गर्नुहोस्।';
+  String get youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits =>
+      'तपाईसँग कुनै TouristSaver विश्वव्यापी क्रेडिट छैन। आफ्नो सदस्यता दर्ता गर्नुहोस् वा TouristSaver लाभहरू पहुँच गर्न लग इन गर्नुहोस्।';
 
   @override
   String get yourActiveMerchantWallets => 'तपाईंको सक्रिय व्यापारी वालेटहरू';
 
   @override
   String get yourEmailIsNotActivatedYet =>
-      'तपाईँको इमेल अझै सक्रिय गरिएको छैन।\nतपाईँले देश परिवर्तन गर्न र व्यापारीलाई सिफारिस गर्न र Piiink बाट महत्त्वपूर्ण इमेलहरू प्राप्त गर्न आफ्नो इमेल सक्रिय गर्न आवश्यक छ।';
+      'तपाईँको इमेल अझै सक्रिय गरिएको छैन।\nतपाईँले देश परिवर्तन गर्न र व्यापारीलाई सिफारिस गर्न र TouristSaver बाट महत्त्वपूर्ण इमेलहरू प्राप्त गर्न आफ्नो इमेल सक्रिय गर्न आवश्यक छ।';
 
   @override
   String get yourEmailIsNotActivatedYetNPleaseVerifyYourEmailBeforeChangingCountry =>
@@ -1461,6 +1469,6 @@ class SNe extends S {
   String get yourQrCode => 'तपाईको QR कोड';
 
   @override
-  String get yourUniversalPiiinkCredits =>
-      'तपाईंको विश्वव्यापी Piiink क्रेडिटहरू';
+  String get yourUniversalTouristSaverCredits =>
+      'तपाईंको विश्वव्यापी TouristSaver क्रेडिटहरू';
 }

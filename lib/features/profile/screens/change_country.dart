@@ -773,7 +773,7 @@ class _ChangeCountryState extends State<ChangeCountry> {
 
                   // title Text
                   AutoSizeText(
-                    S.of(context).piiinkCreditsInfo,
+                    S.of(context).touristSaverCreditsInfo,
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -790,7 +790,7 @@ class _ChangeCountryState extends State<ChangeCountry> {
                     child: AutoSizeText(
                       S
                           .of(context)
-                          .topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant,
+                          .topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant,
                       textAlign: TextAlign.center,
                       style: transactionTextStyle.copyWith(
                         color: Colors.black.withValues(alpha: 0.7),
@@ -898,7 +898,7 @@ class _ChangeCountryState extends State<ChangeCountry> {
 
                   // Free Button
                   CustomButton(
-                    text: S.of(context).continueWithDefaultPiiinkCredits,
+                    text: S.of(context).continueWithDefaultTouristSaverCredits,
                     onPressed: () {
                       if (!mounted) return;
                       context.pushReplacementNamed('bottom-bar',

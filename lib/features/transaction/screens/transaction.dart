@@ -181,12 +181,12 @@ class _TransactionScreenState extends State<TransactionScreen> {
                       Padding(
                         padding: const EdgeInsets.only(top: 10.0, bottom: 5.0),
                         child: AutoSizeText(
-                          S.of(context).availableUniversalPiiinks,
+                          S.of(context).availableUniversalTouristSavers,
                           style: transUni,
                         ),
                       ),
                       AutoSizeText(
-                        '${numFormatter.format(widget.uniBalance)} ${S.of(context).piiinks}',
+                        '${numFormatter.format(widget.uniBalance)} ${S.of(context).touristSavers}',
                         style:
                             transUniBal.copyWith(color: GlobalColors.appColor),
                       ),
@@ -449,7 +449,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                                                               3),
                                                                       //Discount Amount
                                                                       AutoSizeText(
-                                                                        '${toFixed2DecimalPlaces(snapshot.data!.data![availableDate![index]]![index2].discountAmount!)} ${S.of(context).piiinks}',
+                                                                        '${toFixed2DecimalPlaces(snapshot.data!.data![availableDate![index]]![index2].discountAmount!)} ${S.of(context).touristSavers}',
                                                                         style:
                                                                             discountAmtStyle,
                                                                       ),

@@ -100,7 +100,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                 children: [
                   const SizedBox(height: 15),
                   AutoSizeText(
-                    S.of(context).acceptToUsePiiinks,
+                    S.of(context).acceptToUseTouristSavers,
                     style: topicStyle,
                   ),
 

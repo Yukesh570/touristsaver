@@ -111,7 +111,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
                           children: [
                             Center(
                               child: AutoSizeText(
-                                S.of(context).topUpUniversalPiiinkCredits,
+                                S.of(context).topUpUniversalTouristSaverCredits,
                                 style: topicStyle,
                               ),
                             ),
@@ -122,7 +122,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
                               child: AutoSizeText(
                                 S
                                     .of(context)
-                                    .topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants,
+                                    .topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants,
                                 textAlign: TextAlign.center,
                                 style: textStyle15,
                               ),
@@ -340,7 +340,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
             textAlign: TextAlign.center,
             title: S
                 .of(context)
-                .congratulationXPiiinksHasBeenAddedToYourWallet
+                .congratulationXTouristSaversHasBeenAddedToYourWallet
                 .replaceAll(
                     '&X', removeTrailingZero(numFormatter.format(piiinkCre))),
             onOk: () {
@@ -528,7 +528,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AutoSizeText(
-                              S.of(context).loadXPiiinks.replaceAll(
+                              S.of(context).loadXTouristSavers.replaceAll(
                                   '&L',
                                   removeTrailingZero(numFormatter.format(widget
                                       .memPackAll!

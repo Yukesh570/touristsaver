@@ -287,7 +287,7 @@ class _PayScreenState extends State<PayScreen> {
         if (!mounted) return;
         // context.pop();
         return GlobalSnackBar.showError(
-            context, S.of(context).notEnoughPiiinkCredits);
+            context, S.of(context).notEnoughTouristSaverCredits);
       }
     } else if (res is ErrorResModel) {
       setState(() {
@@ -350,7 +350,7 @@ class _PayScreenState extends State<PayScreen> {
         if (!mounted) return;
         // context.pop();
         return GlobalSnackBar.showError(
-            context, S.of(context).notEnoughPiiinkCredits);
+            context, S.of(context).notEnoughTouristSaverCredits);
       }
     } else if (res is ErrorResModel) {
       setState(() {

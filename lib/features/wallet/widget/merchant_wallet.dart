@@ -306,7 +306,9 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
                                       child: AutoSizeText(
                                         e == 'Sort by Alphabetical'
                                             ? S.of(context).sortByAlphabetical
-                                            : S.of(context).sortByPiiinkCredits,
+                                            : S
+                                                .of(context)
+                                                .sortByTouristSaverCredits,
                                         style: dopdownTextStyle,
                                       ),
                                     );
@@ -485,7 +487,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
                           height: 30,
                           child: Center(
                             child: AutoSizeText(
-                              '${numFormatter.format(merchantWallet.balance!)} ${S.of(context).piiinks}',
+                              '${numFormatter.format(merchantWallet.balance!)} ${S.of(context).touristSavers}',
                               style: topicStyle.copyWith(
                                   color: GlobalColors.appColor),
                             ),
@@ -619,7 +621,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
                           height: 30,
                           child: Center(
                             child: AutoSizeText(
-                              '${toFixed2DecimalPlaces(merchantWallet.balance!)} ${S.of(context).piiinks}',
+                              '${toFixed2DecimalPlaces(merchantWallet.balance!)} ${S.of(context).touristSavers}',
                               style: topicStyle.copyWith(
                                   color: GlobalColors.appColor),
                             ),
@@ -655,7 +657,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
             '${selectedWalletType == 'Merchant' ? S.of(context).merchant : S.of(context).groupMerchant}${S.of(context).wallet}${S.of(context).notAvailable}',
         bodyText: S
             .of(context)
-            .firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks,
+            .firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers,
         image: "assets/images/shopping-bag.png",
       ),
     );

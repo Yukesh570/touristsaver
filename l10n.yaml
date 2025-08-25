@@ -4,3 +4,4 @@ output-localization-file: l10n.dart
 output-class: S
 nullable-getter: false
 output-dir: lib/generated
+untranslated-messages-file: untranslated.txt

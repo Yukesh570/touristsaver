@@ -43,7 +43,7 @@ Future<dynamic> showConfirmPiiinksBottomSheet(
               ),
               SizedBox(height: 15.h),
               AutoSizeText(
-                S.of(context).claimFreePiiinks,
+                S.of(context).claimFreeTouristSavers,
                 // 'Claim Free Piiinks',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -97,8 +97,11 @@ Future<dynamic> showConfirmPiiinksBottomSheet(
                                   'piiinkCredit':
                                       value.universalPiiinks.toString(),
                                 });
-                            GlobalSnackBar.showSuccess(context,
-                                S.of(context).freePiiinksClaimedSuccessfully);
+                            GlobalSnackBar.showSuccess(
+                                context,
+                                S
+                                    .of(context)
+                                    .freeTouristSaversClaimedSuccessfully);
                           } else {
                             context.pop();
                             setState(() {

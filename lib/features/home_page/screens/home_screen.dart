@@ -361,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen>
             title: S.of(context).membership,
             body: S
                 .of(context)
-                .toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin,
+                .toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin,
             onregister: () {
               context.pop();
               context.pushNamed('register', queryParameters: {

@@ -49,16 +49,16 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget build(BuildContext context) {
     List<WalletAdditionalSection> additionalList = [
       WalletAdditionalSection(
-          title: S.of(context).topUpUniversalPiiinkCredits,
+          title: S.of(context).topUpUniversalTouristSaverCredits,
           description:
               S.of(context).toUseTopUpFunctionRegisterMembershipOrLogIn),
       WalletAdditionalSection(
           title: S.of(context).changeCountry,
           description: S.of(context).toChangeCountryRegisterMembershipOrLogIn),
       WalletAdditionalSection(
-          title: S.of(context).transferPiiinks,
+          title: S.of(context).transferTouristSavers,
           description:
-              S.of(context).toTransferPiiinksRegisterMembershipOrLogIn),
+              S.of(context).toTransferTouristSaversRegisterMembershipOrLogIn),
       WalletAdditionalSection(
           title: S.of(context).transactionHistory,
           description: S
@@ -94,7 +94,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                       child: AutoSizeText(
                                         S
                                             .of(context)
-                                            .yourUniversalPiiinkCredits,
+                                            .yourUniversalTouristSaverCredits,
                                         style: topicStyle,
                                       ),
                                     ),
@@ -236,7 +236,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 child: AutoSizeText(
                   S
                       .of(context)
-                      .youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits,
+                      .youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits,
                   textAlign: TextAlign.center,
                   style: locationStyle.copyWith(fontSize: 18.sp),
                 ),
@@ -288,8 +288,8 @@ class _WalletScreenState extends State<WalletScreen> {
                   return Align(
                     alignment: Alignment.center,
                     child: InfoPopUp(
-                      title: S.of(context).piiinkCreditsInfo,
-                      body: S.of(context).piiinkCreditsInfoD,
+                      title: S.of(context).touristSaverCreditsInfo,
+                      body: S.of(context).touristSaverCreditsInfoD,
                       onOk: () {
                         context.pop();
                       },

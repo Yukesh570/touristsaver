@@ -68,20 +68,21 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
     }
 
     if (transferredPiiinksController.text.isEmpty) {
-      GlobalSnackBar.valid(
-          context, S.of(context).pleaseEnterNumberOfPiiinksToBeTransferred);
+      GlobalSnackBar.valid(context,
+          S.of(context).pleaseEnterNumberOfTouristSaversToBeTransferred);
       return;
     }
 
     if (double.parse(transferredPiiinksController.text) == 0) {
       GlobalSnackBar.valid(context,
-          S.of(context).pleaseEnterValidNumberOfPiiinksToBeTransferred);
+          S.of(context).pleaseEnterValidNumberOfTouristSaversToBeTransferred);
       return;
     }
 
     if (double.parse(transferredPiiinksController.text) >
         selectedMerchantBalance!) {
-      GlobalSnackBar.valid(context, S.of(context).insufficientPiiinkCredits);
+      GlobalSnackBar.valid(
+          context, S.of(context).insufficientTouristSaverCredits);
       return;
     }
     // await FlutterBarcodeScanner.scanBarcode(
@@ -145,7 +146,7 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(
-          text: S.of(context).transferPiiinks,
+          text: S.of(context).transferTouristSavers,
           icon: Icons.arrow_back_ios,
           onPressed: () {
             context.pop();
@@ -221,7 +222,7 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
                             decoration: textInputDecoration1.copyWith(
                                 hintText: S
                                     .of(context)
-                                    .numberOfPiiinksToBeTransferred),
+                                    .numberOfTouristSaversToBeTransferred),
                           ),
                         ),
                         const SizedBox(height: 15),
@@ -282,20 +283,21 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
       return;
     }
     if (transferredPiiinksController.text.isEmpty) {
-      GlobalSnackBar.valid(
-          context, S.of(context).pleaseEnterNumberOfPiiinksToBeTransferred);
+      GlobalSnackBar.valid(context,
+          S.of(context).pleaseEnterNumberOfTouristSaversToBeTransferred);
       return;
     }
 
     if (double.parse(transferredPiiinksController.text) == 0) {
       GlobalSnackBar.valid(context,
-          S.of(context).pleaseEnterValidNumberOfPiiinksToBeTransferred);
+          S.of(context).pleaseEnterValidNumberOfTouristSaversToBeTransferred);
       return;
     }
 
     if (double.parse(transferredPiiinksController.text) >
         selectedMerchantBalance!) {
-      GlobalSnackBar.valid(context, S.of(context).insufficientPiiinkCredits);
+      GlobalSnackBar.valid(
+          context, S.of(context).insufficientTouristSaverCredits);
       return;
     }
     if (receiverNumberController.text.isEmpty) {
@@ -322,7 +324,7 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
     if (res is TransferPiiinkResModel) {
       if (res.status == "Success") {
         GlobalSnackBar.showSuccess(
-            context, S.of(context).piiinkTransferredSuccessfully);
+            context, S.of(context).touristSaverTransferredSuccessfully);
         setState(() {
           isLoading = false;
         });
@@ -350,10 +352,10 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
       child: NotAvailable(
-        titleText: S.of(context).noMerchantPiiinkAvailable,
+        titleText: S.of(context).noMerchantTouristSaverAvailable,
         bodyText: S
             .of(context)
-            .firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks,
+            .firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers,
         image: "assets/images/shopping-bag.png",
       ),
     );
@@ -362,7 +364,7 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
   // select merchant piiink dropDown
   merchantPiiink(List<MerchantWallet> totalMerchantWallets) {
     return DropdownButtonWidget(
-      label: S.of(context).selectMerchantPiiinks,
+      label: S.of(context).selectMerchantTouristSavers,
       searchController: searchController,
       value: selectedMerchantPiiinks,
       lPadding: 15,
@@ -372,11 +374,11 @@ class _TransferPiiinksState extends State<TransferPiiinks> {
               "${e.merchant!.merchantName} (${toFixed2DecimalPlaces(e.balance!)})",
           child: Tooltip(
             message:
-                "${e.merchant!.merchantName} (${toFixed2DecimalPlaces(e.balance!)} ${S.of(context).piiinks})",
+                "${e.merchant!.merchantName} (${toFixed2DecimalPlaces(e.balance!)} ${S.of(context).touristSavers})",
             child: Padding(
               padding: const EdgeInsets.only(left: 25.0),
               child: AutoSizeText(
-                "${e.merchant!.merchantName} (${toFixed2DecimalPlaces(e.balance!)} ${S.of(context).piiinks})",
+                "${e.merchant!.merchantName} (${toFixed2DecimalPlaces(e.balance!)} ${S.of(context).touristSavers})",
                 overflow: TextOverflow.ellipsis,
                 style: dopdownTextStyle,
               ),

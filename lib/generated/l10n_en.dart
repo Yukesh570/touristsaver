@@ -43,8 +43,8 @@ class SEn extends S {
   String get noPremiumCodeHasBeenUsedYet => 'No Premium code has been used yet';
 
   @override
-  String get congratulationXPiiinksHasBeenAddedToYourWallet =>
-      'Congratulations! &X Piiinks has been added to your wallet';
+  String get congratulationXTouristSaversHasBeenAddedToYourWallet =>
+      'Congratulations! &X TouristSavers has been added to your wallet';
 
   @override
   String get premiumCodeUseHistory => 'Premium Code Use History';
@@ -56,7 +56,7 @@ class SEn extends S {
   String get package => 'Package';
 
   @override
-  String get receivedPiiinks => 'Received Piiinks';
+  String get receivedTouristSavers => 'Received TouristSavers';
 
   @override
   String get v3 => 'V3';
@@ -104,8 +104,8 @@ class SEn extends S {
   String get donateToCharity => 'Donate to charity';
 
   @override
-  String get shopAtPiiinkMerchantsAndGetGreatOffers =>
-      'Shop at Piiink merchants and get great offers';
+  String get shopAtTouristSaverMerchantsAndGetGreatOffers =>
+      'Shop at TouristSaver merchants and get great offers';
 
   @override
   String get goShopping => 'Go shopping';
@@ -115,7 +115,7 @@ class SEn extends S {
       'The most innovative Community Lifestyle Program for your everyday shopping';
 
   @override
-  String get welcomeToPiiink => 'Welcome to Piiink';
+  String get welcomeToTouristSaver => 'Welcome to TouristSaver';
 
   @override
   String get claimNow => 'Claim Now';
@@ -125,8 +125,8 @@ class SEn extends S {
       'You haven\'t claimed your *UP free Universal Piinks yet';
 
   @override
-  String get toShopAtPiiinkMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
-      'To shop at Piiink merchants, get great discounts and donate to your favourite charity, register membership or login';
+  String get toShopAtTouristSaverMerchantsGetGreatDiscountsAndDonatToYourFavouriteCharityRegisterMembershipOrLogin =>
+      'To shop at TouristSaver merchants, get great discounts and donate to your favourite charity, register membership or login';
 
   @override
   String get youreCurrentlyOfflineCheckYourConnectionAndTryAgain =>
@@ -172,7 +172,7 @@ class SEn extends S {
       'No top-up pacakge available for now';
 
   @override
-  String get claimFreePiiinks => 'Claim Free Piiinks';
+  String get claimFreeTouristSavers => 'Claim Free TouristSavers';
 
   @override
   String get linkCopiedToClipboard => 'Link copied to clipboard';
@@ -187,12 +187,12 @@ class SEn extends S {
   String get shareThisQRToYourFriend => 'Share this QR to your friends';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnAUniversalPiiinksAsTheyPerformTransactionEqualsToB =>
-      'Refer Piiink App to your friends and earn *A Universal Piiinks as they perform transaction equals to *B';
+  String get referTouristSaverAppToYourFriendsAndEarnAUniversalTouristSaversAsTheyPerformTransactionEqualsToB =>
+      'Refer TouristSaver App to your friends and earn *A Universal TouristSavers as they perform transaction equals to *B';
 
   @override
-  String get referPiiinkAppToYourFriendsAndEarnPUniversalPiiinks =>
-      'Refer Piiink App to your friends and earn *P Universal Piiinks';
+  String get referTouristSaverAppToYourFriendsAndEarnPUniversalTouristSavers =>
+      'Refer TouristSaver App to your friends and earn *P Universal TouristSavers';
 
   @override
   String get referAFriend => 'Refer a Friend';
@@ -220,8 +220,8 @@ class SEn extends S {
   String get about => 'About';
 
   @override
-  String get freePiiinksClaimedSuccessfully =>
-      'Free piiinks claimed successfully';
+  String get freeTouristSaversClaimedSuccessfully =>
+      'Free touristSavers claimed successfully';
 
   @override
   String get pleaseSearchByLocationOrSelectCategory =>
@@ -256,14 +256,14 @@ class SEn extends S {
   String get withInVKm => 'With in &V KM';
 
   @override
-  String get loadXPiiinks => 'Load &L Piiinks';
+  String get loadXTouristSavers => 'Load &L TouristSavers';
 
   @override
-  String get piiinksCreditAdded => 'Piiink Credits Added';
+  String get touristSaversCreditAdded => 'TouristSaver Credits Added';
 
   @override
-  String get congratulationNowYouHaveXPiiinks =>
-      'Congratulations! You now have &X Piiinks';
+  String get congratulationNowYouHaveXTouristSavers =>
+      'Congratulations! You now have &X TouristSavers';
 
   @override
   String get topUpAndPayXY => 'Top-up and Pay &XY';
@@ -273,7 +273,7 @@ class SEn extends S {
 
   @override
   String get weWillDeductCPiinksFromYourCredit =>
-      'We will deduct &C&X &CPiiinks from Your Credit';
+      'We will deduct &C&X &CTouristSavers from Your Credit';
 
   @override
   String get noNotificationFrom => 'No notifications from &S to &E';
@@ -293,7 +293,7 @@ class SEn extends S {
   String get accept => 'Accept';
 
   @override
-  String get acceptToUsePiiinks => 'Accept to use Piiinks';
+  String get acceptToUseTouristSavers => 'Accept to use TouristSavers';
 
   @override
   String get addReview => 'Add Review';
@@ -332,7 +332,8 @@ class SEn extends S {
       'Are you sure you want to remove your account?';
 
   @override
-  String get availableUniversalPiiinks => 'Available Universal Piiinks';
+  String get availableUniversalTouristSavers =>
+      'Available Universal TouristSavers';
 
   @override
   String get away => ' Away';
@@ -355,7 +356,8 @@ class SEn extends S {
   String get biometrics => 'Biometrics';
 
   @override
-  String get buyXUniversalPiiinkCredits => 'Buy &X Universal Piiink Credits';
+  String get buyXUniversalTouristSaverCredits =>
+      'Buy &X Universal TouristSaver Credits';
 
   @override
   String get byClicking => 'By Clicking';
@@ -447,8 +449,8 @@ class SEn extends S {
   String get continueL => 'Continue';
 
   @override
-  String get continueWithDefaultPiiinkCredits =>
-      'Continue with default Piiink credits';
+  String get continueWithDefaultTouristSaverCredits =>
+      'Continue with default TouristSaver credits';
 
   @override
   String get continueWithoutTopUp => 'Continue without Top-up';
@@ -576,8 +578,8 @@ class SEn extends S {
   String get firstName => 'First Name *';
 
   @override
-  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantPiiinks =>
-      'First try shopping with some merchants to gain and transfer Merchant Piiinks';
+  String get firstTryShoppingWithSomeMerchantsToGainAndTransferMerchantTouristSavers =>
+      'First try shopping with some merchants to gain and transfer Merchant TouristSavers';
 
   @override
   String get forRecommendingTheNewMerchantRegisterMembershipOrLogIn =>
@@ -611,7 +613,8 @@ class SEn extends S {
       'If your camera is not working properly ';
 
   @override
-  String get insufficientPiiinkCredits => 'Insufficient Piiink Credits';
+  String get insufficientTouristSaverCredits =>
+      'Insufficient TouristSaver Credits';
 
   @override
   String get invalidQrCode => 'Invalid QR code';
@@ -787,7 +790,8 @@ class SEn extends S {
       'No merchant is available right now. We will keep you updated';
 
   @override
-  String get noMerchantPiiinkAvailable => 'No Merchant Piiink Available';
+  String get noMerchantTouristSaverAvailable =>
+      'No Merchant TouristSaver Available';
 
   @override
   String get noNumber => 'No Number';
@@ -828,7 +832,7 @@ class SEn extends S {
   String get noWebsiteLink => 'No Website Link';
 
   @override
-  String get notEnoughPiiinkCredits => 'Not enough Piiink credits';
+  String get notEnoughTouristSaverCredits => 'Not enough TouristSaver credits';
 
   @override
   String get notifications => 'Notifications';
@@ -838,8 +842,8 @@ class SEn extends S {
       'Notifications deleted successfully';
 
   @override
-  String get numberOfPiiinksToBeTransferred =>
-      'Number of Piiinks to be transferred';
+  String get numberOfTouristSaversToBeTransferred =>
+      'Number of TouristSavers to be transferred';
 
   @override
   String get ok => 'Ok';
@@ -904,27 +908,27 @@ class SEn extends S {
       'Phone number should be at least 7 digits';
 
   @override
-  String get piiinkCredits => ' Piiink Credits';
+  String get touristSaverCredits => ' TouristSaver Credits';
 
   @override
-  String get piiinkCreditsInfo => 'Piiink Credits Info';
+  String get touristSaverCreditsInfo => 'TouristSaver Credits Info';
 
   @override
-  String get piiinkCreditsInfoD =>
-      'Universal Piiink Credits allow you to get a discount with any of our Merchants. Every time you use Piiink you will receive Merchant Piiink credits to spend back with the issuing Merchant';
+  String get touristSaverCreditsInfoD =>
+      'Universal TouristSaver Credits allow you to get a discount with any of our Merchants. Every time you use TouristSaver you will receive Merchant TouristSaver credits to spend back with the issuing Merchant';
 
   @override
-  String get piiinkTransferredSuccessfully =>
-      'Piiinks transferred successfully';
+  String get touristSaverTransferredSuccessfully =>
+      'TouristSavers transferred successfully';
 
   @override
-  String get piiinks => 'Piiinks';
+  String get touristSavers => 'TouristSavers';
 
   @override
-  String get piiinksLoaded => 'Piiinks Loaded';
+  String get touristSaversLoaded => 'TouristSavers Loaded';
 
   @override
-  String get piiinksOnHold => 'Piiinks On Hold';
+  String get touristSaversOnHold => 'TouristSavers On Hold';
 
   @override
   String get pleaseAcceptTermsConditions => 'Please Accept Terms & Conditions';
@@ -964,8 +968,8 @@ class SEn extends S {
   String get pleaseEnterMobileNumber => 'Please enter mobile number';
 
   @override
-  String get pleaseEnterNumberOfPiiinksToBeTransferred =>
-      'Please enter number of Piiinks to be transferred';
+  String get pleaseEnterNumberOfTouristSaversToBeTransferred =>
+      'Please enter number of TouristSavers to be transferred';
 
   @override
   String get pleaseEnterPassword => 'Please enter password';
@@ -993,8 +997,8 @@ class SEn extends S {
       'Please enter valid merchant email';
 
   @override
-  String get pleaseEnterValidNumberOfPiiinksToBeTransferred =>
-      'Please enter valid number of Piiinks to be transferred';
+  String get pleaseEnterValidNumberOfTouristSaversToBeTransferred =>
+      'Please enter valid number of TouristSavers to be transferred';
 
   @override
   String get pleaseFillCorrectMobileNumber =>
@@ -1095,8 +1099,8 @@ class SEn extends S {
       'Register your membership now and enjoy our amazing offers';
 
   @override
-  String get registerYourMembershipOrLogInToAccessThePiiinkBenefitsAndViewYourProfileDetails =>
-      'Register your membership or log in to access the Piiink benefits and view your profile details';
+  String get registerYourMembershipOrLogInToAccessTheTouristSaverBenefitsAndViewYourProfileDetails =>
+      'Register your membership or log in to access the TouristSaver benefits and view your profile details';
 
   @override
   String get registration => 'Registration';
@@ -1173,7 +1177,7 @@ class SEn extends S {
   String get selectDateTo => 'Select Date To';
 
   @override
-  String get selectMerchantPiiinks => 'Select Merchant Piiinks';
+  String get selectMerchantTouristSavers => 'Select Merchant TouristSavers';
 
   @override
   String get selectStateProvince => 'Select State/Province *';
@@ -1240,7 +1244,7 @@ class SEn extends S {
   String get sortByAlphabetical => 'Sort by Alphabetical';
 
   @override
-  String get sortByPiiinkCredits => 'Sort by Piiink Credits';
+  String get sortByTouristSaverCredits => 'Sort by TouristSaver Credits';
 
   @override
   String get stripePaymentFail => 'Stripe Payment Fail';
@@ -1283,8 +1287,8 @@ class SEn extends S {
   String get to => ' To ';
 
   @override
-  String get toTransferPiiinksRegisterMembershipOrLogIn =>
-      'To transfer Piiinks register membership or log in';
+  String get toTransferTouristSaversRegisterMembershipOrLogIn =>
+      'To transfer TouristSavers register membership or log in';
 
   @override
   String get toUseTopUpFunctionRegisterMembershipOrLogIn =>
@@ -1307,15 +1311,16 @@ class SEn extends S {
   String get topUpHistory => 'Top Up History';
 
   @override
-  String get topUpUniversalPiiinkCredits => 'Top-up Universal Piiink Credits';
+  String get topUpUniversalTouristSaverCredits =>
+      'Top-up Universal TouristSaver Credits';
 
   @override
-  String get topUpUniversalPiiinkCreditsToGetDiscountWithAnyOfOurMerchant =>
-      'Top-up Universal Piiink Credits to get discount with any of our merchant';
+  String get topUpUniversalTouristSaverCreditsToGetDiscountWithAnyOfOurMerchant =>
+      'Top-up Universal TouristSaver Credits to get discount with any of our merchant';
 
   @override
-  String get topUpYourUniversalPiiinksToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
-      'Top-up your Universal Piiinks to gain extra credit and enjoy more offers from your favourite merchants';
+  String get topUpYourUniversalTouristSaversToGainExtraCreditAndEnjoyMoreOffersFromYourFavouriteMerchants =>
+      'Top-up your Universal TouristSavers to gain extra credit and enjoy more offers from your favourite merchants';
 
   @override
   String get transactionCode => 'Transaction Code*';
@@ -1330,7 +1335,7 @@ class SEn extends S {
   String get transactionId => 'Transaction ID ';
 
   @override
-  String get transferPiiinks => 'Transfer Piiinks';
+  String get transferTouristSavers => 'Transfer TouristSavers';
 
   @override
   String get tryAgain => 'Try Again';
@@ -1422,15 +1427,15 @@ class SEn extends S {
   String get yesterday => 'Yesterday';
 
   @override
-  String get youDonTHaveAnyPiiinkUniversalCreditRegisterYourMembershipOrLogInToAccessThePiiinkBenefits =>
-      'You don\'t have any Piiink Universal credit. Register your membership or log in to access the Piiink benefits';
+  String get youDonTHaveAnyTouristSaverUniversalCreditRegisterYourMembershipOrLogInToAccessTheTouristSaverBenefits =>
+      'You don\'t have any TouristSaver Universal credit. Register your membership or log in to access the TouristSaver benefits';
 
   @override
   String get yourActiveMerchantWallets => 'Your Active Merchant Wallets';
 
   @override
   String get yourEmailIsNotActivatedYet =>
-      'Your email is not activated yet.\nYou need to activate your email to change country and recommend merchant as well as to receive important emails from Piiink';
+      'Your email is not activated yet.\nYou need to activate your email to change country and recommend merchant as well as to receive important emails from TouristSaver';
 
   @override
   String get yourEmailIsNotActivatedYetNPleaseVerifyYourEmailBeforeChangingCountry =>
@@ -1447,5 +1452,6 @@ class SEn extends S {
   String get yourQrCode => 'Your QR Code';
 
   @override
-  String get yourUniversalPiiinkCredits => 'Your Universal Piiink Credits';
+  String get yourUniversalTouristSaverCredits =>
+      'Your Universal TouristSaver Credits';
 }

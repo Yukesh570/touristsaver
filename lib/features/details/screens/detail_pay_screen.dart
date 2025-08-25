@@ -260,7 +260,7 @@ class _DetailPayScreenState extends State<DetailPayScreen> {
                                                   context,
                                                   S
                                                       .of(context)
-                                                      .notEnoughPiiinkCredits);
+                                                      .notEnoughTouristSaverCredits);
                                               setState(() {
                                                 isLoading = false;
                                               });

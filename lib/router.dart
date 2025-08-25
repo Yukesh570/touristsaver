@@ -5,6 +5,7 @@ import 'package:new_piiink/common/widgets/congrats.dart';
 import 'package:new_piiink/common/widgets/paid_free.dart';
 import 'package:new_piiink/features/app_intro/screens/first_choose_country.dart';
 import 'package:new_piiink/features/app_intro/screens/intro_screen.dart';
+import 'package:new_piiink/features/app_intro/screens/video_intro_screen.dart';
 import 'package:new_piiink/features/charity/screens/charity_list.dart';
 import 'package:new_piiink/features/charity/screens/view_all_charities.dart';
 import 'package:new_piiink/features/details/screens/detail_pay_screen.dart';
@@ -88,6 +89,11 @@ final GoRouter goRouter = GoRouter(
       path: '/intro-screen',
       name: 'intro-screen',
       builder: (context, state) => const IntroScreen(),
+    ),
+    GoRoute(
+      path: '/video-screen',
+      name: 'video-screen',
+      builder: (context, state) => const VideoIntroScreen(),
     ),
     //First Choose Country Screen
     GoRoute(

@@ -501,7 +501,7 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
 
                   // title Text
                   AutoSizeText(
-                    S.of(context).piiinkCreditsInfo,
+                    S.of(context).touristSaverCreditsInfo,
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
