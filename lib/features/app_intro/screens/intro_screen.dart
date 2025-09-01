@@ -69,9 +69,10 @@ class IntroScreen extends StatelessWidget {
             onDone: () {
               // if (kDebugMode) {
               //   print("Done Clicked");
-              context.pushReplacementNamed(
-                'first-choose-country',
-              );
+              // context.pushReplacementNamed(
+              //   'first-choose-country',
+              // );
+              context.goNamed('bottom-bar', pathParameters: {'page': '0'});
               // }
             },
             //ClampingScrollPhysics prevent the scroll offset from exceeding the bounds of the content.
