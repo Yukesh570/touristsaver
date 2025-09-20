@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:new_piiink/constants/global_colors.dart';
+import 'package:new_piiink/constants/pref.dart';
+import 'package:new_piiink/constants/pref_key.dart';
 import 'package:new_piiink/generated/l10n.dart';
 
 class IntroScreen extends StatelessWidget {
@@ -66,12 +68,11 @@ class IntroScreen extends StatelessWidget {
               // ),
             ],
             // onDone
-            onDone: () {
-              // if (kDebugMode) {
-              //   print("Done Clicked");
-              // context.pushReplacementNamed(
-              //   'first-choose-country',
-              // );
+            onDone: () async {
+              Pref pref = Pref();
+
+              // Save "acc" as true so next time splash skips video + intro
+              await pref.writeData(key: accept, value: 'true');
               context.goNamed('bottom-bar', pathParameters: {'page': '0'});
               // }
             },

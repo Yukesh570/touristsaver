@@ -1,4 +1,4 @@
-package org.piiink.memberapp
+package org.touristsaver.memberapp
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragmentActivity
