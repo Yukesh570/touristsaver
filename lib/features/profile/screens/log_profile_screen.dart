@@ -740,7 +740,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
         : null);
   }
 
-  // Logout Button
+// Logout Button
   logOut() {
     return Center(
       child: CustomButton(
@@ -748,7 +748,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
         onPressed: () async {
           return showDialog(
             context: context,
-            builder: (BuildContext context) {
+            builder: (BuildContext dialogContext) {
+              // Use a distinct context for the dialog
               bool logOutConfirmed = false;
               return AlertDialog(
                 content: StatefulBuilder(
@@ -767,65 +768,96 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
                           ? const CustomButtonWithCircular()
                           : CustomButton(
                               onPressed: () async {
+                                // 1. Show loading state immediately
+                                setState(() {
+                                  logOutConfirmed = true;
+                                });
+
+                                bool apiSuccess = false;
                                 try {
-                                  setState(() {
-                                    logOutConfirmed = true;
-                                  });
-                                  Dio dio = await getClient();
+                                  // Get deviceId before removing any local tokens
                                   String deviceId =
                                       AppVariables.deviceId.isNotEmpty
                                           ? AppVariables.deviceId
                                           : await getDeviceId();
-                                  await dio
-                                      .delete(
-                                    deleteDeviceIdOnLogOut
-                                        .format(params: [deviceId]),
-                                  )
-                                      .then((value) async {
-                                    if (value.data['status'] == "Success") {
-                                      await Pref().removeData(saveToken);
-                                      await Pref().removeData(issuerType);
-                                      //  await Pref().removeData(saveCountryID);
-                                      await Pref().removeData('fcmToken');
-                                      await Pref().removeData('isTokenSent');
-                                      await Pref()
-                                          .removeData('notificationsCount');
-                                      await Pref().removeData(saveUserID);
-                                      await Pref().removeData(saveCurrency);
-                                      await Pref()
-                                          .removeData(savePublishableKey);
-                                      await Pref().removeData(
-                                          userChosenLocationStateID);
-                                      await Pref().removeData(
-                                          userChosenLocationRegionID);
-                                      AppVariables.accessToken = null;
-                                    } else {
-                                      // GlobalSnackBar.showError(
-                                      //     context, 'Error in logging out!');
-                                    }
-                                  });
+
+                                  // API call to delete device ID for notifications
+                                  var response = await getClient().then(
+                                    (dio) => dio.delete(
+                                      deleteDeviceIdOnLogOut
+                                          .format(params: [deviceId]),
+                                    ),
+                                  );
+
+                                  if (response.data != null &&
+                                      response.data['status'] == "Success") {
+                                    apiSuccess = true;
+                                  }
+                                  // If API fails or status is not 'Success', it falls to the 'finally' block
                                 } catch (e) {
-                                  // GlobalSnackBar.showError(
-                                  //     context, 'Error in logging out!');
+                                  // This catch block handles DioErrors (network issues, 4xx/5xx status codes)
+                                  debugPrint(
+                                      'Error during device ID deletion: $e');
+                                  // Do not set apiSuccess to true here.
                                 }
+
+                                // --- Common Logout Logic (Always runs, regardless of API success) ---
+                                // The following steps clear local data and navigate the user away.
+
+                                // 2. Clear Local Data (Essential for a logout)
+                                await Pref().removeData(saveToken);
+                                await Pref().removeData(issuerType);
+                                await Pref().removeData('fcmToken');
+                                await Pref().removeData('isTokenSent');
+                                await Pref().removeData('notificationsCount');
+                                await Pref().removeData(saveUserID);
+                                await Pref().removeData(saveCurrency);
+                                await Pref().removeData(savePublishableKey);
+                                await Pref()
+                                    .removeData(userChosenLocationStateID);
+                                await Pref()
+                                    .removeData(userChosenLocationRegionID);
+                                AppVariables.accessToken = null;
+
+                                // 3. Delete Firebase Token (Always try to clear it locally)
                                 try {
                                   await FirebaseMessaging.instance
                                       .deleteToken();
                                 } catch (e) {
-                                  debugPrint(e.toString());
+                                  debugPrint(
+                                      'Firebase token deletion failed: $e');
                                 }
+
                                 AppVariables.notificationLabel.value = 0;
                                 AppVariables.initNotifications = false;
+
                                 if (!mounted) return;
+
+                                // 4. Dismiss Dialog and Navigate (Crucial Fixes)
+
+                                // Dismiss the dialog immediately after cleaning up and before navigating
+                                // Use the dialogContext for this
+                                Navigator.of(dialogContext).pop();
+
+                                // Navigate to the login/home screen
                                 context.pushReplacementNamed('bottom-bar',
                                     pathParameters: {'page': '4'});
+
+                                // If the API succeeded, you can show a success snackbar if needed.
+                                if (apiSuccess) {
+                                  // GlobalSnackBar.showSuccess(dialogContext, 'Logged out successfully');
+                                } else {
+                                  // If the API failed, we still logged out locally, so only log the error.
+                                  // Optionally, show a generic message that logout succeeded locally.
+                                }
                               },
                               text: S.of(context).yes,
                             ),
                       const SizedBox(height: 10),
                       CustomButton1(
                         onPressed: () {
-                          context.pop();
+                          // Correctly pop the dialog
+                          Navigator.of(context).pop();
                         },
                         text: S.of(context).cancel,
                       ),

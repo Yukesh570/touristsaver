@@ -503,13 +503,16 @@ class _PayScreenState extends State<PayScreen> {
                                           Expanded(
                                             flex: 3,
                                             child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 32,
+                                                      vertical: 4),
                                               decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(7),
                                                   color: GlobalColors.paleGray),
                                               child: AutoSizeText(
-                                                AppVariables.currency
-                                                    .toString(),
+                                                "\$",
                                                 style: const TextStyle(
                                                     fontSize: 60,
                                                     color:

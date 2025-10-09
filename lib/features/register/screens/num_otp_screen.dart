@@ -243,10 +243,11 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                               key: saveToken, value: res.data!.accessToken!);
                           AppVariables.accessToken = res.data!.accessToken!;
                           Pref().setBool(
-                              key: 'showFreePiiinks',
-                              value: res.data!.showFreePiiinks!);
+                            key: 'showFreePiiinks',
+                            value: res.data?.showFreePiiinks ?? false,
+                          );
                           AppVariables.showFreePiiinks =
-                              res.data!.showFreePiiinks!;
+                              res.data?.showFreePiiinks ?? false;
                           // Saving the country ID
                           Pref().writeData(
                               key: saveCountryID,

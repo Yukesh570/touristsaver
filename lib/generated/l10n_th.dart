@@ -1449,4 +1449,7 @@ class STh extends S {
   @override
   String get yourUniversalTouristSaverCredits =>
       'เครดิต TouristSaver สากลของคุณ';
+
+  @override
+  String get direction => 'Directions';
 }

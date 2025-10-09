@@ -2798,6 +2798,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Your Universal TouristSaver Credits'**
   String get yourUniversalTouristSaverCredits;
+
+  /// No description provided for @direction.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get direction;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

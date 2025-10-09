@@ -1471,4 +1471,7 @@ class SNe extends S {
   @override
   String get yourUniversalTouristSaverCredits =>
       'तपाईंको विश्वव्यापी TouristSaver क्रेडिटहरू';
+
+  @override
+  String get direction => 'Directions';
 }

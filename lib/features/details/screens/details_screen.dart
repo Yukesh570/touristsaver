@@ -234,30 +234,30 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                 ),
-                floatingActionButton: IgnorePointer(
-                  ignoring: isLoading,
-                  child: FloatingActionButton(
-                    backgroundColor: GlobalColors.appColor1,
-                    onPressed: () {
-                      onClicked(merchantDetail.data!.latlon);
-                    },
-                    child: Image.asset("assets/images/map_button1.png"),
-                  ),
-                  // FloatingActionButton(
-                  //   backgroundColor: GlobalColors.appColor1,
-                  //   onPressed: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //           builder: (context) => GoogleMapMerchant(
-                  //                 latlon: merchantDetail.data!.latlon,
-                  //                 placeTitle: addressDetail,
-                  //               )),
-                  //     );
-                  //   },
-                  //   child: Image.asset("assets/images/map_button1.png"),
-                  // ),
-                ),
+                // floatingActionButton: IgnorePointer(
+                //   ignoring: isLoading,
+                //   child: FloatingActionButton(
+                //     backgroundColor: GlobalColors.appColor1,
+                //     onPressed: () {
+                //       onClicked(merchantDetail.data!.latlon);
+                //     },
+                //     child: Image.asset("assets/images/map_button1.png"),
+                //   ),
+                //   // FloatingActionButton(
+                //   //   backgroundColor: GlobalColors.appColor1,
+                //   //   onPressed: () {
+                //   //     Navigator.push(
+                //   //       context,
+                //   //       MaterialPageRoute(
+                //   //           builder: (context) => GoogleMapMerchant(
+                //   //                 latlon: merchantDetail.data!.latlon,
+                //   //                 placeTitle: addressDetail,
+                //   //               )),
+                //   //     );
+                //   //   },
+                //   //   child: Image.asset("assets/images/map_button1.png"),
+                //   // ),
+                // ),
               ),
             );
           } else if (state is MerchantDetailErrorState) {
@@ -808,12 +808,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 Row(
                   children: [
                     Container(
-                      width: 25,
-                      height: 25,
-                      decoration: const BoxDecoration(
-                          shape: BoxShape.circle, color: GlobalColors.appColor),
-                      child: const Icon(Icons.timer_sharp,
-                          size: 15, color: Colors.white),
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(shape: BoxShape.circle),
+                      child: Padding(
+                        padding: const EdgeInsets.all(
+                            4.0), // adjust padding as needed
+                        child: Image.asset(
+                          'assets/images/clock.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -842,17 +847,61 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
 
                 const SizedBox(height: 15),
-
-                // Phone Number
                 Row(
                   children: [
                     Container(
-                      width: 25,
-                      height: 25,
-                      decoration: const BoxDecoration(
-                          shape: BoxShape.circle, color: GlobalColors.appColor),
-                      child: const Icon(Icons.phone,
-                          size: 15, color: Colors.white),
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(shape: BoxShape.circle),
+                      child: Padding(
+                        padding: const EdgeInsets.all(
+                            4.0), // adjust padding as needed
+                        child: Image.asset(
+                          'assets/images/redo.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          onClicked(merchantDetail.data!.latlon);
+                        },
+                        child: AutoSizeText(
+                          S.of(context).direction,
+                          style: const TextStyle(
+                            shadows: [
+                              Shadow(color: Colors.black, offset: Offset(0, -5))
+                            ],
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.transparent,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.black,
+                            decorationThickness: 1,
+                            decorationStyle: TextDecorationStyle.solid,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(shape: BoxShape.circle),
+                      child: Padding(
+                        padding: const EdgeInsets.all(
+                            4.0), // adjust padding as needed
+                        child: Image.asset(
+                          'assets/images/call.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -900,13 +949,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Container(
-                        width: 25,
-                        height: 25,
-                        decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: GlobalColors.appColor),
-                        child: const Icon(Icons.home,
-                            size: 15, color: Colors.white),
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(shape: BoxShape.circle),
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                              4.0), // adjust padding as needed
+                          child: Image.asset(
+                            'assets/images/gps.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -999,11 +1052,20 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         merchantDetail.data?.merchantWebsiteInfo
                                                 ?.facebookLink ==
                                             null
-                                    ? GlobalColors.gray
-                                    : GlobalColors.appColor),
-                            child: const Center(
-                              child: FaIcon(FontAwesomeIcons.facebook,
-                                  size: 30, color: Colors.white),
+                                    ? Color(0xffb0b0b0)
+                                    : Colors.white),
+                            child: Center(
+                              child: merchantDetail.data?.merchantWebsiteInfo
+                                              ?.facebookLink ==
+                                          '' ||
+                                      merchantDetail.data?.merchantWebsiteInfo
+                                              ?.facebookLink ==
+                                          null
+                                  ? FaIcon(FontAwesomeIcons.facebook,
+                                      size: 30, color: Colors.white)
+                                  : Image.asset(
+                                      'assets/images/facebook.png',
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -1045,11 +1107,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         merchantDetail.data?.merchantWebsiteInfo
                                                 ?.instagramLink ==
                                             null
-                                    ? GlobalColors.gray
-                                    : GlobalColors.appColor),
-                            child: const Center(
-                              child: FaIcon(FontAwesomeIcons.instagram,
-                                  size: 30, color: Colors.white),
+                                    ? Color(0xffb0b0b0)
+                                    : Colors.white),
+                            child: Center(
+                              child: merchantDetail.data?.merchantWebsiteInfo
+                                              ?.instagramLink ==
+                                          '' ||
+                                      merchantDetail.data?.merchantWebsiteInfo
+                                              ?.instagramLink ==
+                                          null
+                                  ? FaIcon(FontAwesomeIcons.instagram,
+                                      size: 30, color: Colors.white)
+                                  : Image.asset('assets/images/instagram.png'),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -1091,10 +1160,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         merchantDetail.data?.merchantWebsiteInfo
                                                 ?.websiteLink ==
                                             null
-                                    ? GlobalColors.gray
-                                    : GlobalColors.appColor),
-                            child: const Icon(Icons.language,
-                                size: 30, color: Colors.white),
+                                    ? Color(0xffb0b0b0)
+                                    : Colors.white),
+                            child: merchantDetail.data?.merchantWebsiteInfo
+                                            ?.websiteLink ==
+                                        '' ||
+                                    merchantDetail.data?.merchantWebsiteInfo
+                                            ?.websiteLink ==
+                                        null
+                                ? Icon(Icons.language,
+                                    size: 30, color: Colors.white)
+                                : Image.asset('assets/images/world.png'),
                           ),
                           const SizedBox(height: 10),
                           AutoSizeText(S.of(context).website,
@@ -1129,10 +1205,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                             '' ||
                                         merchantDetail.data?.merchantEmail ==
                                             null
-                                    ? GlobalColors.gray
-                                    : GlobalColors.appColor),
-                            child: const Icon(Icons.alternate_email,
-                                size: 30, color: Colors.white),
+                                    ? Color(0xffb0b0b0)
+                                    : Colors.white),
+                            child: merchantDetail.data?.merchantEmail == '' ||
+                                    merchantDetail.data?.merchantEmail == null
+                                ? const Icon(Icons.email,
+                                    size: 30, color: Colors.white)
+                                : Image.asset('assets/images/email.png'),
                           ),
                           const SizedBox(height: 10),
                           AutoSizeText(S.of(context).emailA,

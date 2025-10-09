@@ -1460,4 +1460,7 @@ class SMs extends S {
   @override
   String get yourUniversalTouristSaverCredits =>
       'Kredit TouristSaver Universal Anda';
+
+  @override
+  String get direction => 'Directions';
 }

@@ -1454,4 +1454,7 @@ class SEn extends S {
   @override
   String get yourUniversalTouristSaverCredits =>
       'Your Universal TouristSaver Credits';
+
+  @override
+  String get direction => 'Directions';
 }

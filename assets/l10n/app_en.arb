@@ -446,5 +446,6 @@
 	"yourEmailIsNotActivatedYetNPleaseVerifyYourEmailBeforeRecommendingMerchants": "Your email is not activated yet.\nPlease verify your email before recommending merchants",
 	"yourFeedback": "Your Feedback",
 	"yourQrCode": "Your QR Code",
-	"yourUniversalTouristSaverCredits": "Your Universal TouristSaver Credits"
+	"yourUniversalTouristSaverCredits": "Your Universal TouristSaver Credits",
+	"direction":"Directions"	
 }

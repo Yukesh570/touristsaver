@@ -223,31 +223,31 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
                                                     padding:
                                                         const EdgeInsets.only(
                                                             left: 0, top: 0),
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          showConfirmPiiinksBottomSheet(
-                                                              context,
-                                                              universalFreePiiinks);
-                                                        },
-                                                        child: AutoSizeText(
-                                                          S
-                                                              .of(context)
-                                                              .claimFreeTouristSavers,
-                                                          //     'Claim Free Piiinks',
-                                                          style:
-                                                              notiHeaderTextStyle
-                                                                  .copyWith(
-                                                            fontSize: 16.sp,
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .underline,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
+                                                    // child: Align(
+                                                    //   alignment:
+                                                    //       Alignment.center,
+                                                    //   child: InkWell(
+                                                    //     onTap: () {
+                                                    //       showConfirmPiiinksBottomSheet(
+                                                    //           context,
+                                                    //           universalFreePiiinks);
+                                                    //     },
+                                                    //     child: AutoSizeText(
+                                                    //       S
+                                                    //           .of(context)
+                                                    //           .claimFreeTouristSavers,
+                                                    //       //     'Claim Free Piiinks',
+                                                    //       style:
+                                                    //           notiHeaderTextStyle
+                                                    //               .copyWith(
+                                                    //         fontSize: 16.sp,
+                                                    //         decoration:
+                                                    //             TextDecoration
+                                                    //                 .underline,
+                                                    //       ),
+                                                    //     ),
+                                                    //   ),
+                                                    // ),
                                                   ),
                                                   const SizedBox(height: 10),
                                                 ],

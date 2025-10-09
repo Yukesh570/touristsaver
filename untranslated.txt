@@ -1,1 +1,13 @@
-{}
+{
+  "ms": [
+    "direction"
+  ],
+
+  "ne": [
+    "direction"
+  ],
+
+  "th": [
+    "direction"
+  ]
+}
