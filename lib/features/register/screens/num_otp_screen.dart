@@ -265,6 +265,9 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                           Pref().writeData(
                               key: saveUserID,
                               value: res.data!.memberInfo!.id.toString());
+                          Pref().writeData(
+                              key: userChosenLocationID,
+                              value: widget.countryID.toString());
 
                           // Calling the location get all Api for saving the user member country currency symbol and country name
                           LocationGetAllResModel? countryCurrency =
