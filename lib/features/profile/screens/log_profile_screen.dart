@@ -28,6 +28,7 @@ import 'package:new_piiink/models/response/change_password_res.dart';
 import 'package:new_piiink/models/response/piiink_info_res.dart';
 import 'package:new_piiink/models/response/user_delete_res.dart';
 import 'package:new_piiink/models/response/user_detail_res.dart';
+import 'package:new_piiink/splash_screen.dart';
 import 'package:outline_gradient_button/outline_gradient_button.dart';
 
 import '../../../common/app_variables.dart';
@@ -135,53 +136,72 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
       },
       child: Scaffold(
         appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(kToolbarHeight),
-            child: CustomAppBar(text: S.of(context).profile)),
-        body: BlocBuilder<ConnectivityCubit, ConnectivityState>(
-          builder: (context, state) {
-            return ScrollConfiguration(
-              behavior: const ScrollBehavior(),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      //MemberShip
-                      (state == ConnectivityState.loading)
-                          ? const NoInternetLoader()
-                          : (state == ConnectivityState.disconnected)
-                              ? const NoInternetWidget()
-                              : (state == ConnectivityState.connected)
-                                  ? memberShipBox()
-                                  : const SizedBox(),
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: FutureBuilder<bool>(
+            future: checkWalletBalance(), // 👈 call the async function
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                // show placeholder or loader while fetching
+                return const SizedBox.shrink();
+              }
 
-                      profileScreenList(),
+              final hasBalance = snapshot.data ?? false;
 
-                      if (hideRemoveAccountButton == false)
-                        Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            Center(
-                              child: CustomButton1(
-                                text: S.of(context).removeAccount,
-                                onPressed: () {
-                                  removeButton();
-                                },
+              return CustomAppBar(
+                text: S.of(context).profile,
+                icon: hasBalance ? null : Icons.arrow_back_ios,
+                onPressed: () => context.pop(),
+              );
+            },
+          ),
+        ),
+        body: SafeArea(
+          child: BlocBuilder<ConnectivityCubit, ConnectivityState>(
+            builder: (context, state) {
+              return ScrollConfiguration(
+                behavior: const ScrollBehavior(),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        //MemberShip
+                        (state == ConnectivityState.loading)
+                            ? const NoInternetLoader()
+                            : (state == ConnectivityState.disconnected)
+                                ? const NoInternetWidget()
+                                : (state == ConnectivityState.connected)
+                                    ? memberShipBox()
+                                    : const SizedBox(),
+
+                        profileScreenList(),
+
+                        if (hideRemoveAccountButton == false)
+                          Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              Center(
+                                child: CustomButton1(
+                                  text: S.of(context).removeAccount,
+                                  onPressed: () {
+                                    removeButton();
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      const SizedBox(height: 10),
-                      // Logout Button
-                      logOut(),
-                    ],
+                            ],
+                          ),
+                        const SizedBox(height: 10),
+                        // Logout Button
+                        logOut(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

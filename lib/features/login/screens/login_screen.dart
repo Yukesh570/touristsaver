@@ -41,6 +41,7 @@ import 'package:new_piiink/models/response/location_get_all.dart';
 import 'package:new_piiink/models/response/login_res.dart';
 import 'package:new_piiink/models/response/stripe_key_res.dart';
 import 'package:new_piiink/models/response/user_detail_res.dart';
+import 'package:new_piiink/splash_screen.dart';
 
 import '../../../common/app_variables.dart';
 import '../../../models/response/country_wise_prefix_res_model.dart'
@@ -157,6 +158,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     ConnectivityCubit().close();
     super.dispose();
+  }
+
+  void showTopUpScreen() {
+    context.pushReplacementNamed('top-up'); // adjust route name
   }
 
   @override
@@ -509,8 +514,13 @@ class _LoginScreenState extends State<LoginScreen> {
         checkSavedCredentials(res.data!.accessToken!);
         // Navigating to the Next Screen after successful login
         if (!mounted) return;
-        context
-            .pushReplacementNamed('bottom-bar', pathParameters: {'page': '4'});
+        bool canGoHome = await checkWalletBalance();
+        if (canGoHome) {
+          context.pushReplacementNamed('bottom-bar',
+              pathParameters: {'page': '4'});
+        } else {
+          showTopUpScreen(); // redirect to top up / warning
+        }
       }
     } else if (res is ErrorResModel) {
       if (!mounted) return;

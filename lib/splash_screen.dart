@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:new_piiink/constants/pref.dart';
 import 'package:new_piiink/constants/pref_key.dart';
 import 'package:new_piiink/constants/read_sms_otp.dart';
+import 'package:new_piiink/features/wallet/services/dio_wallet.dart';
+import 'package:new_piiink/models/response/universal_get_my_wallet.dart';
 
 import 'common/app_variables.dart';
 
@@ -16,6 +18,22 @@ class MySplashScreen extends StatefulWidget {
 
   @override
   State<MySplashScreen> createState() => _MySplashScreenState();
+}
+
+Future<bool> checkWalletBalance() async {
+  try {
+    DioWallet dioWallet = DioWallet();
+    UniversalGetMyWallet? wallet = await dioWallet.getUniverslUserWallet();
+
+    double balance = wallet?.data?.balance ?? 0;
+    debugPrint("💰 User balance: $balance");
+
+    // Return true only if balance > 0
+    return balance > 0;
+  } catch (e) {
+    debugPrint("❌ Error fetching wallet: $e");
+    return false; // default to false to avoid navigating to home
+  }
 }
 
 class _MySplashScreenState extends State<MySplashScreen> {
@@ -101,12 +119,27 @@ class _MySplashScreenState extends State<MySplashScreen> {
       if (notificationsCount != null && notificationsCount != 0) {
         AppVariables.notificationLabel.value = notificationsCount;
       }
-      Timer(Duration(seconds: splashtime),
-          () => acc == 'true' ? showBottomBar() : showIntroVideo());
+      // Wait splash time before deciding where to go
+      Timer(Duration(seconds: splashtime), () async {
+        if (acc == 'true') {
+          bool canGoHome = await checkWalletBalance();
+          if (canGoHome) {
+            showBottomBar();
+          } else {
+            showTopUpScreen(); // redirect to top up / warning
+          }
+        } else {
+          showIntroVideo();
+        }
+      });
     });
 
     getAppSign(); //Calling to auto the SMS OTP
     super.initState();
+  }
+
+  void showTopUpScreen() {
+    context.pushReplacementNamed('top-up'); // adjust route name
   }
 
   // @override

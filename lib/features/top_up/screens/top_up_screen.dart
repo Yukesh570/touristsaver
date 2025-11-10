@@ -32,6 +32,7 @@ import 'package:new_piiink/models/response/premium_validity_res.dart';
 import 'package:new_piiink/models/response/top_up_stripe_res.dart';
 
 import 'package:new_piiink/generated/l10n.dart';
+import 'package:new_piiink/splash_screen.dart';
 
 class TopUpScreen extends StatefulWidget {
   static const String routeName = '/top-up';
@@ -67,11 +68,27 @@ class _TopUpScreenState extends State<TopUpScreen> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(
-          text: S.of(context).topUp,
-          icon: Icons.arrow_back_ios,
-          onPressed: () {
-            context.pop();
+        child: FutureBuilder<bool>(
+          future: checkWalletBalance(), // 👈 call the async function
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              // show placeholder or loader while fetching
+              return const SizedBox.shrink();
+            }
+
+            final hasBalance = snapshot.data ?? false;
+
+            return hasBalance
+                ? CustomAppBar(
+                    text: S.of(context).topUp,
+                    icon: Icons.arrow_back_ios,
+                    onPressed: () => context.pop(),
+                  )
+                : CustomAppBar(
+                    text: S.of(context).topUp,
+                    icon: Icons.person_outlined,
+                    onPressed: () => context.push('/log-profile'),
+                  );
           },
         ),
       ),

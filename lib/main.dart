@@ -105,7 +105,7 @@ class MyApp extends StatelessWidget {
           child: BlocBuilder<LocaleCubit, LocaleState>(
             builder: (context, state) {
               return MaterialApp.router(
-                title: "Piiink",
+                title: "TouristSaver",
                 debugShowCheckedModeBanner: false,
                 scrollBehavior: const ScrollBehavior(),
                 localizationsDelegates: S.localizationsDelegates,

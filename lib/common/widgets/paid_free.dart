@@ -58,293 +58,301 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(
-          text: S.of(context).chooseOne,
-        ),
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 15),
-
-          // Top Up
-          BlocProvider(
-            lazy: false,
-            create: (context) =>
-                MemPackAllBloc(RepositoryProvider.of<DioTopUpStripe>(context))
-                  ..add(LoadMemPackAllEvent()),
-            child: BlocBuilder<MemPackAllBloc, MemPackAllState>(
-              builder: (context, state) {
-                //loaded state
-                if (state is MemPackAllLoadingState) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15.0, vertical: 20.0),
-                    width: MediaQuery.of(context).size.width / 1,
-                    constraints: const BoxConstraints(
-                      //To make height expandable according to the text
-                      maxHeight: double.infinity,
-                    ),
-                    decoration: BoxDecoration(
-                        color: GlobalColors.appWhiteBackgroundColor,
-                        borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                            offset: const Offset(2, 2),
-                          )
-                        ]),
-                    child: Column(
-                      children: [
-                        AutoSizeText(
-                          S
-                              .of(context)
-                              .buyXUniversalTouristSaverCredits
-                              .replaceAll('&X', '...'),
-                          style: locationStyle,
-                        ),
-                        const SizedBox(height: 10),
-                        const CustomButton(text: '....')
-                      ],
-                    ),
-                  );
-                }
-                // loading state
-                else if (state is MemPackAllLoadedState) {
-                  // MemberShipPackageResModel memPackAll = state.memPackAll;
-                  MembershipGetOneForFreeByMember memPackAll2 =
-                      state.memPackAll2;
-                  MembershipGetOneForTouristByMember memPackAll3 =
-                      state.memPackAll3;
-                  return Column(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 15.0, vertical: 20.0),
-                        width: MediaQuery.of(context).size.width / 1,
-                        constraints: const BoxConstraints(
-                          //To make height expandable according to the text
-                          maxHeight: double.infinity,
-                        ),
-                        decoration: BoxDecoration(
-                            color: GlobalColors.appWhiteBackgroundColor,
-                            borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(alpha: 0.2),
-                                blurRadius: 4,
-                                spreadRadius: 1,
-                                offset: const Offset(2, 2),
-                              )
-                            ]),
-                        child: Column(
-                          children: [
-                            AutoSizeText(
-                              S
-                                  .of(context)
-                                  .buyXUniversalTouristSaverCredits
-                                  .replaceAll(
-                                      '&X',
-                                      removeTrailingZero(numFormatter
-                                          .format(memPackAll3
-                                              .data!.universalPiiinks)
-                                          .toString())),
-                              // 'Buy ${memPackAll.data![0].universalPiiinks} Universal Piiink Credits',
-                              // 'Buy ${memPackAll3.data!.universalPiiinks} Universal Piiink Credits',
-                              style: locationStyle,
-                            ),
-                            const SizedBox(height: 10),
-                            memPackAll3.data!.packageFee == 0
-                                ? CustomButton(
-                                    text: S.of(context).noTopUpAvailable,
-                                    onPressed: () {
-                                      // Navigator.pushReplacement(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //     builder: (context) =>
-                                      //         const CongratsScreen(
-                                      //       piiinkCredit: '20',
-                                      //     ),
-                                      //   ),
-                                      // );
-                                    },
-                                  )
-                                : isLoading == true
-                                    ? const CustomButtonWithCircular()
-                                    : CustomButton(
-                                        text: S
-                                            .of(context)
-                                            .topUpAndPayXY
-                                            .replaceAll('&XY',
-                                                ' ${memPackAll3.data!.packageCurrencySymbol}${removeTrailingZero(numFormatter.format(memPackAll3.data!.packageFee))}'),
-                                        //   text:
-                                        //      'Top-up and Pay ${memPackAll3.data!.packageCurrencySymbol}${memPackAll3.data!.packageFee.toString()}',
-                                        onPressed: () async {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          var res = await DioRegister()
-                                              .regTopUpStripe(
-                                            registerTopUpStripeReqModel:
-                                                RegisterTopUpStripeReqModel(
-                                              paymentGateway: 'stripe',
-                                              membershipPackageId: memPackAll3
-                                                  .data!.id
-                                                  .toString(),
-                                              countryId: countryID,
-                                              //   memberPremiumCode: widget.premium,
-                                              isTopupUponRegistration: true,
-                                            ),
-                                          );
-
-                                          if (!mounted) return;
-                                          if (res is TopUpStripeResModel) {
-                                            await Stripe.instance
-                                                .initPaymentSheet(
-                                                    paymentSheetParameters:
-                                                        SetupPaymentSheetParameters(
-                                              paymentIntentClientSecret:
-                                                  res.clientSecret,
-                                              // applePay: const PaymentSheetApplePay(
-                                              //     merchantCountryCode: 'DE'),
-                                              // googlePay: const PaymentSheetGooglePay(
-                                              //     merchantCountryCode: 'DE', testEnv: true),
-                                              merchantDisplayName: 'Prospects',
-                                              style: ThemeMode.dark,
-                                              // returnURL:
-                                              //     'https://piiink-backend.demo-4u.net/api/$stripePayConfirm',
-                                            ));
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                            await displayPaymentSheet(
-                                                res.clientSecret);
-                                          } else {
-                                            GlobalSnackBar.showError(context,
-                                                S.of(context).serverError);
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                          }
-                                        },
-                                      ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // OR
-                      AppVariables.showFreePiiinks == true
-                          ? AutoSizeText(
-                              S.of(context).or,
-                              style: topicStyle,
-                            )
-                          : const SizedBox(),
-                      const SizedBox(height: 15),
-
-                      // Free
-                      AppVariables.showFreePiiinks == true
-                          ? Container(
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 10.0),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 15.0, vertical: 20.0),
-                              width: MediaQuery.of(context).size.width / 1,
-                              constraints: const BoxConstraints(
-                                //To make height expandable according to the text
-                                maxHeight: double.infinity,
-                              ),
-                              decoration: BoxDecoration(
-                                  color: GlobalColors.appWhiteBackgroundColor,
-                                  borderRadius: BorderRadius.circular(5),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withValues(alpha: 0.2),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                      offset: const Offset(2, 2),
-                                    )
-                                  ]),
-                              child: Column(
-                                children: [
-                                  // Free
-                                  AutoSizeText(
-                                    S
-                                        .of(context)
-                                        .getFree20UniversalFreeCredits
-                                        .replaceAll(
-                                            '20',
-                                            removeTrailingZero(
-                                                numFormatter.format(memPackAll2
-                                                    .data!.universalPiiinks))),
-                                    // 'Get Free ${memPackAll2.data!.universalPiiinks} Universal Free Credits',
-                                    style: locationStyle,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  CustomButton(
-                                    text: S.of(context).free,
-                                    onPressed: () async {
-                                      // Navigating to the Next Screen
-                                      var result =
-                                          await DioWallet().confirmPiiinks();
-                                      if (result is ClaimPiiinksResModel) {
-                                        if (result.status == 'success') {
-                                          if (!mounted) return;
-                                          context.pushReplacementNamed(
-                                              'congrats-screen',
-                                              pathParameters: {
-                                                'piiinkCredit': result
-                                                    .universalPiiinks
-                                                    .toString(),
-                                              });
-                                          GlobalSnackBar.showSuccess(
-                                              context,
-                                              S
-                                                  .of(context)
-                                                  .freeTouristSaversClaimedSuccessfully);
-                                        }
-                                      } else if (result is ErrorResModel) {
-                                        if (!mounted) return;
-                                        GlobalSnackBar.showError(context,
-                                            S.of(context).someErrorOccurred);
-                                      } else {
-                                        if (!mounted) return;
-                                        GlobalSnackBar.showError(context,
-                                            S.of(context).someErrorOccurred);
-                                      }
-                                      // log(res.toString());
-                                      // if (!mounted) return;
-                                      // context.pushReplacementNamed(
-                                      //     'congrats-screen',
-                                      //     pathParameters: {
-                                      //       'piiinkCredit': widget.uniCredit!,
-                                      //     });
-                                    },
-                                  )
-                                ],
-                              ),
-                            )
-                          : const SizedBox()
-                    ],
-                  );
-                } else if (state is MemPackAllErrorState) {
-                  return Center(
-                    child: AutoSizeText(S.of(context).error),
-                  );
-                } else {
-                  return const SizedBox();
-                }
-              },
-            ),
+    return WillPopScope(
+      onWillPop: () async {
+        context.pushReplacementNamed('top-up');
+        return false;
+      },
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: CustomAppBar(
+            text: S.of(context).chooseOne,
           ),
-        ],
+        ),
+        body: Column(
+          children: [
+            const SizedBox(height: 15),
+
+            // Top Up
+            BlocProvider(
+              lazy: false,
+              create: (context) =>
+                  MemPackAllBloc(RepositoryProvider.of<DioTopUpStripe>(context))
+                    ..add(LoadMemPackAllEvent()),
+              child: BlocBuilder<MemPackAllBloc, MemPackAllState>(
+                builder: (context, state) {
+                  //loaded state
+                  if (state is MemPackAllLoadingState) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15.0, vertical: 20.0),
+                      width: MediaQuery.of(context).size.width / 1,
+                      constraints: const BoxConstraints(
+                        //To make height expandable according to the text
+                        maxHeight: double.infinity,
+                      ),
+                      decoration: BoxDecoration(
+                          color: GlobalColors.appWhiteBackgroundColor,
+                          borderRadius: BorderRadius.circular(5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                              offset: const Offset(2, 2),
+                            )
+                          ]),
+                      child: Column(
+                        children: [
+                          AutoSizeText(
+                            S
+                                .of(context)
+                                .buyXUniversalTouristSaverCredits
+                                .replaceAll('&X', '...'),
+                            style: locationStyle,
+                          ),
+                          const SizedBox(height: 10),
+                          const CustomButton(text: '....')
+                        ],
+                      ),
+                    );
+                  }
+                  // loading state
+                  else if (state is MemPackAllLoadedState) {
+                    // MemberShipPackageResModel memPackAll = state.memPackAll;
+                    MembershipGetOneForFreeByMember memPackAll2 =
+                        state.memPackAll2;
+                    MembershipGetOneForTouristByMember memPackAll3 =
+                        state.memPackAll3;
+                    return Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 15.0, vertical: 20.0),
+                          width: MediaQuery.of(context).size.width / 1,
+                          constraints: const BoxConstraints(
+                            //To make height expandable according to the text
+                            maxHeight: double.infinity,
+                          ),
+                          decoration: BoxDecoration(
+                              color: GlobalColors.appWhiteBackgroundColor,
+                              borderRadius: BorderRadius.circular(5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withValues(alpha: 0.2),
+                                  blurRadius: 4,
+                                  spreadRadius: 1,
+                                  offset: const Offset(2, 2),
+                                )
+                              ]),
+                          child: Column(
+                            children: [
+                              AutoSizeText(
+                                S
+                                    .of(context)
+                                    .buyXUniversalTouristSaverCredits
+                                    .replaceAll(
+                                        '&X',
+                                        removeTrailingZero(numFormatter
+                                            .format(memPackAll3
+                                                .data!.universalPiiinks)
+                                            .toString())),
+                                // 'Buy ${memPackAll.data![0].universalPiiinks} Universal Piiink Credits',
+                                // 'Buy ${memPackAll3.data!.universalPiiinks} Universal Piiink Credits',
+                                style: locationStyle,
+                              ),
+                              const SizedBox(height: 10),
+                              memPackAll3.data!.packageFee == 0
+                                  ? CustomButton(
+                                      text: S.of(context).noTopUpAvailable,
+                                      onPressed: () {
+                                        // Navigator.pushReplacement(
+                                        //   context,
+                                        //   MaterialPageRoute(
+                                        //     builder: (context) =>
+                                        //         const CongratsScreen(
+                                        //       piiinkCredit: '20',
+                                        //     ),
+                                        //   ),
+                                        // );
+                                      },
+                                    )
+                                  : isLoading == true
+                                      ? const CustomButtonWithCircular()
+                                      : CustomButton(
+                                          text: S
+                                              .of(context)
+                                              .topUpAndPayXY
+                                              .replaceAll('&XY',
+                                                  ' ${memPackAll3.data!.packageCurrencySymbol}${removeTrailingZero(numFormatter.format(memPackAll3.data!.packageFee))}'),
+                                          //   text:
+                                          //      'Top-up and Pay ${memPackAll3.data!.packageCurrencySymbol}${memPackAll3.data!.packageFee.toString()}',
+                                          onPressed: () async {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                            var res = await DioRegister()
+                                                .regTopUpStripe(
+                                              registerTopUpStripeReqModel:
+                                                  RegisterTopUpStripeReqModel(
+                                                paymentGateway: 'stripe',
+                                                membershipPackageId: memPackAll3
+                                                    .data!.id
+                                                    .toString(),
+                                                countryId: countryID,
+                                                //   memberPremiumCode: widget.premium,
+                                                isTopupUponRegistration: true,
+                                              ),
+                                            );
+
+                                            if (!mounted) return;
+                                            if (res is TopUpStripeResModel) {
+                                              await Stripe.instance
+                                                  .initPaymentSheet(
+                                                      paymentSheetParameters:
+                                                          SetupPaymentSheetParameters(
+                                                paymentIntentClientSecret:
+                                                    res.clientSecret,
+                                                // applePay: const PaymentSheetApplePay(
+                                                //     merchantCountryCode: 'DE'),
+                                                // googlePay: const PaymentSheetGooglePay(
+                                                //     merchantCountryCode: 'DE', testEnv: true),
+                                                merchantDisplayName:
+                                                    'Prospects',
+                                                style: ThemeMode.dark,
+                                                // returnURL:
+                                                //     'https://piiink-backend.demo-4u.net/api/$stripePayConfirm',
+                                              ));
+                                              setState(() {
+                                                isLoading = false;
+                                              });
+                                              await displayPaymentSheet(
+                                                  res.clientSecret);
+                                            } else {
+                                              GlobalSnackBar.showError(context,
+                                                  S.of(context).serverError);
+                                              setState(() {
+                                                isLoading = false;
+                                              });
+                                            }
+                                          },
+                                        ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        // OR
+                        AppVariables.showFreePiiinks == true
+                            ? AutoSizeText(
+                                S.of(context).or,
+                                style: topicStyle,
+                              )
+                            : const SizedBox(),
+                        const SizedBox(height: 15),
+
+                        // Free
+                        AppVariables.showFreePiiinks == true
+                            ? Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 10.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0, vertical: 20.0),
+                                width: MediaQuery.of(context).size.width / 1,
+                                constraints: const BoxConstraints(
+                                  //To make height expandable according to the text
+                                  maxHeight: double.infinity,
+                                ),
+                                decoration: BoxDecoration(
+                                    color: GlobalColors.appWhiteBackgroundColor,
+                                    borderRadius: BorderRadius.circular(5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.2),
+                                        blurRadius: 4,
+                                        spreadRadius: 1,
+                                        offset: const Offset(2, 2),
+                                      )
+                                    ]),
+                                child: Column(
+                                  children: [
+                                    // Free
+                                    AutoSizeText(
+                                      S
+                                          .of(context)
+                                          .getFree20UniversalFreeCredits
+                                          .replaceAll(
+                                              '20',
+                                              removeTrailingZero(numFormatter
+                                                  .format(memPackAll2.data!
+                                                      .universalPiiinks))),
+                                      // 'Get Free ${memPackAll2.data!.universalPiiinks} Universal Free Credits',
+                                      style: locationStyle,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    CustomButton(
+                                      text: S.of(context).free,
+                                      onPressed: () async {
+                                        // Navigating to the Next Screen
+                                        var result =
+                                            await DioWallet().confirmPiiinks();
+                                        if (result is ClaimPiiinksResModel) {
+                                          if (result.status == 'success') {
+                                            if (!mounted) return;
+                                            context.pushReplacementNamed(
+                                                'congrats-screen',
+                                                pathParameters: {
+                                                  'piiinkCredit': result
+                                                      .universalPiiinks
+                                                      .toString(),
+                                                });
+                                            GlobalSnackBar.showSuccess(
+                                                context,
+                                                S
+                                                    .of(context)
+                                                    .freeTouristSaversClaimedSuccessfully);
+                                          }
+                                        } else if (result is ErrorResModel) {
+                                          if (!mounted) return;
+                                          GlobalSnackBar.showError(context,
+                                              S.of(context).someErrorOccurred);
+                                        } else {
+                                          if (!mounted) return;
+                                          GlobalSnackBar.showError(context,
+                                              S.of(context).someErrorOccurred);
+                                        }
+                                        // log(res.toString());
+                                        // if (!mounted) return;
+                                        // context.pushReplacementNamed(
+                                        //     'congrats-screen',
+                                        //     pathParameters: {
+                                        //       'piiinkCredit': widget.uniCredit!,
+                                        //     });
+                                      },
+                                    )
+                                  ],
+                                ),
+                              )
+                            : const SizedBox()
+                      ],
+                    );
+                  } else if (state is MemPackAllErrorState) {
+                    return Center(
+                      child: AutoSizeText(S.of(context).error),
+                    );
+                  } else {
+                    return const SizedBox();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
