@@ -53,7 +53,6 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
   // Premium data mapping
   dynamic premiumData;
   String? registrationImageUrl;
-  bool isGlobalLoading = false; // Add this at the top with your other variables
   late MemPackAllBloc _memPackAllBloc;
   bool _memPackBlocReady = false;
 
@@ -385,21 +384,6 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
             },
           ),
         ),
-        if (isGlobalLoading)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap:
-                  () {}, // This empty callback blocks taps from reaching the buttons below
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
       ]),
     );
   }
@@ -444,8 +428,10 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         fullscreenDialog: true,
         builder: (_) => _PaymentConfirmationScreen(
           amountText: paymentPriceText,
-          onContinue: (paymentContext) => _handleTopUp(
+          onContinue: (paymentContext, showActivationProcessing) =>
+              _handleTopUp(
             paymentContext: paymentContext,
+            showActivationProcessing: showActivationProcessing,
           ),
         ),
       ),
@@ -504,7 +490,10 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     _navigateToActivationSuccess(creditAmount: creditAmount);
   }
 
-  Future<void> _handleTopUp({BuildContext? paymentContext}) async {
+  Future<void> _handleTopUp({
+    BuildContext? paymentContext,
+    required VoidCallback showActivationProcessing,
+  }) async {
     FocusManager.instance.primaryFocus?.unfocus();
     await Future.delayed(const Duration(milliseconds: 300));
 
@@ -583,25 +572,17 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       });
 
       // WAIT for the payment to completely finish
-      bool paymentSuccess = await displayPaymentSheet(res.clientSecret);
+      final bool paymentSuccess = await displayPaymentSheet(
+        res.clientSecret,
+        showActivationProcessing: showActivationProcessing,
+      );
 
       if (!mounted) return;
 
       if (paymentSuccess) {
-        // 👉 1. Show the global circular loader immediately
-        final parentState =
-            context.findAncestorStateOfType<_PaidFreeScreenState>();
-        parentState?.setState(() {
-          parentState.isGlobalLoading = true;
-        });
-
-        // 👉 2. CHANGE: Use 'await' so the loader stays until balance is updated
-        await checkWalletBalance();
-
-        if (!mounted) return;
-
-        // 👉 3. Navigate Home - the loader will disappear as the screen is destroyed
-        _dismissPaymentConfirmation(paymentContext);
+        // Replace the GoRouter page while the full-screen processing route is
+        // still covering it. Removing the underlying page also removes its
+        // pageless confirmation route, so the membership page is never shown.
         _navigateToActivationSuccess(
           creditAmount: _selectedPackageCreditAmount(),
         );
@@ -613,32 +594,35 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     }
   }
 
-  Future<bool> displayPaymentSheet(String? clientSecret) async {
+  Future<bool> displayPaymentSheet(
+    String? clientSecret, {
+    required VoidCallback showActivationProcessing,
+  }) async {
     try {
       await Stripe.instance.presentPaymentSheet();
+      showActivationProcessing();
 
       // Retrieve status from Stripe Native SDK
       var res = await Stripe.instance.retrievePaymentIntent(clientSecret!);
 
       if (res.status == PaymentIntentsStatus.Succeeded) {
-        try {
-          var confirm = await DioTopUpStripe().confirmTopUp(
-              confirmTopUpReqModel: ConfirmTopUpReqModel(
-                  paymentIntent: res.id,
-                  paymentIntentClientSecret: res.clientSecret));
+        final confirm = await DioTopUpStripe().confirmTopUp(
+          confirmTopUpReqModel: ConfirmTopUpReqModel(
+            paymentIntent: res.id,
+            paymentIntentClientSecret: res.clientSecret,
+          ),
+        );
 
-          if (confirm is ConfirmTopUpResModel && confirm.status == 'success') {
-            return true;
-          }
-        } catch (e) {
-          // 👉 FIX: Catch ANY error (208 Already Reported, 500, etc.)
-          // Because Stripe's native UI said it succeeded, we ignore the backend
-          // conflict and check if the wallet got the money from the webhook!
-          debugPrint(
-              "⚠️ Backend confirm conflict, checking wallet directly...");
-          return await checkWalletBalance();
+        if (confirm is ConfirmTopUpResModel && confirm.status == 'success') {
+          return true;
         }
-        return await checkWalletBalance();
+
+        if (mounted) {
+          GlobalSnackBar.showError(
+            context,
+            'We could not confirm your membership activation. Please contact TouristSaver support before trying again.',
+          );
+        }
       }
       return false;
     } on StripeException {
@@ -1339,7 +1323,10 @@ class _PaymentConfirmationScreen extends StatefulWidget {
   });
 
   final String amountText;
-  final Future<void> Function(BuildContext context) onContinue;
+  final Future<void> Function(
+    BuildContext context,
+    VoidCallback showActivationProcessing,
+  ) onContinue;
 
   @override
   State<_PaymentConfirmationScreen> createState() =>
@@ -1349,6 +1336,14 @@ class _PaymentConfirmationScreen extends StatefulWidget {
 class _PaymentConfirmationScreenState
     extends State<_PaymentConfirmationScreen> {
   bool _isProcessing = false;
+  bool _isActivatingMembership = false;
+
+  void _showActivationProcessing() {
+    if (!mounted) return;
+    setState(() {
+      _isActivatingMembership = true;
+    });
+  }
 
   Future<void> _handleContinue() async {
     if (_isProcessing) return;
@@ -1357,11 +1352,12 @@ class _PaymentConfirmationScreenState
     });
 
     try {
-      await widget.onContinue(context);
+      await widget.onContinue(context, _showActivationProcessing);
     } finally {
       if (mounted) {
         setState(() {
           _isProcessing = false;
+          _isActivatingMembership = false;
         });
       }
     }
@@ -1369,6 +1365,16 @@ class _PaymentConfirmationScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (_isActivatingMembership) {
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: _TopUpWidgetState._screenBackground,
+          body: SafeArea(child: _activationProcessingView()),
+        ),
+      );
+    }
+
     return PopScope(
       canPop: !_isProcessing,
       child: Scaffold(
@@ -1543,6 +1549,49 @@ class _PaymentConfirmationScreenState
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _activationProcessingView() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 58.w,
+              height: 58.w,
+              child: const CircularProgressIndicator(
+                color: _TopUpWidgetState._primaryBlue,
+                strokeWidth: 5,
+              ),
+            ),
+            SizedBox(height: 28.h),
+            Text(
+              'Activating your Premium Membership...',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                color: _TopUpWidgetState._headingColor,
+                fontSize: 25.sp,
+                fontWeight: FontWeight.w900,
+                height: 1.2,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'Please keep TouristSaver open while we securely confirm your membership.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                color: _TopUpWidgetState._bodyColor,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.45,
+              ),
+            ),
+          ],
         ),
       ),
     );
