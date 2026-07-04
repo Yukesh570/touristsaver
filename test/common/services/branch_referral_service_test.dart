@@ -56,5 +56,34 @@ void main() {
       expect(referral.issuerCode, isNull);
       expect(referral.memberReferralCode, 'NEW_MEMBER');
     });
+
+    test('builds registration parameters for an issuer referral', () {
+      const referral = BranchRegistrationReferral(
+        issuerCode: 'AU0000000011',
+      );
+
+      expect(registrationQueryParametersFor(referral), {
+        'issuercode': 'AU0000000011',
+        'memberReferralCode': '',
+      });
+    });
+
+    test('builds registration parameters for a member referral', () {
+      const referral = BranchRegistrationReferral(
+        memberReferralCode: '6123456789012345',
+      );
+
+      expect(registrationQueryParametersFor(referral), {
+        'issuercode': '',
+        'memberReferralCode': '6123456789012345',
+      });
+    });
+
+    test('builds empty parameters when no referral is pending', () {
+      expect(registrationQueryParametersFor(null), {
+        'issuercode': '',
+        'memberReferralCode': '',
+      });
+    });
   });
 }

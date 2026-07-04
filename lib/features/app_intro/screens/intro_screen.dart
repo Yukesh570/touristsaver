@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
 
@@ -21,7 +22,11 @@ class IntroScreen extends StatelessWidget {
   Future<void> _goToRegister(BuildContext context) async {
     await _markWelcomeSeen();
     if (!context.mounted) return;
-    context.goNamed('register');
+    final pendingReferral = BranchReferralService.takePendingReferral();
+    context.goNamed(
+      'register',
+      queryParameters: registrationQueryParametersFor(pendingReferral),
+    );
   }
 
   Future<void> _goToLogin(BuildContext context) async {

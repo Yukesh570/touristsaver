@@ -51,6 +51,15 @@ class BranchRegistrationReferral {
   }
 }
 
+Map<String, String> registrationQueryParametersFor(
+  BranchRegistrationReferral? referral,
+) {
+  return {
+    'issuercode': referral?.issuerCode ?? '',
+    'memberReferralCode': referral?.memberReferralCode ?? '',
+  };
+}
+
 class BranchReferralService {
   BranchReferralService._();
 
