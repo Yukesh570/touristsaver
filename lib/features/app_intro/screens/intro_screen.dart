@@ -82,41 +82,7 @@ class IntroScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 14.h),
-                    // TEMPORARY: remove after TestFlight build 50 attribution validation.
-                    StreamBuilder<BranchRegistrationReferral>(
-                      stream: BranchReferralService.referrals,
-                      initialData: BranchReferralService.pendingReferral,
-                      builder: (context, snapshot) {
-                        final referral = snapshot.data;
-                        return Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 9.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3CD),
-                            border: Border.all(color: const Color(0xFFFFC107)),
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
-                          child: Text(
-                            'TEMP BUILD 50 ATTRIBUTION\n\n'
-                            'Pending Branch:\n'
-                            'Issuer: ${referral?.issuerCode ?? '-'}\n'
-                            'Member: ${referral?.memberReferralCode ?? '-'}',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: const Color(0xFF5F4700),
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w700,
-                              height: 1.3,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 14.h),
+                    SizedBox(height: 34.h),
                     _PrimaryActionButton(
                       label: 'Join Now',
                       onPressed: () => _goToRegister(context),

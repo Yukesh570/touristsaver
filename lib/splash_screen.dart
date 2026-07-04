@@ -8,6 +8,7 @@ import 'package:touristsaver/features/wallet/services/dio_wallet.dart';
 import 'package:touristsaver/models/response/universal_get_my_wallet.dart';
 
 import 'common/app_variables.dart';
+import 'common/services/branch_referral_service.dart';
 
 String? acc;
 
@@ -129,12 +130,13 @@ class _MySplashScreenState extends State<MySplashScreen> {
 
       // Wait splash time before deciding where to go
       Timer(Duration(seconds: splashtime), () async {
-        if (acc == 'true') {
-          if (isLoggedIn) {
-            showBottomBar();
-          } else {
-            showlogin();
-          }
+        if (isLoggedIn) {
+          showBottomBar();
+        } else if (BranchReferralService.pendingReferral?.hasRegistrationCode ==
+            true) {
+          showIntro();
+        } else if (acc == 'true') {
+          showlogin();
         } else {
           showIntro();
         }

@@ -698,41 +698,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(height: 22.h),
-                                  Wrap(
-                                    alignment: WrapAlignment.center,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Don't have an account? ",
-                                        style: TextStyle(
-                                          fontSize: 14.sp,
-                                          color: _softText,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          context.pushNamed(
-                                            'register',
-                                            queryParameters: {
-                                              'issuercode': '',
-                                              'memberReferralCode': '',
-                                            },
-                                          );
-                                        },
-                                        child: Text(
-                                          'Register Now',
-                                          style: TextStyle(
-                                            fontSize: 15.sp,
-                                            fontWeight: FontWeight.w800,
-                                            color: _primaryBlue,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ],
                               );
                             } else if (locationState is LocationAllErrorState) {
