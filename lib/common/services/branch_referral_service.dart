@@ -70,6 +70,7 @@ class BranchReferralService {
   static BranchRegistrationReferral? _pendingReferral;
 
   static Stream<BranchRegistrationReferral> get referrals => _controller.stream;
+  static BranchRegistrationReferral? get pendingReferral => _pendingReferral;
 
   static void start() {
     if (_branchSubscription != null) return;

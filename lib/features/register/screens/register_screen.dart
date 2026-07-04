@@ -1176,6 +1176,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
+                                    // TEMPORARY: remove after TestFlight build 50 attribution validation.
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12.w,
+                                        vertical: 9.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFF3CD),
+                                        border: Border.all(
+                                            color: const Color(0xFFFFC107)),
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
+                                      ),
+                                      child: Text(
+                                        'TEMP BUILD 50 ATTRIBUTION\n\n'
+                                        'Register:\n'
+                                        'Issuer Controller: ${providerController.text.trim()}\n'
+                                        'Member Controller: ${referralCodeController.text.trim()}',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: const Color(0xFF5F4700),
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w700,
+                                          height: 1.3,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 18.h),
                                     _sectionHeader(
                                         Icons.person_outline, 'Your Details'),
                                     Row(
