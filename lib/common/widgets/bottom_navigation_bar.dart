@@ -3,12 +3,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/common/services/firebase_api.dart';
 import 'package:touristsaver/common/widgets/reg_log_slider.dart';
 import 'package:touristsaver/constants/global_colors.dart';
@@ -43,9 +43,10 @@ class _BottomBarState extends State<BottomBar> {
   int _page = 4;
   late bool serviceEnabled;
   late LocationPermission permission;
+  late final Future<void> _checkTokenFuture;
 
   // For checking the token and For reading the country currency that user is registered with
-  checkToken() async {
+  Future<void> checkToken() async {
     AppVariables.originCountryId =
         await Pref().readData(key: saveCountryOriginID);
     AppVariables.accessToken = await Pref().readData(key: saveToken);
@@ -57,36 +58,35 @@ class _BottomBarState extends State<BottomBar> {
     acc = await Pref().readData(key: accept);
   }
 
-  //Using Branch.io for referral issuer code
-  StreamSubscription<Map>? streamSubscription;
-  // StreamController<String> controllerData = StreamController<String>();
-  void listenDynamicLinks() async {
-    // FlutterBranchSdk.init();
-    streamSubscription = FlutterBranchSdk.listSession().listen((data) {
-      if (AppVariables.accessToken != null) return;
-      if (data.containsKey('+clicked_branch_link') &&
-          data['+clicked_branch_link'] == true) {
-        if (data.containsKey('issuercode')) {
-          Pref().setBool(key: 'isShownRegLog', value: true);
-          context.pushNamed('register', queryParameters: {
-            'issuercode': '${data['issuercode']}',
-            'memberReferralCode': ''
-          });
-        } else if (data.containsKey('memberReferralCode')) {
-          Pref().setBool(key: 'isShownRegLog', value: true);
-          context.pushNamed('register', queryParameters: {
-            'issuercode': '',
-            'memberReferralCode': '${data['memberReferralCode']}'
-          });
-        } else {
-          return;
-        }
-      } else {
-        return;
-      }
-    }, onError: (error) {
-      debugPrint('InitSesseion error: ${error.toString()}');
+  StreamSubscription<BranchRegistrationReferral>? streamSubscription;
+
+  void _openRegistrationFromBranch(BranchRegistrationReferral referral) {
+    BranchReferralService.markHandled(referral);
+    if (!mounted || AppVariables.accessToken != null) return;
+
+    debugPrint(
+      'BRANCH_REGISTRATION_INPUTS: '
+      'issuerCode=${referral.issuerCode}, '
+      'memberReferralCode=${referral.memberReferralCode}',
+    );
+    Pref().setBool(key: 'isShownRegLog', value: true);
+    context.pushNamed('register', queryParameters: {
+      'issuercode': referral.issuerCode ?? '',
+      'memberReferralCode': referral.memberReferralCode ?? '',
     });
+  }
+
+  Future<void> listenDynamicLinks() async {
+    await _checkTokenFuture;
+    if (!mounted) return;
+
+    streamSubscription =
+        BranchReferralService.referrals.listen(_openRegistrationFromBranch);
+
+    final pendingReferral = BranchReferralService.takePendingReferral();
+    if (pendingReferral != null) {
+      _openRegistrationFromBranch(pendingReferral);
+    }
   }
 
   initializeNotifications() async {
@@ -97,19 +97,19 @@ class _BottomBarState extends State<BottomBar> {
 
   @override
   void initState() {
-    checkToken();
+    _checkTokenFuture = checkToken();
     _page = widget.page ?? 4;
     MerchantDiscoveryIntentStore.bottomTabRequest
         .addListener(_handleDiscoveryTabRequest);
     _handleDiscoveryTabRequest();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await listenDynamicLinks();
       await LocationService().enableLocationAndFetchCountry();
       await Pref().readData(key: savePublishableKey) == null
           ? byDefaultStripeKey()
           : initializeFlutterStripe();
       // Initializing Firebase notifications
       initializeNotifications();
-      listenDynamicLinks();
     });
     //   WidgetsBinding.instance.addObserver(this);
     super.initState();

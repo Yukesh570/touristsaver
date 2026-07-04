@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:touristsaver/constants/global_colors.dart';
+import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/features/charity/services/dio_charity.dart';
 import 'package:touristsaver/features/connectivity/cubit/internet_cubit.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
@@ -35,6 +36,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FlutterBranchSdk.init();
+  BranchReferralService.start();
   // FlutterBranchSdk
   //     .validateSDKIntegration(); //For Branch.io Remove it from the production
   await SystemChrome.setPreferredOrientations(
