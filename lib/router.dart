@@ -26,10 +26,8 @@ import 'package:touristsaver/features/merchant/screens/merchant_rating.dart';
 import 'package:touristsaver/features/merchant/screens/merchant_screen.dart';
 import 'package:touristsaver/features/more_offers/screens/more_offers_screen.dart';
 import 'package:touristsaver/features/notification/notification_screen.dart';
-import 'package:touristsaver/features/payment/screens/accept_screen.dart';
 import 'package:touristsaver/features/payment/screens/confirm_pay_screen.dart';
 import 'package:touristsaver/features/payment/screens/manual_code.dart';
-import 'package:touristsaver/features/payment/screens/pay_complete.dart';
 import 'package:touristsaver/features/payment/screens/pay_screen.dart';
 import 'package:touristsaver/common/widgets/qr_scan.dart';
 import 'package:touristsaver/features/profile/screens/change_country.dart';
@@ -478,46 +476,6 @@ final GoRouter goRouter = GoRouter(
             terminalUserId: args['terminalUserId'],
             terminalId: args['terminalId'],
             returnToSearch: args['returnToSearch'] == true,
-          );
-        }),
-    //Accept Screen
-    GoRoute(
-        path: '/accept-screen',
-        name: 'accept-screen',
-        builder: (context, state) {
-          Map<String, dynamic> args = state.extra as Map<String, dynamic>;
-          return AcceptScreen(
-            merchantId: args['merchantId'],
-            totalAmount: args['totalAmount'],
-            qrCode: args['qrCode'],
-            discountedTransactionAmount: args['discountedTransactionAmount'],
-            totalPiiinkDiscount: args['totalPiiinkDiscount'],
-            merchantRebateToMember: args['merchantRebateToMember'],
-            merchantDiscountPercentage: args['merchantDiscountPercentage'],
-            merchantName: args['merchantName'],
-            logo: args['logo'],
-            tsdcsRemaining: args['tsdcsRemaining'],
-            walletType: args['walletType'],
-            terminalUserId: args['terminalUserId'],
-            terminalId: args['terminalId'],
-          );
-        }),
-    //Payment Completed
-    GoRoute(
-        path: '/payment-complete',
-        name: 'payment-complete',
-        builder: (context, state) {
-          Map<String, dynamic> args = state.extra as Map<String, dynamic>;
-          return PaymentCompleted(
-            merchantId: args['merchantId'],
-            merchantName: args['merchantName'],
-            totalAmount: args['totalAmount'],
-            totalPiiinkDiscount: args['totalPiiinkDiscount'],
-            discountedTransactionAmount: args['discountedTransactionAmount'],
-            merchantRebateToMember: args['merchantRebateToMember'],
-            merchantDiscountPercentage: args['merchantDiscountPercentage'],
-            walletType: args['walletType'],
-            merchantLogo: args['merchantLogo'],
           );
         }),
     //Bottom Navigation Bar

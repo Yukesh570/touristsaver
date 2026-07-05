@@ -14,6 +14,8 @@ class CustomAppBar extends StatelessWidget {
   final PreferredSizeWidget? tabs;
   final Color? icon2Color;
   final Color? textColor;
+  final IconData? titleIcon;
+  final Color? titleIconColor;
   final double? fontSize;
   final FontWeight? fontWeight;
   final bool reserveEmptyActions;
@@ -32,6 +34,8 @@ class CustomAppBar extends StatelessWidget {
     this.tabs,
     this.icon2Color,
     this.textColor,
+    this.titleIcon,
+    this.titleIconColor,
     this.fontSize,
     this.fontWeight,
     this.reserveEmptyActions = true,
@@ -64,19 +68,41 @@ class CustomAppBar extends StatelessWidget {
       ),
 
       title: Tooltip(
-          message: text,
-          child: AutoSizeText(
-            text,
-            // 👉 Apply the color if it exists, otherwise use default
-            style: textColor != null
-                ? appbarTitleStyle.copyWith(
-                    color: textColor,
-                    fontSize: fontSize,
-                    fontWeight: fontWeight,
-                  )
-                : appbarTitleStyle,
-            overflow: TextOverflow.ellipsis,
-          )),
+        message: text,
+        child: titleIcon == null
+            ? AutoSizeText(
+                text,
+                // 👉 Apply the color if it exists, otherwise use default
+                style: textColor != null
+                    ? appbarTitleStyle.copyWith(
+                        color: textColor,
+                        fontSize: fontSize,
+                        fontWeight: fontWeight,
+                      )
+                    : appbarTitleStyle,
+                overflow: TextOverflow.ellipsis,
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    titleIcon,
+                    color: titleIconColor ?? textColor,
+                    size: 23,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    text,
+                    style: appbarTitleStyle.copyWith(
+                      color: textColor,
+                      fontSize: fontSize,
+                      fontWeight: fontWeight,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+      ),
 
       centerTitle: true,
 

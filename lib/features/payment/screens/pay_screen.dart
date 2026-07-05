@@ -59,6 +59,7 @@ class _PayScreenState extends State<PayScreen> {
   //Flutter BarCode Scanner for QR Code
   String manualQrCode = '';
   String merchantQrCode = '';
+  String? selectedMerchantName;
 
   // For Loader
   bool isLoading = false;
@@ -246,12 +247,12 @@ class _PayScreenState extends State<PayScreen> {
     });
   }
 
-  _scanManualQr(String manualQrCode) async {
+  Future<void> _scanManualQr(String scannedQrCode) async {
     // log('Merchant enter amount QR pay');
     var res = await DioPay().confirmApplyPiiink(
       confirmApplyPiiinkReqModel: ConfirmApplyPiiinkReqModel(
           totalAmount: double.parse(amountController.text.trim()),
-          transactionQRCode: manualQrCode,
+          transactionQRCode: scannedQrCode,
           hour: int.parse(DateFormat('HH ').format(DateTime.now())),
           week: DateTime.now().weekday % 7,
           lang: AppVariables.selectedLanguageNow),
@@ -265,28 +266,39 @@ class _PayScreenState extends State<PayScreen> {
         var data = res.data!;
         final String? merchantLogo = await _merchantLogoFromConfirmData(data);
         if (!mounted) return;
-        context.pushNamed('confirm-pay', extra: {
-          'merchantId': data.merchantInfo!.id,
-          'totalAmount': amountController.text.trim(),
-          'qrCode': manualQrCode,
-          'hasMerchantPiiinks': data.hasMerchantPiiinks.toString(),
-          'hasUniversalPiiinks': data.hasUniversalPiiinks.toString(),
-          'merchantName': data.merchantInfo!.merchantName,
-          'universalPiiinkBalance':
-              toFixed2DecimalPlaces(data.universalPiiinkBalance!).toString(),
-          'merchantPiiinkBalance':
-              toFixed2DecimalPlaces(data.merchantPiiinkBalance!).toString(),
-          'merchantRebateToMember': data.merchantRebateToMember.toString(),
-          'merchantDiscountPercentage':
-              data.merchantDiscountPercentage.toString(),
-          'discountedTransactionAmount':
-              data.discountedTransactionAmount.toString(),
-          'totalPiiinkDiscount': data.totalPiiinkDiscount.toString(),
-          'logo': merchantLogo,
-          'universalPiiinkOnHold': data.universalPiiinkBalanceOnHold.toString(),
-          'merchantPiiinkOnHold': data.merchantPiiinkBalanceOnHold.toString(),
-          'returnToSearch': widget.returnToSearch,
+        setState(() {
+          manualQrCode = scannedQrCode;
+          selectedMerchantName = data.merchantInfo!.merchantName;
         });
+        final bool? editRequested = await context.pushNamed<bool>(
+          'confirm-pay',
+          extra: {
+            'merchantId': data.merchantInfo!.id,
+            'totalAmount': amountController.text.trim(),
+            'qrCode': scannedQrCode,
+            'hasMerchantPiiinks': data.hasMerchantPiiinks.toString(),
+            'hasUniversalPiiinks': data.hasUniversalPiiinks.toString(),
+            'merchantName': data.merchantInfo!.merchantName,
+            'universalPiiinkBalance':
+                toFixed2DecimalPlaces(data.universalPiiinkBalance!).toString(),
+            'merchantPiiinkBalance':
+                toFixed2DecimalPlaces(data.merchantPiiinkBalance!).toString(),
+            'merchantRebateToMember': data.merchantRebateToMember.toString(),
+            'merchantDiscountPercentage':
+                data.merchantDiscountPercentage.toString(),
+            'discountedTransactionAmount':
+                data.discountedTransactionAmount.toString(),
+            'totalPiiinkDiscount': data.totalPiiinkDiscount.toString(),
+            'logo': merchantLogo,
+            'universalPiiinkOnHold':
+                data.universalPiiinkBalanceOnHold.toString(),
+            'merchantPiiinkOnHold': data.merchantPiiinkBalanceOnHold.toString(),
+            'returnToSearch': widget.returnToSearch,
+          },
+        );
+        if (editRequested == true && mounted) {
+          setState(() {});
+        }
       } else {
         setState(() {
           isLoading = false;
@@ -402,6 +414,7 @@ class _PayScreenState extends State<PayScreen> {
     amountController.clear();
     manualQrCode = '';
     merchantQrCode = '';
+    selectedMerchantName = null;
     if (!mounted) return;
     setState(() {
       isLoading = false;
@@ -592,6 +605,9 @@ class _PayScreenState extends State<PayScreen> {
   }
 
   Widget _merchantSelectionCard() {
+    final bool hasSelectedMerchant =
+        manualQrCode.trim().isNotEmpty && selectedMerchantName != null;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.r),
@@ -604,7 +620,7 @@ class _PayScreenState extends State<PayScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Check merchant offer',
+            hasSelectedMerchant ? 'Merchant selected' : 'Check merchant offer',
             style: TextStyle(
               color: const Color(0xFF111C44),
               fontSize: 17.sp,
@@ -614,7 +630,9 @@ class _PayScreenState extends State<PayScreen> {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Scan the TouristSaver QR at the counter, table, menu, window or EFTPOS terminal.',
+            hasSelectedMerchant
+                ? '${selectedMerchantName!}\nEdit the bill amount above, then update the discount without scanning again.'
+                : 'Scan the TouristSaver QR at the counter, table, menu, window or EFTPOS terminal.',
             style: TextStyle(
               color: GlobalColors.textColor,
               fontSize: 13.5.sp,
@@ -624,8 +642,16 @@ class _PayScreenState extends State<PayScreen> {
           ),
           SizedBox(height: 14.h),
           _scanMerchantQrButton(
+            label: hasSelectedMerchant ? 'Update discount' : 'Scan merchant QR',
+            icon: hasSelectedMerchant
+                ? Icons.calculate_outlined
+                : Icons.qr_code_scanner_rounded,
             isLoading: isLoading,
-            onTap: isMerchantQrLoading ? null : _openOfferQrScanner,
+            onTap: isMerchantQrLoading
+                ? null
+                : hasSelectedMerchant
+                    ? _recalculateSelectedMerchant
+                    : _openOfferQrScanner,
           ),
         ],
       ),
@@ -677,6 +703,8 @@ class _PayScreenState extends State<PayScreen> {
 
   Widget _scanMerchantQrButton({
     required VoidCallback? onTap,
+    required String label,
+    required IconData icon,
     bool isLoading = false,
   }) {
     final bool enabled = onTap != null;
@@ -723,13 +751,13 @@ class _PayScreenState extends State<PayScreen> {
                       ),
                     )
                   : Icon(
-                      Icons.qr_code_scanner_rounded,
+                      icon,
                       color: Colors.white,
                       size: 21.sp,
                     ),
               SizedBox(width: 10.w),
               Text(
-                'Scan merchant QR',
+                label,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16.sp,
@@ -754,9 +782,10 @@ class _PayScreenState extends State<PayScreen> {
       (result) async {
         if (result != null && result.toString().isNotEmpty) {
           setState(() {
+            manualQrCode = result.toString();
             isLoading = true;
           });
-          await _scanManualQr(result.toString());
+          await _scanManualQr(manualQrCode);
           if (mounted) {
             setState(() {
               isLoading = false;
@@ -765,6 +794,27 @@ class _PayScreenState extends State<PayScreen> {
         }
       },
     );
+  }
+
+  Future<void> _recalculateSelectedMerchant() async {
+    if (!_hasValidAmount()) {
+      GlobalSnackBar.valid(context, S.of(context).pleaseEnterTheRightAmount);
+      return;
+    }
+    if (manualQrCode.trim().isEmpty) {
+      _openOfferQrScanner();
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+    await _scanManualQr(manualQrCode);
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   KeyEventResult _handleDebugManualCodeShortcut(

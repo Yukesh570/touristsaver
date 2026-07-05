@@ -85,7 +85,7 @@ class LocalNotificationService {
   }
 
   static String? _safeNotificationTitle(String? title) {
-    return _looksLikeOldPaymentSuccessCopy(title) ? 'Discount approved' : title;
+    return _looksLikeOldPaymentSuccessCopy(title) ? 'Member Discount' : title;
   }
 
   static String? _safeNotificationBody({

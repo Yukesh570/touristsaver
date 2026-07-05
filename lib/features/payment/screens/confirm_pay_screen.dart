@@ -15,7 +15,8 @@ import 'package:touristsaver/models/request/sure_apply_piiink_req.dart';
 import 'package:touristsaver/models/response/sure_apply_piiink_res.dart';
 
 class ConfimrPaymentScreen extends StatefulWidget {
-  static const String routeName = "/confirm-pay";
+  static const String routeName = '/confirm-pay';
+
   final String totalAmount;
   final String qrCode;
   final String hasMerchantPiiinks;
@@ -68,12 +69,16 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
   static const Color _headingColor = Color(0xFF111C44);
   static const Color _bodyColor = Color(0xFF61708A);
   static const Color _borderColor = Color(0xFFE2E8F3);
+  static const Color _successGreen = Color(0xFF159455);
 
   final NumberFormat _currencyFormat = NumberFormat.currency(
-      symbol: AppVariables.currency ?? '\$', decimalDigits: 2);
+    symbol: AppVariables.currency ?? '\$',
+    decimalDigits: 2,
+  );
   final NumberFormat _numberFormat = NumberFormat('#,##0.##');
 
   bool isLoading = false;
+  bool _redemptionComplete = false;
 
   double get _billAmount => double.tryParse(widget.totalAmount) ?? 0;
   double get _memberSavings => double.tryParse(widget.totalPiiinkDiscount) ?? 0;
@@ -81,85 +86,184 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       double.tryParse(widget.discountedTransactionAmount) ?? 0;
   double get _discountPercent =>
       double.tryParse(widget.merchantDiscountPercentage) ?? 0;
+  bool get _canLeaveReview =>
+      widget.merchantId != null && widget.merchantName.trim().isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _screenBackground,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(
-          text: 'Redeem Discount',
-          icon: Icons.arrow_back_ios,
-          onPressed: () => navigateToSafePrimaryScreen(
-            context,
-            returnToSearch: widget.returnToSearch,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || isLoading) return;
+        if (_redemptionComplete) {
+          _finishToSavings();
+        } else {
+          _editBillAmount();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: _screenBackground,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: CustomAppBar(
+            text: 'Member Discount',
+            icon: Icons.arrow_back_ios,
+            titleIcon: Icons.check_circle_rounded,
+            titleIconColor: _successGreen,
+            onPressed: isLoading ? null : _editBillAmount,
           ),
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 28.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _merchantCard(),
-              SizedBox(height: 16.h),
-              _summaryCard(),
-              SizedBox(height: 18.h),
-              isLoading
-                  ? TouristSaverLoadingView(height: 54.h, spinnerSize: 24)
-                  : _GradientButton(
-                      label: 'Approve Discount',
-                      onTap: () {
-                        _redeemDiscount(walletType: 'universalWallet');
-                      },
-                    ),
-              SizedBox(height: 18.h),
-              TextButton(
-                onPressed: _returnToPayEntrySafely,
-                child: Text(
-                  'Try again / Cancel',
-                  style: TextStyle(
-                    color: _bodyColor,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'Sans',
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 28.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _merchantPresentationCard(),
+                SizedBox(height: 14.h),
+                isLoading
+                    ? TouristSaverLoadingView(height: 54.h, spinnerSize: 24)
+                    : _GradientButton(
+                        label: 'Close',
+                        onTap: _completeAndFinish,
+                      ),
+                if (!_redemptionComplete) ...[
+                  SizedBox(height: 12.h),
+                  _OutlinedButton(
+                    label: 'Edit Bill Amount',
+                    icon: Icons.edit_outlined,
+                    onTap: _editBillAmount,
                   ),
-                ),
-              ),
-            ],
+                ],
+                if (_canLeaveReview) ...[
+                  SizedBox(height: 6.h),
+                  TextButton.icon(
+                    onPressed: isLoading ? null : _completeAndReview,
+                    icon: Icon(
+                      Icons.star_outline_rounded,
+                      color: _primaryBlue,
+                      size: 21.sp,
+                    ),
+                    label: Text(
+                      'Leave a Review',
+                      style: TextStyle(
+                        color: _primaryBlue,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Sans',
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _merchantCard() {
-    return _PayCard(
-      child: Row(
+  Widget _merchantPresentationCard() {
+    return _PresentationCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _merchantLogo(),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+          Center(
+            child: Image.asset(
+              'assets/images/touristSaver.png',
+              width: 245.w,
+              height: 74.h,
+              fit: BoxFit.contain,
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _merchantLogo(),
+              SizedBox(width: 14.w),
+              Flexible(
+                child: Text(
                   widget.merchantName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: _headingColor,
-                    fontSize: 20.sp,
+                    fontSize: 22.sp,
                     fontWeight: FontWeight.w900,
+                    fontFamily: 'Sans',
+                    height: 1.18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 20.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF2F7FF),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: const Color(0xFFDCE8FF)),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Discount Bill Amount',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _headingColor,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w800,
                     fontFamily: 'Sans',
                   ),
                 ),
-                SizedBox(height: 6.h),
+                SizedBox(height: 5.h),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    _formatCurrency(_customerPays),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _primaryBlue,
+                      fontSize: 45.sp,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'Sans',
+                      letterSpacing: -1.2,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 5.h),
                 Text(
-                  'TouristSaver found an available member discount.',
-                  style: _bodyStyle(),
+                  'Cashier enters this amount into the EFTPOS terminal.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _bodyColor,
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Sans',
+                  ),
                 ),
               ],
+            ),
+          ),
+          SizedBox(height: 20.h),
+          _summaryRow('Original Bill', _formatCurrency(_billAmount)),
+          SizedBox(height: 12.h),
+          _summaryRow(
+            'You Save',
+            '${_formatCurrency(_memberSavings)} (${_numberFormat.format(_discountPercent)}%)',
+            savings: true,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Show this screen to the cashier.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: _headingColor,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Sans',
             ),
           ),
         ],
@@ -171,47 +275,80 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
     final String? logoUrl = _normalizedMerchantLogo(widget.logo);
 
     return Container(
-      width: 58.w,
-      height: 58.w,
+      width: 62.w,
+      height: 62.w,
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF7FF),
-        borderRadius: BorderRadius.circular(18.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(17.r),
+        border: Border.all(color: _borderColor),
       ),
       clipBehavior: Clip.antiAlias,
-      child: logoUrl != null
-          ? CachedNetworkImage(
+      child: logoUrl == null
+          ? _fallbackMerchantLogo()
+          : CachedNetworkImage(
               imageUrl: logoUrl,
-              fit: BoxFit.cover,
-              errorWidget: (context, url, error) => _fallbackLogo(),
-            )
-          : _fallbackLogo(),
+              fit: BoxFit.contain,
+              errorWidget: (context, url, error) => _fallbackMerchantLogo(),
+            ),
     );
   }
 
-  Widget _fallbackLogo() {
-    return Icon(Icons.storefront_outlined, color: _primaryBlue, size: 30.sp);
-  }
-
-  Widget _summaryCard() {
-    return _PayCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionHeader(Icons.local_offer_outlined, 'Your discount summary'),
-          SizedBox(height: 14.h),
-          _summaryRow('Bill amount', _formatCurrency(_billAmount)),
-          _summaryRow('Member discount',
-              '${_formatCurrency(_memberSavings)} (${_numberFormat.format(_discountPercent)}%)'),
-          _summaryRow('You pay merchant', _formatCurrency(_customerPays),
-              emphasized: true),
-          _summaryRow(
-              'Premium Savings Applied', _formatCurrency(_memberSavings)),
-        ],
-      ),
+  Widget _fallbackMerchantLogo() {
+    return Icon(
+      Icons.storefront_rounded,
+      color: _primaryBlue,
+      size: 31.sp,
     );
   }
 
-  Future<void> _redeemDiscount({required String walletType}) async {
+  Widget _summaryRow(String label, String value, {bool savings = false}) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: _bodyColor,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Sans',
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: savings ? _successGreen : _headingColor,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Sans',
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _completeAndFinish() {
+    if (_redemptionComplete) {
+      _finishToSavings();
+      return;
+    }
+    _redeemDiscount(onSuccess: _finishToSavings);
+  }
+
+  void _completeAndReview() {
+    if (_redemptionComplete) {
+      _openReview();
+      return;
+    }
+    _redeemDiscount(onSuccess: _openReview);
+  }
+
+  Future<void> _redeemDiscount({required VoidCallback onSuccess}) async {
     if (isLoading) return;
 
     setState(() {
@@ -222,7 +359,7 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       payToMainMerchant: widget.terminalUserId == null,
       sureApplyPiiinkReqModel: SureApplyPiiinkReqModel(
         totalAmount: double.parse(widget.totalAmount),
-        piiinkWalletType: walletType,
+        piiinkWalletType: 'universalWallet',
         transactionQrCode: widget.qrCode,
         hour: int.parse(DateFormat('HH ').format(DateTime.now())),
         week: DateTime.now().weekday % 7,
@@ -233,14 +370,16 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
 
     if (!mounted) return;
 
-    if (res is SureApplyPiiinkResModel && res.status == "Success") {
-      _completeRedemption(walletType);
+    if (res is SureApplyPiiinkResModel && res.status == 'Success') {
+      _markRedemptionComplete();
+      onSuccess();
     } else if (_isDemoBalanceEnforcementFailure(res)) {
       debugPrint(
         'success demo: backend balance enforcement bypassed after '
         '/member/transaction/applyPiiink response: ${_responseMessage(res)}',
       );
-      _completeRedemption(walletType);
+      _markRedemptionComplete();
+      onSuccess();
     } else {
       GlobalSnackBar.showError(
         context,
@@ -252,22 +391,42 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
     }
   }
 
-  void _completeRedemption(String walletType) {
+  void _markRedemptionComplete() {
     setState(() {
       isLoading = false;
+      _redemptionComplete = true;
     });
     AppVariables.payAmountResetSignal.value++;
-    context.goNamed('payment-complete', extra: {
-      'merchantId': widget.merchantId,
-      'merchantName': widget.merchantName,
-      'totalAmount': widget.totalAmount,
-      'discountedTransactionAmount': widget.discountedTransactionAmount,
-      'totalPiiinkDiscount': widget.totalPiiinkDiscount,
-      'merchantRebateToMember': widget.merchantRebateToMember,
-      'merchantDiscountPercentage': widget.merchantDiscountPercentage,
-      'walletType': walletType,
-      'merchantLogo': widget.logo,
-    });
+  }
+
+  void _finishToSavings() {
+    navigateToBottomTab(context, 3);
+  }
+
+  void _openReview() {
+    context.pushNamed(
+      'feedback-screen',
+      extra: {
+        'merchantId': widget.merchantId.toString(),
+        'merchantName': widget.merchantName,
+        'merchantLogo': widget.logo,
+      },
+    );
+  }
+
+  void _editBillAmount() {
+    if (isLoading) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    if (context.canPop()) {
+      context.pop(true);
+      return;
+    }
+
+    context.goNamed(
+      'bottom-bar',
+      pathParameters: {'page': '2'},
+    );
   }
 
   bool _isDemoBalanceEnforcementFailure(dynamic res) {
@@ -285,70 +444,6 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       return res.message ?? res.error?.status?.toString();
     }
     return null;
-  }
-
-  void _returnToPayEntrySafely() {
-    if (context.canPop()) {
-      context.pop();
-      return;
-    }
-
-    context.goNamed(
-      'bottom-bar',
-      pathParameters: {'page': '2'},
-    );
-  }
-
-  Widget _sectionHeader(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: _primaryBlue, size: 22.sp),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: _headingColor,
-              fontSize: 17.sp,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'Sans',
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _summaryRow(String label, String value, {bool emphasized = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: _bodyStyle())),
-          SizedBox(width: 12.w),
-          Text(
-            value,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              color: emphasized ? _primaryBlue : _headingColor,
-              fontSize: emphasized ? 17.sp : 14.sp,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'Sans',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  TextStyle _bodyStyle() {
-    return TextStyle(
-      color: _bodyColor,
-      fontSize: 13.5.sp,
-      fontWeight: FontWeight.w600,
-      height: 1.38,
-      fontFamily: 'Sans',
-    );
   }
 
   String _formatCurrency(num value) {
@@ -372,8 +467,8 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
   }
 }
 
-class _PayCard extends StatelessWidget {
-  const _PayCard({required this.child});
+class _PresentationCard extends StatelessWidget {
+  const _PresentationCard({required this.child});
 
   final Widget child;
 
@@ -381,16 +476,16 @@ class _PayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(18.r),
+      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(26.r),
         border: Border.all(color: _ConfimrPaymentScreenState._borderColor),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0A236B).withValues(alpha: 0.06),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF0A236B).withValues(alpha: 0.07),
+            blurRadius: 22,
+            offset: const Offset(0, 11),
           ),
         ],
       ),
@@ -400,10 +495,7 @@ class _PayCard extends StatelessWidget {
 }
 
 class _GradientButton extends StatelessWidget {
-  const _GradientButton({
-    required this.label,
-    required this.onTap,
-  });
+  const _GradientButton({required this.label, required this.onTap});
 
   final String label;
   final VoidCallback onTap;
@@ -416,7 +508,7 @@ class _GradientButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(18.r),
         onTap: onTap,
         child: Ink(
-          height: 54.h,
+          height: 56.h,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
@@ -430,7 +522,7 @@ class _GradientButton extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: _ConfimrPaymentScreenState._primaryBlue
-                    .withValues(alpha: 0.20),
+                    .withValues(alpha: 0.22),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -441,11 +533,65 @@ class _GradientButton extends StatelessWidget {
               label,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16.sp,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w900,
                 fontFamily: 'Sans',
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OutlinedButton extends StatelessWidget {
+  const _OutlinedButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18.r),
+        onTap: onTap,
+        child: Ink(
+          height: 54.h,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: _ConfimrPaymentScreenState._primaryBlue,
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: _ConfimrPaymentScreenState._primaryBlue,
+                size: 20.sp,
+              ),
+              SizedBox(width: 9.w),
+              Text(
+                label,
+                style: TextStyle(
+                  color: _ConfimrPaymentScreenState._primaryBlue,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Sans',
+                ),
+              ),
+            ],
           ),
         ),
       ),

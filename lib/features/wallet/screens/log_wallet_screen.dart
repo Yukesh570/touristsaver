@@ -967,7 +967,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  'When a discount is approved, the saved amount contributes to your Premium Savings total.',
+                  'When a discount is redeemed, the saved amount contributes to your Premium Savings total.',
                   style: _bodyTextStyle(),
                 ),
                 SizedBox(height: 12.h),
