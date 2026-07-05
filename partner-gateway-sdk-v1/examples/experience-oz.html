@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>TouristSaver member experiences | Experience Oz</title>
+
+    <!-- Host this as a versioned, immutable file in production. -->
+    <script src="../touristsaver-partner-gateway.js"></script>
+    <script>
+      TouristSaverGateway.init({
+        partner: 'experienceoz',
+        verifyEndpoint:
+          'https://api.touristsaver.org/api/partner-gateway/verify-token',
+        redirectUrl:
+          'https://touristsaver.org/partners/experienceoz',
+        unauthorisedMessage:
+          'This offer is exclusively available to TouristSaver members.'
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Experience Oz keeps ownership of this page and everything beyond it. -->
+    <main>
+      <h1>TouristSaver member experiences</h1>
+      <p>The existing Experience Oz product and booking journey continues here.</p>
+    </main>
+  </body>
+</html>

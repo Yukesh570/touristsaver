@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>TouristSaver Partner Gateway local test</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: system-ui, sans-serif;
+        color: #111c44;
+        background: #f7f9fe;
+      }
+      main {
+        max-width: 42rem;
+        padding: 2rem;
+        border: 1px solid #dce5f3;
+        border-radius: 1.25rem;
+        background: white;
+      }
+      .success { color: #159455; }
+      code { word-break: break-all; }
+    </style>
+    <script>
+      // Local demonstration only. Production pages must call TouristSaver.
+      window.fetch = async function (_url, options) {
+        const request = JSON.parse(options.body);
+        const response =
+          request.token === 'valid-demo-token'
+            ? {
+                valid: true,
+                partner: 'demo-partner',
+                expiresAt: new Date(Date.now() + 120000).toISOString(),
+                requestId: 'local-demo-request'
+              }
+            : {
+                valid: false,
+                reason:
+                  request.token === 'expired-demo-token'
+                    ? 'expired_token'
+                    : 'invalid_token',
+                requestId: 'local-demo-request'
+              };
+        return { ok: true, status: 200, json: async () => response };
+      };
+    </script>
+    <script src="../touristsaver-partner-gateway.js"></script>
+    <script>
+      TouristSaverGateway.init({
+        partner: 'demo-partner',
+        verifyEndpoint: 'http://localhost:8080/mock/verify-token',
+        redirectUrl: 'http://localhost:8080/examples/unauthorised.html'
+      });
+    </script>
+  </head>
+  <body>
+    <main>
+      <p class="success"><strong>✓ TouristSaver member verified</strong></p>
+      <h1>Protected partner test page</h1>
+      <p>
+        This content is visible because the local mock accepted
+        <code>valid-demo-token</code>.
+      </p>
+    </main>
+  </body>
+</html>

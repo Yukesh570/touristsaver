@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TouristSaver member access required</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: system-ui, sans-serif;
+        color: #111c44;
+        background: #f7f9fe;
+      }
+      main { max-width: 36rem; padding: 2rem; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>TouristSaver member access</h1>
+      <p id="gateway-message">
+        This offer is exclusively available to TouristSaver members.
+      </p>
+    </main>
+    <script>
+      const message = new URL(location.href).searchParams.get(
+        'ts_gateway_message'
+      );
+      if (message) {
+        // textContent prevents a query-string value from becoming HTML.
+        document.getElementById('gateway-message').textContent = message;
+      }
+    </script>
+  </body>
+</html>

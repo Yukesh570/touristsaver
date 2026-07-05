@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Partner Gateway error handling example</title>
+    <script src="../touristsaver-partner-gateway.js"></script>
+    <script>
+      document.addEventListener('touristsaver:authorised', function (event) {
+        // Safe operational metadata only; no token or member PII is exposed.
+        console.info('TouristSaver access granted', event.detail.requestId);
+      });
+
+      document.addEventListener('touristsaver:unauthorised', function (event) {
+        console.info('TouristSaver access denied', event.detail.reason);
+      });
+
+      TouristSaverGateway.init({
+        partner: 'partner-slug',
+        verifyEndpoint:
+          'https://api.example.touristsaver/api/partner-gateway/verify-token',
+        redirectUrl: 'https://www.example.touristsaver/partner-offers',
+        onAuthorised: function (result) {
+          window.partnerAnalytics?.track('member_gateway_allowed', {
+            requestId: result.requestId
+          });
+        },
+        onUnauthorised: function (result) {
+          window.partnerAnalytics?.track('member_gateway_denied', {
+            reason: result.reason
+          });
+        }
+      }).catch(function (configurationError) {
+        // init rejects only for integration/configuration errors.
+        console.error(configurationError.code, configurationError.message);
+      });
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Partner-owned member page</h1>
+    </main>
+  </body>
+</html>

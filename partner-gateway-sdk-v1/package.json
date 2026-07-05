@@ -1,0 +1,10 @@
+{
+  "name": "@touristsaver/partner-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TouristSaver Partner Gateway browser SDK developer hand-off package",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "UNLICENSED"
+}
