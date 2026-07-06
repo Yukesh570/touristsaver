@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
@@ -496,6 +497,31 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                             await Pref().writeData(
                                 key: 'savePassword', value: widget.password);
                             AppVariables.isLocalAuthEnabled = false;
+
+                            if (res.data!.isPremiumMember) {
+                              final recognition =
+                                  widget.premium.trim().isEmpty ||
+                                          widget.premium == 'null'
+                                      ? const PremiumWelcomeRecognition()
+                                      : await MembershipOfferRecognition()
+                                          .fromCurrentMember();
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              context.pushReplacementNamed(
+                                'congrats-screen',
+                                pathParameters: {'piiinkCredit': '0'},
+                                extra: {
+                                  'communityWelcome': true,
+                                  'isComplimentary':
+                                      recognition.isComplimentary,
+                                  'sourceName': recognition.sourceName,
+                                  'proudlySupportsSource':
+                                      recognition.proudlySupportsSource,
+                                },
+                              );
+                              return;
+                            }
+
                             //Calling API to fetch the stripe key
                             StripeKeyResModel? getStripeKey =
                                 await DioCommon().getStripe();

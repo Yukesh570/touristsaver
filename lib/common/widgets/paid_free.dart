@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
@@ -446,11 +447,20 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     }
   }
 
-  void _navigateToActivationSuccess({String creditAmount = '0'}) {
+  Future<void> _navigateToActivationSuccess({String creditAmount = '0'}) async {
+    final recognition =
+        await MembershipOfferRecognition().fromCodeData(widget.premiumData);
+    if (!mounted) return;
     context.pushReplacementNamed(
       'congrats-screen',
       pathParameters: {
         'piiinkCredit': creditAmount,
+      },
+      extra: {
+        'communityWelcome': true,
+        'isComplimentary': recognition.isComplimentary,
+        'sourceName': recognition.sourceName,
+        'proudlySupportsSource': recognition.proudlySupportsSource,
       },
     );
   }
@@ -487,7 +497,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       isLoading = false;
     });
 
-    _navigateToActivationSuccess(creditAmount: creditAmount);
+    await _navigateToActivationSuccess(creditAmount: creditAmount);
   }
 
   Future<void> _handleTopUp({
@@ -541,12 +551,12 @@ class _TopUpWidgetState extends State<TopUpWidget> {
 
         if (canGoHome) {
           _dismissPaymentConfirmation(paymentContext);
-          _navigateToActivationSuccess(
+          await _navigateToActivationSuccess(
             creditAmount: _selectedPackageCreditAmount(),
           );
         } else {
           _dismissPaymentConfirmation(paymentContext);
-          _navigateToActivationSuccess(
+          await _navigateToActivationSuccess(
             creditAmount: _selectedPackageCreditAmount(),
           );
         }
@@ -583,7 +593,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         // Replace the GoRouter page while the full-screen processing route is
         // still covering it. Removing the underlying page also removes its
         // pageless confirmation route, so the membership page is never shown.
-        _navigateToActivationSuccess(
+        await _navigateToActivationSuccess(
           creditAmount: _selectedPackageCreditAmount(),
         );
       } else {

@@ -4,12 +4,24 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../app_variables.dart';
+import '../models/premium_welcome_copy.dart';
 
 class CongratsScreen extends StatefulWidget {
   static const String routeName = '/congrats-screen';
   final String piiinkCredit;
+  final bool communityWelcome;
+  final bool isComplimentary;
+  final String? sourceName;
+  final bool proudlySupportsSource;
 
-  const CongratsScreen({super.key, required this.piiinkCredit});
+  const CongratsScreen({
+    super.key,
+    required this.piiinkCredit,
+    this.communityWelcome = false,
+    this.isComplimentary = false,
+    this.sourceName,
+    this.proudlySupportsSource = false,
+  });
 
   @override
   State<CongratsScreen> createState() => _CongratsScreenState();
@@ -77,6 +89,16 @@ class _CongratsScreenState extends State<CongratsScreen> {
 
   Widget _successCard() {
     final bool hasCredits = _creditAmount > 0;
+    final String title = widget.communityWelcome
+        ? 'Welcome to the TouristSaver Community!'
+        : 'Your Premium Membership is now active';
+    final String mainText = widget.communityWelcome
+        ? premiumWelcomeMessage(
+            isComplimentary: widget.isComplimentary,
+            sourceName: widget.sourceName,
+            proudlySupportsSource: widget.proudlySupportsSource,
+          )
+        : 'Welcome to TouristSaver. You can now explore nearby experiences, dining, attractions and travel savings across Australia.';
 
     return Container(
       width: double.infinity,
@@ -96,7 +118,7 @@ class _CongratsScreenState extends State<CongratsScreen> {
       child: Column(
         children: [
           Text(
-            'Your Premium Membership is now active',
+            title,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               color: _headingColor,
@@ -107,7 +129,7 @@ class _CongratsScreenState extends State<CongratsScreen> {
           ),
           SizedBox(height: 12.h),
           Text(
-            'Welcome to TouristSaver. You can now explore nearby experiences, dining, attractions and travel savings across Australia.',
+            mainText,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               color: _bodyColor,
@@ -116,7 +138,20 @@ class _CongratsScreenState extends State<CongratsScreen> {
               height: 1.45,
             ),
           ),
-          if (hasCredits) ...[
+          if (widget.communityWelcome) ...[
+            SizedBox(height: 12.h),
+            Text(
+              'We hope you enjoy discovering amazing experiences, dining, attractions and exclusive savings across Australia.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                color: _bodyColor,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.45,
+              ),
+            ),
+          ],
+          if (hasCredits && !widget.communityWelcome) ...[
             SizedBox(height: 22.h),
             _creditsCard(),
           ],
@@ -206,7 +241,7 @@ class _CongratsScreenState extends State<CongratsScreen> {
           },
           child: Center(
             child: Text(
-              'Start exploring',
+              'Start Exploring',
               style: GoogleFonts.nunito(
                 color: Colors.white,
                 fontSize: 17.sp,

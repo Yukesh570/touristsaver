@@ -41,6 +41,9 @@ class Data {
   final int? packageId;
   final String? discount;
 
+  bool get isPremiumMember =>
+      memberInfo?.memberType?.trim().toLowerCase() == 'premium';
+
   Data({
     this.showFreePiiinks,
     this.accessToken,

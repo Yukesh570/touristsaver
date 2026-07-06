@@ -542,8 +542,17 @@ final GoRouter goRouter = GoRouter(
     GoRoute(
       path: '/congrats-screen/:piiinkCredit',
       name: 'congrats-screen',
-      builder: (context, state) =>
-          CongratsScreen(piiinkCredit: state.pathParameters['piiinkCredit']!),
+      builder: (context, state) {
+        final extra = state.extra;
+        final args = extra is Map<String, dynamic> ? extra : null;
+        return CongratsScreen(
+          piiinkCredit: state.pathParameters['piiinkCredit']!,
+          communityWelcome: args?['communityWelcome'] == true,
+          isComplimentary: args?['isComplimentary'] == true,
+          sourceName: args?['sourceName'] as String?,
+          proudlySupportsSource: args?['proudlySupportsSource'] == true,
+        );
+      },
     ),
 
     //Qr Scan Screen
