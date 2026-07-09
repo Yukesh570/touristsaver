@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:touristsaver/common/models/premium_code_classification.dart';
+
 RegisterResModel registerResModelFromJson(String str) =>
     RegisterResModel.fromJson(json.decode(str));
 
@@ -43,6 +45,20 @@ class Data {
 
   bool get isPremiumMember =>
       memberInfo?.memberType?.trim().toLowerCase() == 'premium';
+
+  double get premiumCodeDiscountPercent =>
+      membershipOfferDiscountPercent(discount);
+
+  bool get hasExplicitComplimentaryPremiumCode =>
+      premiumCodeIsApplied == true &&
+      isExplicitComplimentaryMembershipOffer(
+        isGiveaway: false,
+        premiumCodeIsPaid: premiumCodeIsPaid,
+        discountPercent: premiumCodeDiscountPercent,
+      );
+
+  bool get shouldShowPremiumWelcomeAfterRegistration =>
+      isPremiumMember && hasExplicitComplimentaryPremiumCode;
 
   Data({
     this.showFreePiiinks,

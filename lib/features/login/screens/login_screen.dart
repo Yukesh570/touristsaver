@@ -724,6 +724,11 @@ class _LoginScreenState extends State<LoginScreen> {
   // --- LOGIC METHODS REMAIN UNCHANGED BELOW THIS LINE ---
 
   onLoginSubmit() async {
+    final String phoneNumber = numController.text;
+    final String password = passwordController.text;
+    final String? phonePrefix = selectedPhonePrefix;
+    final String? countryId = selectedCountryID?.toString();
+
     setState(() {
       isLoading = true;
     });
@@ -734,14 +739,14 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       return;
     }
-    if (numController.text.isEmpty) {
+    if (phoneNumber.isEmpty) {
       GlobalSnackBar.valid(context, S.of(context).enterValidMobileNumber);
       setState(() {
         isLoading = false;
       });
       return;
     }
-    if (passwordController.text.isEmpty) {
+    if (password.isEmpty) {
       GlobalSnackBar.valid(context, S.of(context).enterValidPassword);
       setState(() {
         isLoading = false;
@@ -749,12 +754,18 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
+    debugPrint(
+      'TEMP_LOGIN_PAYLOAD phoneNumberPrefix=$phonePrefix '
+      'emailPhone=$phoneNumber countryId=$countryId '
+      'lang=${AppVariables.selectedLanguageNow} '
+      'passwordLength=${password.length}',
+    );
     var res = await DioLogin().userLogin(
       loginReqModel: LoginReqModel(
-        phoneNumberPrefix: selectedPhonePrefix!,
-        emailPhone: numController.text.trim(),
-        password: passwordController.text.trim(),
-        countryId: selectedCountryID.toString(),
+        phoneNumberPrefix: phonePrefix!,
+        emailPhone: phoneNumber,
+        password: password,
+        countryId: countryId,
         lang: AppVariables.selectedLanguageNow,
       ),
     );
@@ -846,13 +857,19 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         context
             .pushReplacementNamed('bottom-bar', pathParameters: {'page': '0'});
+      } else {
+        if (!mounted) return;
+        GlobalSnackBar.showError(
+            context, S.of(context).pleaseEnterCorrectMobileNumber);
+        setState(() {
+          isLoading = false;
+        });
+        return;
       }
     } else if (res is ErrorResModel) {
       if (!mounted) return;
       GlobalSnackBar.showError(context, res.message!);
       setState(() {
-        //  numController.clear();
-        passwordController.clear();
         isLoading = false;
       });
       return;

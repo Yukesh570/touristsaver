@@ -47,7 +47,7 @@ class MembershipOfferRecognition {
     }
 
     return PremiumWelcomeRecognition(
-      isComplimentary: offer.isGiveaway,
+      isComplimentary: offer.isComplimentaryMembership,
       sourceName:
           sourceName?.trim().isNotEmpty == true ? sourceName!.trim() : null,
       proudlySupportsSource: offer.proudlySupportsSource,

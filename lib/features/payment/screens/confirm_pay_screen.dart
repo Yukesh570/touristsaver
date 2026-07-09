@@ -373,13 +373,6 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
     if (res is SureApplyPiiinkResModel && res.status == 'Success') {
       _markRedemptionComplete();
       onSuccess();
-    } else if (_isDemoBalanceEnforcementFailure(res)) {
-      debugPrint(
-        'success demo: backend balance enforcement bypassed after '
-        '/member/transaction/applyPiiink response: ${_responseMessage(res)}',
-      );
-      _markRedemptionComplete();
-      onSuccess();
     } else {
       GlobalSnackBar.showError(
         context,
@@ -427,16 +420,6 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       'bottom-bar',
       pathParameters: {'page': '2'},
     );
-  }
-
-  bool _isDemoBalanceEnforcementFailure(dynamic res) {
-    final message = _responseMessage(res)?.toLowerCase() ?? '';
-    return message.contains('not enough') ||
-        message.contains('insufficient') ||
-        message.contains('balance') ||
-        message.contains('wallet') ||
-        message.contains('credit') ||
-        message.contains('piiink');
   }
 
   String? _responseMessage(dynamic res) {

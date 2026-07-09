@@ -1,6 +1,10 @@
+import 'package:touristsaver/common/models/premium_code_classification.dart';
+
 class MembershipOfferCodeDetails {
   const MembershipOfferCodeDetails({
     required this.isGiveaway,
+    this.discount,
+    this.premiumCodeIsPaid,
     this.codeOwnerId,
     this.codeOwnerType,
     this.assignedToName,
@@ -8,10 +12,27 @@ class MembershipOfferCodeDetails {
   });
 
   final bool isGiveaway;
+  final String? discount;
+  final bool? premiumCodeIsPaid;
   final int? codeOwnerId;
   final String? codeOwnerType;
   final String? assignedToName;
   final bool proudlySupportsSource;
+
+  double get discountPercent => membershipOfferDiscountPercent(discount);
+
+  bool get isComplimentaryMembership => isExplicitComplimentaryMembershipOffer(
+        isGiveaway: isGiveaway,
+        premiumCodeIsPaid: premiumCodeIsPaid,
+        discountPercent: discountPercent,
+      );
+
+  double get effectiveDiscountPercent =>
+      effectiveMembershipOfferDiscountPercent(
+        discount: discount,
+        isGiveaway: isGiveaway,
+        premiumCodeIsPaid: premiumCodeIsPaid,
+      );
 
   factory MembershipOfferCodeDetails.fromJson(Map<String, dynamic> json) {
     final owner = _firstMap([
@@ -27,6 +48,8 @@ class MembershipOfferCodeDetails {
 
     return MembershipOfferCodeDetails(
       isGiveaway: json['isGiveaway'] == true,
+      discount: _nonEmptyString(json['discount']),
+      premiumCodeIsPaid: _asBool(json['premiumCodeIsPaid']),
       codeOwnerId: _asInt(json['codeOwnerId']),
       codeOwnerType: codeOwnerType,
       assignedToName: _firstNonEmpty([
@@ -55,6 +78,14 @@ class MembershipOfferCodeDetails {
   static int? _asInt(dynamic value) {
     if (value is int) return value;
     return int.tryParse(value?.toString() ?? '');
+  }
+
+  static bool? _asBool(dynamic value) {
+    if (value is bool) return value;
+    final normalized = value?.toString().trim().toLowerCase();
+    if (normalized == 'true') return true;
+    if (normalized == 'false') return false;
+    return null;
   }
 
   static String? _nonEmptyString(dynamic value) {

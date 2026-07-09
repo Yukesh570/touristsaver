@@ -29,5 +29,29 @@ void main() {
 
       expect(data.isPremiumMember, isFalse);
     });
+
+    test('routes explicit complimentary premium registration to welcome', () {
+      final data = Data(
+        memberInfo: MemberInfo(memberType: 'premium'),
+        premiumCodeIsApplied: true,
+        premiumCodeIsPaid: false,
+        discount: '100',
+      );
+
+      expect(data.shouldShowPremiumWelcomeAfterRegistration, isTrue);
+    });
+
+    test('keeps SAVER20-style percentage code on paid membership path', () {
+      final data = Data(
+        memberInfo: MemberInfo(memberType: 'premium'),
+        premiumCodeIsApplied: true,
+        premiumCodeIsPaid: true,
+        discount: '20',
+      );
+
+      expect(data.isPremiumMember, isTrue);
+      expect(data.premiumCodeDiscountPercent, 20);
+      expect(data.shouldShowPremiumWelcomeAfterRegistration, isFalse);
+    });
   });
 }

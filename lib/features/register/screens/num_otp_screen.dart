@@ -498,7 +498,8 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                                 key: 'savePassword', value: widget.password);
                             AppVariables.isLocalAuthEnabled = false;
 
-                            if (res.data!.isPremiumMember) {
+                            if (res.data!
+                                .shouldShowPremiumWelcomeAfterRegistration) {
                               final recognition =
                                   widget.premium.trim().isEmpty ||
                                           widget.premium == 'null'

@@ -34,9 +34,47 @@ void main() {
         'isGiveaway': false,
         'codeOwnerId': 42,
         'codeOwnerType': 'merchant',
+        'discount': '20',
+        'premiumCodeIsPaid': true,
       });
 
       expect(details.isGiveaway, isFalse);
+      expect(details.isComplimentaryMembership, isFalse);
+      expect(details.effectiveDiscountPercent, 20);
+    });
+
+    test('keeps SAVER20 as a 20 percent paid discount', () {
+      final details = MembershipOfferCodeDetails.fromJson({
+        'memberPremiumCode': 'SAVER20',
+        'isGiveaway': false,
+        'discount': '20',
+        'premiumCodeIsPaid': true,
+      });
+
+      expect(details.isComplimentaryMembership, isFalse);
+      expect(details.effectiveDiscountPercent, 20);
+    });
+
+    test('treats explicit giveaway as complimentary even without discount', () {
+      final details = MembershipOfferCodeDetails.fromJson({
+        'isGiveaway': true,
+        'discount': null,
+        'premiumCodeIsPaid': true,
+      });
+
+      expect(details.isComplimentaryMembership, isTrue);
+      expect(details.effectiveDiscountPercent, 100);
+    });
+
+    test('does not let a paid non-giveaway 100 value become complimentary', () {
+      final details = MembershipOfferCodeDetails.fromJson({
+        'isGiveaway': false,
+        'discount': '100',
+        'premiumCodeIsPaid': true,
+      });
+
+      expect(details.isComplimentaryMembership, isFalse);
+      expect(details.effectiveDiscountPercent, 0);
     });
 
     test('recognises charity and club owners as community support sources', () {

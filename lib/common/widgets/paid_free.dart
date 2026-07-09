@@ -25,6 +25,7 @@ import 'package:touristsaver/models/request/premium_topup_req.dart';
 import 'package:touristsaver/models/request/top_up_stripe_req.dart';
 import 'package:touristsaver/models/response/confirm_topup_res.dart';
 import 'package:touristsaver/models/response/member_package_res.dart';
+import 'package:touristsaver/models/response/membership_offer_code_details.dart';
 import 'package:touristsaver/models/response/pre_topup_free_res.dart';
 import 'package:touristsaver/models/response/pre_topup_paid_res.dart';
 import 'package:touristsaver/models/response/premium_validity_res.dart';
@@ -521,9 +522,10 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     });
 
     final originalFee = widget.memPackAll!.data![widget.index!].packageFee!;
-    final discountStr = widget.premiumData?['discount'];
+    final premiumOffer = _premiumOfferDetails();
+    final discountPercent = premiumOffer?.effectiveDiscountPercent ?? 0;
     final isDiscountedPackage =
-        discountStr != null && discountStr.toString() != "0" && originalFee > 0;
+        discountPercent > 0 && discountPercent < 100 && originalFee > 0;
 
     final String? codeToSend =
         isDiscountedPackage ? widget.premiumData['memberPremiumCode'] : null;
@@ -654,12 +656,11 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         : AppVariables.currency ?? "\$";
     final currencyName = package.packageCurrencyName?.trim() ?? '';
 
-    final discountStr = widget.premiumData?['discount'];
+    final premiumOffer = _premiumOfferDetails();
+    final discountStr = premiumOffer?.discount;
     debugPrint("====== CURRENT DISCOUNT PERCENT: $discountStr% ======");
 
-    double discountPercent =
-        double.tryParse(discountStr?.toString() ?? "0") ?? 0;
-    discountPercent = discountPercent.clamp(0, 100);
+    final double discountPercent = premiumOffer?.effectiveDiscountPercent ?? 0;
     debugPrint("====== CURRENT DISCOUNT PERCENT: $discountPercent% ======");
     final double discountAmount = originalFee * (discountPercent / 100);
     final double finalFee =
@@ -672,7 +673,8 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     final amountPayableText =
         _formatMembershipAmount(finalFee, currency, currencyName);
 
-    final bool isFreeMembership = discountPercent == 100;
+    final bool isFreeMembership =
+        premiumOffer?.isComplimentaryMembership ?? false;
     final bool hasPartialDiscount =
         discountPercent > 0 && discountPercent < 100;
     final String buttonLabel = "Continue";
@@ -721,6 +723,12 @@ class _TopUpWidgetState extends State<TopUpWidget> {
   ) {
     final amountText = "$currency${amount.toStringAsFixed(2)}";
     return currencyName.isEmpty ? amountText : "$amountText $currencyName";
+  }
+
+  MembershipOfferCodeDetails? _premiumOfferDetails() {
+    final raw = widget.premiumData;
+    if (raw is! Map) return null;
+    return MembershipOfferCodeDetails.fromJson(Map<String, dynamic>.from(raw));
   }
 
   Widget _heroImage() {
