@@ -66,6 +66,17 @@ android {
         multiDexEnabled true
     }
 
+    flavorDimensions "environment"
+    productFlavors {
+        production {
+            dimension "environment"
+        }
+        staging {
+            dimension "environment"
+            applicationId "org.touristsaver.memberapp.staging"
+        }
+    }
+
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
