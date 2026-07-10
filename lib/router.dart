@@ -476,6 +476,8 @@ final GoRouter goRouter = GoRouter(
             terminalUserId: args['terminalUserId'],
             terminalId: args['terminalId'],
             returnToSearch: args['returnToSearch'] == true,
+            isProfileClaim: args['isProfileClaim'] == true,
+            initialRedemptionComplete: args['isProfileClaimApplied'] == true,
           );
         }),
     //Bottom Navigation Bar

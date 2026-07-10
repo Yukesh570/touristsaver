@@ -8,6 +8,7 @@ import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
 import 'package:touristsaver/constants/url_end_point.dart';
 import 'package:touristsaver/models/error_res.dart';
+import 'package:touristsaver/models/request/apply_piiink_by_merchant_req.dart';
 import 'package:touristsaver/models/request/confirm_piiink_req.dart';
 import 'package:touristsaver/models/request/sure_apply_piiink_req.dart';
 import 'package:touristsaver/models/response/confirm_piiink_res.dart';
@@ -15,6 +16,74 @@ import 'package:touristsaver/models/response/is_pay_enable_res.dart';
 import 'package:touristsaver/models/response/sure_apply_piiink_res.dart';
 
 class DioPay {
+  // Preview a TouristSaver member discount directly from a merchant profile.
+  // This mirrors the QR startApplyPiiink lifecycle and does not create a
+  // transaction.
+  Future<dynamic> startApplyPiiinkByMerchant({
+    required ApplyPiiinkByMerchantReqModel applyPiiinkByMerchantReqModel,
+  }) async {
+    try {
+      Dio dio = await getClient();
+      Response<String> response = await dio.post(
+        startApplyPiiinkByMerchantURL,
+        data: applyPiiinkByMerchantReqModel.toJson(),
+      );
+      return confirmApplyPiiinkResModelFromJson(response.data!);
+    } on DioException catch (e) {
+      return _paymentError(e);
+    } catch (err) {
+      return ErrorResModel(message: err.toString());
+    }
+  }
+
+  // Apply a TouristSaver member discount directly from a merchant profile.
+  // This is the final transaction creation step for merchant-profile claims.
+  Future<dynamic> applyPiiinkByMerchant({
+    required ApplyPiiinkByMerchantReqModel applyPiiinkByMerchantReqModel,
+  }) async {
+    try {
+      Dio dio = await getClient();
+      Response<String> response = await dio.post(
+        applyPiiinkByMerchantURL,
+        data: applyPiiinkByMerchantReqModel.toJson(),
+      );
+      return confirmApplyPiiinkResModelFromJson(response.data!);
+    } on DioException catch (e) {
+      return _paymentError(e);
+    } catch (err) {
+      return ErrorResModel(message: err.toString());
+    }
+  }
+
+  ErrorResModel _paymentError(DioException e) {
+    final responseData = e.response?.data;
+    if (responseData is String) {
+      try {
+        return errorResModelFromJson(responseData);
+      } catch (_) {
+        return ErrorResModel(
+          status: e.response?.statusCode,
+          message: responseData,
+        );
+      }
+    }
+
+    if (responseData is Map<String, dynamic>) {
+      return ErrorResModel.fromJson(responseData);
+    }
+
+    if (responseData is Map) {
+      return ErrorResModel.fromJson(
+        jsonDecode(jsonEncode(responseData)) as Map<String, dynamic>,
+      );
+    }
+
+    return ErrorResModel(
+      status: e.response?.statusCode,
+      message: e.message,
+    );
+  }
+
   // Confirm the Payment to apply piiink
   Future<dynamic> confirmApplyPiiink(
       {required ConfirmApplyPiiinkReqModel confirmApplyPiiinkReqModel}) async {

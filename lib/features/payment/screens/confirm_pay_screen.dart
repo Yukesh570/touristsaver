@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,7 +13,9 @@ import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
 import 'package:touristsaver/constants/helper.dart';
 import 'package:touristsaver/features/payment/services/dio_payment.dart';
 import 'package:touristsaver/models/error_res.dart';
+import 'package:touristsaver/models/request/apply_piiink_by_merchant_req.dart';
 import 'package:touristsaver/models/request/sure_apply_piiink_req.dart';
+import 'package:touristsaver/models/response/confirm_piiink_res.dart';
 import 'package:touristsaver/models/response/sure_apply_piiink_res.dart';
 
 class ConfimrPaymentScreen extends StatefulWidget {
@@ -35,6 +39,8 @@ class ConfimrPaymentScreen extends StatefulWidget {
   final int? terminalId;
   final int? merchantId;
   final bool returnToSearch;
+  final bool isProfileClaim;
+  final bool initialRedemptionComplete;
 
   const ConfimrPaymentScreen({
     super.key,
@@ -56,6 +62,8 @@ class ConfimrPaymentScreen extends StatefulWidget {
     this.terminalId,
     this.merchantId,
     this.returnToSearch = false,
+    this.isProfileClaim = false,
+    this.initialRedemptionComplete = false,
   });
 
   @override
@@ -76,9 +84,13 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
     decimalDigits: 2,
   );
   final NumberFormat _numberFormat = NumberFormat('#,##0.##');
+  final DateFormat _liveDateFormat = DateFormat('d MMMM yyyy');
+  final DateFormat _liveTimeFormat = DateFormat('h:mm:ss a');
 
   bool isLoading = false;
-  bool _redemptionComplete = false;
+  late bool _redemptionComplete = widget.initialRedemptionComplete;
+  DateTime _now = DateTime.now();
+  Timer? _clockTimer;
 
   double get _billAmount => double.tryParse(widget.totalAmount) ?? 0;
   double get _memberSavings => double.tryParse(widget.totalPiiinkDiscount) ?? 0;
@@ -88,6 +100,23 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       double.tryParse(widget.merchantDiscountPercentage) ?? 0;
   bool get _canLeaveReview =>
       widget.merchantId != null && widget.merchantName.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {
+        _now = DateTime.now();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +135,7 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: CustomAppBar(
-            text: 'Member Discount',
+            text: 'Member Payment',
             icon: Icons.arrow_back_ios,
             titleIcon: Icons.check_circle_rounded,
             titleIconColor: _successGreen,
@@ -169,14 +198,9 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
-            child: Image.asset(
-              'assets/images/touristSaver.png',
-              width: 245.w,
-              height: 74.h,
-              fit: BoxFit.contain,
-            ),
+            child: _AnimatedTouristSaverPaymentLogo(),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 14.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -198,6 +222,8 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
               ),
             ],
           ),
+          SizedBox(height: 10.h),
+          _livePreparedTime(),
           SizedBox(height: 18.h),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 20.h),
@@ -209,7 +235,7 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
             child: Column(
               children: [
                 Text(
-                  'Discount Bill Amount',
+                  'Amount to Pay',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: _headingColor,
@@ -293,6 +319,37 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
     );
   }
 
+  Widget _livePreparedTime() {
+    return Column(
+      children: [
+        Text(
+          _liveDateFormat.format(_now),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _bodyColor,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w800,
+            fontFamily: 'Sans',
+            height: 1.2,
+          ),
+        ),
+        SizedBox(height: 3.h),
+        Text(
+          _liveTimeFormat.format(_now),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _headingColor,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'Sans',
+            letterSpacing: 0.2,
+            height: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _fallbackMerchantLogo() {
     return Icon(
       Icons.storefront_rounded,
@@ -337,6 +394,10 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       _finishToSavings();
       return;
     }
+    if (widget.isProfileClaim) {
+      _redeemProfileClaim(onSuccess: _finishToSavings);
+      return;
+    }
     _redeemDiscount(onSuccess: _finishToSavings);
   }
 
@@ -345,7 +406,51 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       _openReview();
       return;
     }
+    if (widget.isProfileClaim) {
+      _redeemProfileClaim(onSuccess: _openReview);
+      return;
+    }
     _redeemDiscount(onSuccess: _openReview);
+  }
+
+  Future<void> _redeemProfileClaim({required VoidCallback onSuccess}) async {
+    if (isLoading) return;
+
+    final int? merchantId = widget.merchantId;
+    if (merchantId == null) {
+      GlobalSnackBar.showError(
+        context,
+        'The discount could not be redeemed for this merchant.',
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final res = await DioPay().applyPiiinkByMerchant(
+      applyPiiinkByMerchantReqModel: ApplyPiiinkByMerchantReqModel(
+        merchantId: merchantId,
+        amount: double.parse(widget.totalAmount),
+        lang: AppVariables.selectedLanguageNow,
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (res is ConfirmApplyPiiinkResModel && res.status == 'Success') {
+      _markRedemptionComplete();
+      onSuccess();
+    } else {
+      GlobalSnackBar.showError(
+        context,
+        _responseMessage(res) ?? 'The discount could not be redeemed.',
+      );
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> _redeemDiscount({required VoidCallback onSuccess}) async {
@@ -411,6 +516,14 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
     if (isLoading) return;
     FocusManager.instance.primaryFocus?.unfocus();
 
+    if (widget.isProfileClaim) {
+      context.pop({
+        'editRequested': true,
+        'billAmount': widget.totalAmount,
+      });
+      return;
+    }
+
     if (context.canPop()) {
       context.pop(true);
       return;
@@ -473,6 +586,110 @@ class _PresentationCard extends StatelessWidget {
         ],
       ),
       child: child,
+    );
+  }
+}
+
+class _AnimatedTouristSaverPaymentLogo extends StatefulWidget {
+  const _AnimatedTouristSaverPaymentLogo();
+
+  @override
+  State<_AnimatedTouristSaverPaymentLogo> createState() =>
+      _AnimatedTouristSaverPaymentLogoState();
+}
+
+class _AnimatedTouristSaverPaymentLogoState
+    extends State<_AnimatedTouristSaverPaymentLogo>
+    with TickerProviderStateMixin {
+  late final AnimationController _ringController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 7),
+  )..repeat();
+
+  late final AnimationController _pulseController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2600),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _ringController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 258.w,
+      height: 104.h,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          FadeTransition(
+            opacity: Tween<double>(begin: 0.18, end: 0.34).animate(
+              CurvedAnimation(
+                parent: _pulseController,
+                curve: Curves.easeInOut,
+              ),
+            ),
+            child: Container(
+              width: 214.w,
+              height: 74.h,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(40.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD9A441).withValues(alpha: 0.42),
+                    blurRadius: 28,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          RotationTransition(
+            turns: _ringController,
+            child: Container(
+              width: 238.w,
+              height: 90.h,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(46.r),
+                gradient: const SweepGradient(
+                  colors: [
+                    Color(0xFFEACB73),
+                    Color(0xFFFFF3BE),
+                    Color(0xFFC8932F),
+                    Color(0xFFF5D77C),
+                    Color(0xFFEACB73),
+                  ],
+                  stops: [0, 0.28, 0.55, 0.82, 1],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: 228.w,
+            height: 80.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(42.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0A236B).withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            child: Image.asset(
+              'assets/images/touristSaver.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

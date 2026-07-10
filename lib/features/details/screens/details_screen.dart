@@ -18,6 +18,7 @@ import 'package:touristsaver/common/widgets/error.dart';
 import 'package:touristsaver/common/widgets/no_merchant.dart';
 import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
 import 'package:touristsaver/constants/decimal_remove.dart';
+import 'package:touristsaver/constants/fixed_decimal.dart';
 import 'package:touristsaver/constants/global_colors.dart';
 import 'package:touristsaver/constants/style.dart';
 import 'package:touristsaver/features/details/bloc/details_blocs.dart';
@@ -26,6 +27,11 @@ import 'package:touristsaver/features/details/bloc/details_states.dart';
 import 'package:touristsaver/features/details/screens/carousel_widget.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
 import 'package:touristsaver/features/details/services/fav_or_not.dart';
+import 'package:touristsaver/features/payment/services/dio_payment.dart';
+import 'package:touristsaver/models/error_res.dart';
+import 'package:touristsaver/models/request/apply_piiink_by_merchant_req.dart';
+import 'package:touristsaver/models/response/confirm_piiink_res.dart'
+    as confirm_piiink;
 import 'package:touristsaver/models/response/detail_res.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -73,6 +79,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool isExpand = false;
   bool? isFavoritez;
   bool isLoading = false;
+  bool _isVerifyingMemberDiscount = false;
 
   Future<void> getFavOrNOt() async {
     FavOrNot? favOrNot =
@@ -204,7 +211,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 child: Scaffold(
                   extendBodyBehindAppBar: true,
                   body: IgnorePointer(
-                    ignoring: isLoading,
+                    ignoring: isLoading || _isVerifyingMemberDiscount,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -228,7 +235,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             ],
                           ),
                         ),
-                        if (isLoading)
+                        if (_isVerifyingMemberDiscount)
+                          const Positioned.fill(
+                            child: _MemberDiscountVerificationView(),
+                          )
+                        else if (isLoading)
                           Positioned(
                             child: Container(
                               decoration: BoxDecoration(
@@ -659,9 +670,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   Widget _memberOfferCard(MerchantDetailResModel merchantDetail) {
     final String? discount = _memberDiscountValue(merchantDetail.data);
-    final String primaryCtaLabel = discount == null
-        ? 'Claim Member Discount'
-        : 'Claim $discount% Discount';
+    final String offerCopy = discount == null
+        ? 'Save when paying your bill'
+        : 'Save $discount% when paying your bill';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -705,7 +716,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Member offer',
+                        'Current Member Offer',
                         style: TextStyle(
                           color: _headingColor,
                           fontSize: 17.sp,
@@ -715,7 +726,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                       SizedBox(height: 5.h),
                       Text(
-                        'Available for TouristSaver members',
+                        offerCopy,
                         style: TextStyle(
                           color: _bodyColor,
                           fontSize: 13.sp,
@@ -732,17 +743,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
             if (AppVariables.accessToken != null) ...[
               SizedBox(height: 14.h),
               _primaryGradientButton(
-                label: primaryCtaLabel,
-                subtitle: 'when paying your bill',
-                onTap: () {
-                  context.pushNamed(
-                    'pay',
-                    extra: {
-                      'merchantName': merchantDetail.data?.merchantName,
-                      'returnToSearch': widget.returnToSearch,
-                    },
-                  );
-                },
+                label: 'Claim Discount',
+                onTap: () => _showDirectClaimBillAmountSheet(merchantDetail),
               ),
             ],
             SizedBox(height: 8.h),
@@ -784,6 +786,163 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _showDirectClaimBillAmountSheet(
+      MerchantDetailResModel merchantDetail,
+      {double? initialAmount}) async {
+    if (isLoading || _isVerifyingMemberDiscount) return;
+
+    final double? billAmount = await showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return _BillAmountBottomSheet(
+          currencySymbol: AppVariables.currency ?? '\$',
+          initialAmount: initialAmount,
+        );
+      },
+    );
+
+    if (!mounted || billAmount == null) return;
+    await _startDirectMerchantClaim(
+      merchantDetail: merchantDetail,
+      billAmount: billAmount,
+    );
+  }
+
+  Future<void> _startDirectMerchantClaim({
+    required MerchantDetailResModel merchantDetail,
+    required double billAmount,
+  }) async {
+    if (isLoading || _isVerifyingMemberDiscount) return;
+
+    final Data? merchant = merchantDetail.data;
+    final int? merchantId = merchant?.id;
+    if (merchant == null || merchantId == null) {
+      GlobalSnackBar.showError(
+        context,
+        'This merchant discount cannot be claimed from the profile yet. Please use the QR scan option.',
+      );
+      return;
+    }
+
+    setState(() {
+      _isVerifyingMemberDiscount = true;
+    });
+
+    final results = await Future.wait<dynamic>([
+      DioPay().startApplyPiiinkByMerchant(
+        applyPiiinkByMerchantReqModel: ApplyPiiinkByMerchantReqModel(
+          merchantId: merchantId,
+          amount: billAmount,
+          lang: AppVariables.selectedLanguageNow,
+        ),
+      ),
+      Future<void>.delayed(const Duration(seconds: 2)),
+    ]);
+
+    final res = results.first;
+
+    if (!mounted) return;
+
+    if (res is confirm_piiink.ConfirmApplyPiiinkResModel &&
+        res.status == 'Success' &&
+        res.data != null) {
+      final data = res.data!;
+      setState(() {
+        _isVerifyingMemberDiscount = false;
+      });
+      final dynamic editResult = await context.pushNamed(
+        'confirm-pay',
+        extra: {
+          'merchantId': data.merchantInfo?.id ?? merchant.id,
+          'totalAmount': billAmount.toStringAsFixed(2),
+          'qrCode': '',
+          'isProfileClaim': true,
+          'hasMerchantPiiinks': data.hasMerchantPiiinks.toString(),
+          'hasUniversalPiiinks': data.hasUniversalPiiinks.toString(),
+          'merchantName': data.merchantInfo?.merchantName ??
+              merchant.merchantName ??
+              'Merchant',
+          'universalPiiinkBalance':
+              toFixed2DecimalPlaces(data.universalPiiinkBalance ?? 0),
+          'merchantPiiinkBalance':
+              toFixed2DecimalPlaces(data.merchantPiiinkBalance ?? 0),
+          'merchantRebateToMember': data.merchantRebateToMember.toString(),
+          'merchantDiscountPercentage':
+              data.merchantDiscountPercentage.toString(),
+          'discountedTransactionAmount':
+              data.discountedTransactionAmount.toString(),
+          'totalPiiinkDiscount': data.totalPiiinkDiscount.toString(),
+          'logo': _merchantLogoFromDetail(merchant),
+          'universalPiiinkOnHold': data.universalPiiinkBalanceOnHold.toString(),
+          'merchantPiiinkOnHold': data.merchantPiiinkBalanceOnHold.toString(),
+          'returnToSearch': widget.returnToSearch,
+        },
+      );
+      if (!mounted) return;
+      final double? editAmount = _profileClaimEditAmount(editResult);
+      if (editAmount != null) {
+        await _showDirectClaimBillAmountSheet(
+          merchantDetail,
+          initialAmount: editAmount,
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isVerifyingMemberDiscount = false;
+    });
+
+    GlobalSnackBar.showError(
+      context,
+      _directClaimErrorMessage(res) ??
+          'The discount could not be created. Please try again or use the QR scan option.',
+    );
+  }
+
+  double? _profileClaimEditAmount(dynamic result) {
+    if (result is Map) {
+      final Object? editRequested = result['editRequested'];
+      if (editRequested != true) return null;
+      final Object? amount = result['billAmount'];
+      if (amount is num) return amount.toDouble();
+      if (amount is String) return double.tryParse(amount);
+    }
+    return null;
+  }
+
+  String? _directClaimErrorMessage(dynamic res) {
+    if (res is ErrorResModel) {
+      final String? message = res.message ?? res.error?.status?.toString();
+      if (message == null || message.trim().isEmpty) return null;
+      return message;
+    }
+    return null;
+  }
+
+  String? _merchantLogoFromDetail(Data merchant) {
+    final MerchantImageInfo? imageInfo = merchant.merchantImageInfo;
+    return _firstNotEmpty([
+      imageInfo?.logoUrl,
+      imageInfo?.slider1,
+      imageInfo?.slider2,
+      imageInfo?.slider3,
+      imageInfo?.slider4,
+      imageInfo?.slider5,
+      imageInfo?.slider6,
+    ]);
+  }
+
+  String? _firstNotEmpty(Iterable<String?> values) {
+    for (final String? value in values) {
+      final String? trimmed = value?.trim();
+      if (trimmed != null && trimmed.isNotEmpty) return trimmed;
+    }
+    return null;
   }
 
   Widget _publicListingCard(MerchantDetailResModel merchantDetail) {
@@ -2078,6 +2237,421 @@ class _DetailsScreenState extends State<DetailsScreen> {
           child: child,
         );
       },
+    );
+  }
+}
+
+class _BillAmountBottomSheet extends StatefulWidget {
+  const _BillAmountBottomSheet({
+    required this.currencySymbol,
+    this.initialAmount,
+  });
+
+  final String currencySymbol;
+  final double? initialAmount;
+
+  @override
+  State<_BillAmountBottomSheet> createState() => _BillAmountBottomSheetState();
+}
+
+class _BillAmountBottomSheetState extends State<_BillAmountBottomSheet> {
+  static const Color _primaryBlue = Color(0xFF0009FE);
+  static const Color _ctaCyan = Color(0xFF18C6FF);
+  static const Color _headingColor = Color(0xFF111C44);
+  static const Color _bodyColor = Color(0xFF63708A);
+  static const Color _borderColor = Color(0xFFE2E8F3);
+
+  final TextEditingController _amountController = TextEditingController();
+  bool _isSubmitting = false;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    final double? initialAmount = widget.initialAmount;
+    if (initialAmount != null && initialAmount > 0) {
+      _amountController.text = initialAmount.toStringAsFixed(2);
+      _amountController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _amountController.text.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _showDiscount() {
+    if (_isSubmitting) return;
+
+    final double? amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      setState(() {
+        _errorText = 'Please enter a bill amount greater than 0.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorText = null;
+    });
+    Navigator.of(context).pop(amount);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(22.w, 22.h, 22.w, 24.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 24,
+              offset: const Offset(0, -8),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 42.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD8DFEA),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 22.h),
+              Text(
+                'Enter bill amount',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _headingColor,
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Sans',
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'TouristSaver will calculate your member discount for this merchant.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _bodyColor,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Sans',
+                  height: 1.35,
+                ),
+              ),
+              SizedBox(height: 18.h),
+              TextField(
+                controller: _amountController,
+                autofocus: true,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _showDiscount(),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    final String value = newValue.text;
+                    if (value.isEmpty) return newValue;
+                    if ('.'.allMatches(value).length > 1) return oldValue;
+                    final int decimalIndex = value.indexOf('.');
+                    if (decimalIndex != -1 &&
+                        value.substring(decimalIndex + 1).length > 2) {
+                      return oldValue;
+                    }
+                    return newValue;
+                  }),
+                ],
+                style: TextStyle(
+                  color: _headingColor,
+                  fontSize: 28.sp,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Sans',
+                ),
+                decoration: InputDecoration(
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.only(left: 16.w, right: 8.w),
+                    child: Text(
+                      '${widget.currencySymbol} ',
+                      style: TextStyle(
+                        color: _primaryBlue,
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'Sans',
+                      ),
+                    ),
+                  ),
+                  prefixIconConstraints:
+                      BoxConstraints(minWidth: 0, minHeight: 0),
+                  hintText: '0.00',
+                  errorText: _errorText,
+                  filled: true,
+                  fillColor: const Color(0xFFF7FAFF),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide: const BorderSide(color: _borderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide:
+                        const BorderSide(color: _primaryBlue, width: 1.6),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide: const BorderSide(color: Colors.redAccent),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide:
+                        const BorderSide(color: Colors.redAccent, width: 1.6),
+                  ),
+                ),
+              ),
+              SizedBox(height: 18.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: Size.fromHeight(52.h),
+                        side: const BorderSide(color: _borderColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: _bodyColor,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Sans',
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16.r),
+                        onTap: _isSubmitting ? null : _showDiscount,
+                        child: Ink(
+                          height: 52.h,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [_primaryBlue, _ctaCyan],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Show Discount',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'Sans',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MemberDiscountVerificationView extends StatefulWidget {
+  const _MemberDiscountVerificationView();
+
+  @override
+  State<_MemberDiscountVerificationView> createState() =>
+      _MemberDiscountVerificationViewState();
+}
+
+class _MemberDiscountVerificationViewState
+    extends State<_MemberDiscountVerificationView>
+    with SingleTickerProviderStateMixin {
+  static const Color _headingColor = Color(0xFF111C44);
+  static const Color _bodyColor = Color(0xFF63708A);
+
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.scale(
+            scale: 0.98 + (0.02 * value),
+            child: child,
+          ),
+        );
+      },
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFF8FBFF),
+              Color(0xFFEFF7FF),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 168.w,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w,
+                      vertical: 16.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(0xFF0A236B).withValues(alpha: 0.10),
+                          blurRadius: 30,
+                          offset: const Offset(0, 16),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/touristsaver-app-logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  SizedBox(height: 34.h),
+                  Text(
+                    'Applying your member discount',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _headingColor,
+                      fontSize: 26.sp,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'Sans',
+                      height: 1.15,
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    "Calculating the amount you'll pay...",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _bodyColor,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Sans',
+                      height: 1.35,
+                    ),
+                  ),
+                  SizedBox(height: 34.h),
+                  _BrandedVerificationSpinner(controller: _controller),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BrandedVerificationSpinner extends StatelessWidget {
+  const _BrandedVerificationSpinner({required this.controller});
+
+  final AnimationController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: controller,
+      child: Container(
+        width: 58.w,
+        height: 58.w,
+        padding: EdgeInsets.all(6.w),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const SweepGradient(
+            colors: [
+              Color(0xFF0009FE),
+              Color(0xFF18C6FF),
+              Color(0x330009FE),
+              Color(0xFF0009FE),
+            ],
+            stops: [0, 0.45, 0.76, 1],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0009FE).withValues(alpha: 0.18),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FBFF),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -18,6 +18,9 @@ const confirmApplyPiiinkURL = '/member/transaction/startApplyPiiink';
 const terminalConfirmApplyPiiinkURL =
     '/member/transaction/terminalStartApplyPiiink';
 const surApplyPiiink = '/member/transaction/applyPiiink';
+const startApplyPiiinkByMerchantURL =
+    '/member/transaction/startApplyPiiink/byMerchant';
+const applyPiiinkByMerchantURL = '/member/transaction/applyPiiink/byMerchant';
 
 const memberPremiumGetOne = '/memberPremiumCode/getOne';
 const showCharityGetOne = '/showCharity/getOne';
