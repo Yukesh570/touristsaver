@@ -8,12 +8,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/utils.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
 import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
+import 'package:touristsaver/constants/app_environment.dart';
 import 'package:touristsaver/constants/global_colors.dart';
 import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
@@ -97,6 +99,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   bool? hideRecommendOption;
   bool? hideRemoveAccountButton;
   bool _isBiometricsSupported = true;
+  String? _versionBuildLabel;
 
   bool isHidden = true;
   bool isHidden1 = true;
@@ -111,11 +114,21 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     });
   }
 
+  Future<void> _loadVersionBuildInfo() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      _versionBuildLabel =
+          'Version ${packageInfo.version} (${packageInfo.buildNumber})';
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     fetchShowCharity();
     getPiiinkInfo();
+    _loadVersionBuildInfo();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       localAuth.isDeviceSupported().then((bool isSupported) {
@@ -476,9 +489,45 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
             ],
           ),
         const SizedBox(height: 10),
+        _versionEnvironmentInfo(),
         // Logout Button
         logOut(),
       ],
+    );
+  }
+
+  Widget _versionEnvironmentInfo() {
+    if (!AppEnvironment.isStaging) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_versionBuildLabel != null)
+            Text(
+              _versionBuildLabel!,
+              style: const TextStyle(
+                color: _profileMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          if (AppEnvironment.isStaging) ...[
+            const SizedBox(height: 2),
+            const Text(
+              'Pre-Production',
+              style: TextStyle(
+                color: _profileMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
