@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
@@ -548,7 +549,20 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
 
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).clearSnackBars();
-                            context.pushReplacementNamed('paid-free');
+                            final registrationPremiumContext =
+                                res.data!.premiumCodeIsApplied == true &&
+                                        widget.premium.trim().isNotEmpty &&
+                                        widget.premium != 'null'
+                                    ? RegistrationPremiumOfferContext
+                                        .fromRegistrationResponse(
+                                        memberPremiumCode: widget.premium,
+                                        data: res.data!,
+                                      )
+                                    : null;
+                            context.pushReplacementNamed(
+                              'paid-free',
+                              extra: registrationPremiumContext?.toRouteExtra(),
+                            );
                           } else if (res is ErrorResModel) {
                             if (!mounted) return;
                             GlobalSnackBar.showError(

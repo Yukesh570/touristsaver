@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/models/merchant_summary.dart';
+import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/common/widgets/bottom_navigation_bar.dart';
 import 'package:touristsaver/common/widgets/congrats.dart';
 import 'package:touristsaver/common/widgets/paid_free.dart';
@@ -390,7 +391,13 @@ final GoRouter goRouter = GoRouter(
     GoRoute(
       path: '/paid-free',
       name: 'paid-free',
-      builder: (context, state) => PaidFreeScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        final initialOfferContext = extra is Map<String, dynamic>
+            ? RegistrationPremiumOfferContext.fromRouteExtra(extra)
+            : null;
+        return PaidFreeScreen(initialOfferContext: initialOfferContext);
+      },
     ),
     //Transfer Piiinks
     GoRoute(

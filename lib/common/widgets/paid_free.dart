@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
@@ -36,7 +37,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class PaidFreeScreen extends StatefulWidget {
   static const String routeName = '/paid-free';
-  const PaidFreeScreen({super.key});
+  const PaidFreeScreen({super.key, this.initialOfferContext});
+
+  final RegistrationPremiumOfferContext? initialOfferContext;
 
   @override
   State<PaidFreeScreen> createState() => _PaidFreeScreenState();
@@ -104,6 +107,14 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
   }
 
   Future<void> fetchMemberPremiumGetOne() async {
+    if (widget.initialOfferContext?.hasCode == true) {
+      if (!mounted) return;
+      setState(() {
+        premiumData = widget.initialOfferContext!.toPremiumData();
+      });
+      return;
+    }
+
     try {
       var res = await DioCommon().getdiscountInmemberPremiumCode();
       if (res != null && res['status'] == "Success") {
@@ -126,6 +137,16 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
         if (memPackAll.data![i].subscriptionType == 'premium') {
           premiumIndices.add(i);
         }
+      }
+    }
+
+    final initialPackageId = widget.initialOfferContext?.packageId;
+    if (initialPackageId != null && memPackAll.data != null) {
+      final matchingPremiumIndices = premiumIndices
+          .where((index) => memPackAll.data![index].id == initialPackageId)
+          .toList();
+      if (matchingPremiumIndices.isNotEmpty) {
+        premiumIndices = matchingPremiumIndices;
       }
     }
     return ListView.separated(
@@ -522,13 +543,11 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     });
 
     final originalFee = widget.memPackAll!.data![widget.index!].packageFee!;
-    final premiumOffer = _premiumOfferDetails();
-    final discountPercent = premiumOffer?.effectiveDiscountPercent ?? 0;
-    final isDiscountedPackage =
-        discountPercent > 0 && discountPercent < 100 && originalFee > 0;
-
-    final String? codeToSend =
-        isDiscountedPackage ? widget.premiumData['memberPremiumCode'] : null;
+    final paymentPreview = membershipOfferPaymentPreview(
+      originalAmount: originalFee,
+      premiumData: widget.premiumData is Map ? widget.premiumData as Map : null,
+    );
+    final String? codeToSend = paymentPreview.memberPremiumCodeForPaymentIntent;
 
     var res = await DioTopUpStripe().topUpStripe(
       topUpStripeReqModel: TopUpStripeReqModel(
@@ -657,14 +676,14 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     final currencyName = package.packageCurrencyName?.trim() ?? '';
 
     final premiumOffer = _premiumOfferDetails();
-    final discountStr = premiumOffer?.discount;
-    debugPrint("====== CURRENT DISCOUNT PERCENT: $discountStr% ======");
 
-    final double discountPercent = premiumOffer?.effectiveDiscountPercent ?? 0;
-    debugPrint("====== CURRENT DISCOUNT PERCENT: $discountPercent% ======");
-    final double discountAmount = originalFee * (discountPercent / 100);
-    final double finalFee =
-        (originalFee - discountAmount).clamp(0, double.infinity);
+    final paymentPreview = membershipOfferPaymentPreview(
+      originalAmount: originalFee,
+      premiumData: widget.premiumData is Map ? widget.premiumData as Map : null,
+    );
+    final double discountPercent = paymentPreview.discountPercent;
+    final double discountAmount = paymentPreview.discountAmount;
+    final double finalFee = paymentPreview.payableAmount;
 
     final originalPriceText =
         _formatMembershipAmount(originalFee, currency, currencyName);

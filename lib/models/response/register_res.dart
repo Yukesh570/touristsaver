@@ -42,6 +42,8 @@ class Data {
   final bool? premiumCodeIsPaid;
   final int? packageId;
   final String? discount;
+  final bool? isGiveaway;
+  final bool? complimentaryPremiumCode;
 
   bool get isPremiumMember =>
       memberInfo?.memberType?.trim().toLowerCase() == 'premium';
@@ -69,6 +71,8 @@ class Data {
     this.premiumCodeIsPaid,
     this.packageId,
     this.discount,
+    this.isGiveaway,
+    this.complimentaryPremiumCode,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -84,6 +88,8 @@ class Data {
         premiumCodeIsPaid: json["premiumCodeIsPaid"],
         packageId: json["packageId"],
         discount: json["discount"]?.toString(),
+        isGiveaway: json["isGiveaway"],
+        complimentaryPremiumCode: json["complimentaryPremiumCode"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -95,6 +101,8 @@ class Data {
         "premiumCodeIsPaid": premiumCodeIsPaid,
         "packageId": packageId,
         "discount": discount,
+        "isGiveaway": isGiveaway,
+        "complimentaryPremiumCode": complimentaryPremiumCode,
       };
 }
 
