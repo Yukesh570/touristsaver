@@ -53,6 +53,7 @@ class Datum {
   final double? distance;
   final double? latitude;
   final double? longitude;
+  final String? merchantListingType;
 
   Datum({
     this.merchantImageInfoId,
@@ -72,6 +73,7 @@ class Datum {
     this.distance,
     this.latitude,
     this.longitude,
+    this.merchantListingType,
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -94,6 +96,8 @@ class Datum {
         distance: json["distance"]?.toDouble(),
         latitude: json["latitude"]?.toDouble(),
         longitude: json["longitude"]?.toDouble(),
+        merchantListingType:
+            json["merchantListingType"] ?? json["merchantlistingtype"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -115,5 +119,6 @@ class Datum {
         "distance": distance,
         "latitude": latitude,
         "longitude": longitude,
+        "merchantListingType": merchantListingType,
       };
 }

@@ -189,7 +189,8 @@ class _MerchantScreenState extends State<MerchantScreen> {
           '[MerchantDiscovery] Consumed launch intent: '
           'categoryId=${activeIntent.categoryId}, '
           'categoryName=${activeIntent.categoryName}, '
-          'openSubcategorySelector=${activeIntent.openSubcategorySelector}',
+          'openSubcategorySelector=${activeIntent.openSubcategorySelector}, '
+          'publicDealsOnly=${activeIntent.publicDealsOnly}',
         );
       }
       if (activeIntent.openSubcategorySelector) {
@@ -199,6 +200,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
         final String activeCategoryName =
             activeIntent.categoryName?.trim() ?? '';
         if (activeCategoryId == null || activeCategoryName.isEmpty) return;
+        _discovery.setPublicDealsOnly(activeIntent.publicDealsOnly);
         await _loadCategory(activeCategoryId, activeCategoryName);
       }
     });
@@ -316,6 +318,14 @@ class _MerchantScreenState extends State<MerchantScreen> {
 
   void _setBestOfferFirst(bool value) {
     _discovery.setBestOfferFirst(value);
+  }
+
+  void _setPublicDealsOnly(bool value) {
+    _discovery.setPublicDealsOnly(value);
+  }
+
+  void _setFavouritesOnly(bool value) {
+    _discovery.setFavouritesOnly(value);
   }
 
   void _openResultsMap(List<MerchantSummary> merchants, String title) {
@@ -481,9 +491,13 @@ class _MerchantScreenState extends State<MerchantScreen> {
                             selectedSort: discoveryState.selectedSort,
                             selectedRadiusKm: discoveryState.selectedRadiusKm,
                             bestOfferFirst: discoveryState.bestOfferFirst,
+                            publicDealsOnly: discoveryState.publicDealsOnly,
+                            favouritesOnly: discoveryState.favouritesOnly,
                             onSortSelected: _setSort,
                             onRadiusSelected: _setRadius,
                             onBestOfferChanged: _setBestOfferFirst,
+                            onPublicDealsOnlyChanged: _setPublicDealsOnly,
+                            onFavouritesOnlyChanged: _setFavouritesOnly,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -955,17 +969,25 @@ class _FilterSortBar extends StatelessWidget {
     required this.selectedSort,
     required this.selectedRadiusKm,
     required this.bestOfferFirst,
+    required this.publicDealsOnly,
+    required this.favouritesOnly,
     required this.onSortSelected,
     required this.onRadiusSelected,
     required this.onBestOfferChanged,
+    required this.onPublicDealsOnlyChanged,
+    required this.onFavouritesOnlyChanged,
   });
 
   final String selectedSort;
   final double? selectedRadiusKm;
   final bool bestOfferFirst;
+  final bool publicDealsOnly;
+  final bool favouritesOnly;
   final ValueChanged<String> onSortSelected;
   final ValueChanged<double?> onRadiusSelected;
   final ValueChanged<bool> onBestOfferChanged;
+  final ValueChanged<bool> onPublicDealsOnlyChanged;
+  final ValueChanged<bool> onFavouritesOnlyChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -982,9 +1004,14 @@ class _FilterSortBar extends StatelessWidget {
               onTap: () => onBestOfferChanged(!bestOfferFirst),
             ),
             _DiscoveryChip(
+              label: 'Public Deals',
+              selected: publicDealsOnly,
+              onTap: () => onPublicDealsOnlyChanged(!publicDealsOnly),
+            ),
+            _DiscoveryChip(
               label: 'Favourites',
-              selected: selectedSort == 'Favourites',
-              onTap: () => onSortSelected('Favourites'),
+              selected: favouritesOnly,
+              onTap: () => onFavouritesOnlyChanged(!favouritesOnly),
             ),
             _DiscoveryChip(
               label: 'Distance',

@@ -99,6 +99,8 @@ class MerchantDiscoveryController extends ChangeNotifier {
     final response = await DioHome().getAllMerchant(
       pageNumber: 1,
       categoryId: categoryId,
+      merchantListingType:
+          state.publicDealsOnly ? merchantListingTypePublicDeal : null,
     );
     if (_isStale(requestId)) return;
 
@@ -209,6 +211,7 @@ class MerchantDiscoveryController extends ChangeNotifier {
         selectedCategoryId: null,
         selectedCategoryName: null,
         selectedRadiusKm: null,
+        selectedSort: 'Best Offer',
         bestOfferFirst: true,
         isLoading: true,
         error: null,
@@ -304,7 +307,12 @@ class MerchantDiscoveryController extends ChangeNotifier {
   }
 
   void setSort(String sort) {
-    _emit(state.copyWith(selectedSort: sort));
+    _emit(
+      state.copyWith(
+        selectedSort: sort,
+        bestOfferFirst: sort == 'Best Offer',
+      ),
+    );
     _refreshVisibleResults();
   }
 
@@ -318,25 +326,63 @@ class MerchantDiscoveryController extends ChangeNotifier {
   }
 
   void setBestOfferFirst(bool value) {
-    _emit(state.copyWith(bestOfferFirst: value));
+    _emit(
+      state.copyWith(
+        bestOfferFirst: value,
+        selectedSort: value ? 'Best Offer' : 'Distance',
+      ),
+    );
+    _refreshVisibleResults();
+  }
+
+  void setFavouritesOnly(bool value) {
+    _emit(state.copyWith(favouritesOnly: value));
+    _refreshVisibleResults();
+  }
+
+  void setPublicDealsOnly(bool value) {
+    _emit(state.copyWith(publicDealsOnly: value));
+    if (state.source == MerchantDiscoverySource.category &&
+        state.selectedCategoryId != null &&
+        state.selectedCategoryName != null) {
+      loadCategory(state.selectedCategoryId!, state.selectedCategoryName!);
+      return;
+    }
     _refreshVisibleResults();
   }
 
   void clear() {
     _cancelSearch();
     _requestId++;
-    _rawResults = [];
+    final int? categoryId = state.selectedCategoryId;
+    final String? categoryName = state.selectedCategoryName;
+    final bool preserveCategory =
+        state.source == MerchantDiscoverySource.category &&
+            categoryId != null &&
+            categoryName != null;
     _emit(
       state.copyWith(
-        source: MerchantDiscoverySource.none,
-        searchText: '',
-        selectedCategoryId: null,
-        selectedCategoryName: null,
+        source: preserveCategory
+            ? MerchantDiscoverySource.category
+            : MerchantDiscoverySource.none,
+        searchText: preserveCategory ? state.searchText : '',
+        selectedCategoryId: preserveCategory ? categoryId : null,
+        selectedCategoryName: preserveCategory ? categoryName : null,
+        selectedRadiusKm: null,
+        selectedSort: 'Distance',
+        bestOfferFirst: false,
+        publicDealsOnly: false,
+        favouritesOnly: false,
         isLoading: false,
         error: null,
-        results: const [],
+        results: preserveCategory ? state.results : const [],
       ),
     );
+    if (preserveCategory) {
+      loadCategory(categoryId, categoryName);
+    } else {
+      _rawResults = [];
+    }
   }
 
   void _refreshVisibleResults() {
@@ -364,18 +410,16 @@ class MerchantDiscoveryController extends ChangeNotifier {
           .toList();
     }
 
-    if (state.selectedSort == 'Favourites') {
-      results.sort((left, right) {
-        final int favouriteCompare =
-            _favouriteRank(left).compareTo(_favouriteRank(right));
-        if (favouriteCompare != 0) return favouriteCompare;
-        if (state.bestOfferFirst) {
-          final int offerCompare = _compareOffer(left, right);
-          if (offerCompare != 0) return offerCompare;
-        }
-        return _compareDistance(left, right);
-      });
-    } else if (state.bestOfferFirst) {
+    if (state.publicDealsOnly) {
+      results = results.where((merchant) => merchant.isPublicDeal).toList();
+    }
+
+    if (state.favouritesOnly) {
+      results =
+          results.where((merchant) => merchant.isFavourite == true).toList();
+    }
+
+    if (state.bestOfferFirst) {
       results.sort((left, right) {
         final int offerCompare = _compareOffer(left, right);
         if (offerCompare != 0) return offerCompare;
@@ -388,10 +432,6 @@ class MerchantDiscoveryController extends ChangeNotifier {
     }
 
     return results;
-  }
-
-  int _favouriteRank(MerchantSummary merchant) {
-    return merchant.isFavourite == true ? 0 : 1;
   }
 
   int _compareDistance(MerchantSummary left, MerchantSummary right) {

@@ -585,27 +585,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 
   // Detail Page
-  bool _isOfficialTsdcListing(Data? merchant) {
-    final String? listingType = merchant?.merchantListingType?.trim();
-    if (listingType != null && listingType.isNotEmpty) {
-      return listingType.toLowerCase() == 'official_tsdc';
-    }
-    if (merchant?.isOfficialTsdcMerchant != null) {
-      return merchant!.isOfficialTsdcMerchant!;
-    }
-    if (merchant?.canRedeemTsdcSavings != null) {
-      return merchant!.canRedeemTsdcSavings!;
-    }
-    return true;
+  bool _isDiscountOfferListing(Data? merchant) {
+    return merchant?.merchantListingType?.trim().toLowerCase() ==
+        'discount_offer';
   }
 
   String _publicListingLabel(String? listingType) {
     switch (listingType?.trim().toLowerCase()) {
       case 'public_deal':
         return 'Public deal';
-      case 'place_of_interest':
-        return 'Place of interest';
       case 'concierge_listing':
+        return 'Concierge listing';
       default:
         return 'Concierge listing';
     }
@@ -1352,19 +1342,20 @@ class _DetailsScreenState extends State<DetailsScreen> {
       await launchUrl(emailOpen);
     }
 
-    final bool isOfficialListing = _isOfficialTsdcListing(merchantDetail.data);
+    final bool isDiscountOfferListing =
+        _isDiscountOfferListing(merchantDetail.data);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        isOfficialListing
+        isDiscountOfferListing
             ? _memberOfferCard(merchantDetail)
             : _publicListingCard(merchantDetail),
 
         SizedBox(height: 12.h),
 
         // Additional Information
-        if (isOfficialListing) ...[
+        if (isDiscountOfferListing) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: AutoSizeText(
@@ -2473,7 +2464,7 @@ class _BillAmountBottomSheetState extends State<_BillAmountBottomSheet> {
                           ),
                           child: Center(
                             child: Text(
-                              'Show Discount',
+                              'Continue',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15.sp,

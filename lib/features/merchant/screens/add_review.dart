@@ -121,13 +121,24 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                             _merchantHeader(merchantName, merchantLogo),
                             SizedBox(height: 8.h),
                             Text(
-                              S.of(context).rateThisMerchant,
+                              'Be the first to review $merchantName',
                               style: topicStyle.copyWith(
                                 color: _headingColor,
                                 fontSize: 18.sp,
                               ),
                             ),
                             SizedBox(height: 6.h),
+                            Text(
+                              'Share your experience and help other TouristSaver members discover this great place.',
+                              style: TextStyle(
+                                color: _bodyColor,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Sans',
+                                height: 1.3,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
                             Center(child: _ratingBar(_ratingBarMode)),
                             SizedBox(height: 7.h),
                             const Divider(thickness: 1, color: _borderColor),

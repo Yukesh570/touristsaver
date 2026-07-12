@@ -58,7 +58,7 @@ class DioMerchant {
         dio.options.queryParameters.addAll({'countryId': countryId});
       }
       Response<String> response = await dio.get(
-          '$getAllFavouriteURL?order_by=createdAt&ordering=DESC&fields=merchantName,maxDiscount&lang=${AppVariables.selectedLanguageNow}');
+          '$getAllFavouriteURL?order_by=createdAt&ordering=DESC&fields=merchantName,maxDiscount,merchantListingType&lang=${AppVariables.selectedLanguageNow}');
       return merchantGetAllResModelFromJson(response.data!);
     } on DioException catch (e) {
       return errorResModelFromJson(e.response?.data);

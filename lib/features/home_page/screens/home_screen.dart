@@ -280,6 +280,56 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
+  void _openDiningDealsNearby() {
+    final CategoryState state = context.read<CategoryBloc>().state;
+    if (state is! CategoryLoadedState) {
+      GlobalSnackBar.showError(
+        context,
+        'Dining deals are still loading. Please try again in a moment.',
+      );
+      return;
+    }
+
+    final Datum? diningCategory = _findDiningCategory(state.categoryList);
+    if (diningCategory == null ||
+        diningCategory.id == null ||
+        diningCategory.name?.trim().isNotEmpty != true) {
+      GlobalSnackBar.showError(
+        context,
+        'Dining deals are unavailable right now.',
+      );
+      return;
+    }
+
+    MerchantDiscoveryIntentStore.launchCategory(
+      categoryId: diningCategory.id!,
+      categoryName: diningCategory.name!.trim(),
+      openSubcategorySelector: false,
+      publicDealsOnly: true,
+    );
+    _openDiscoveryTab();
+  }
+
+  Datum? _findDiningCategory(CategoryListResModel categoryList) {
+    final List<Datum> categories = categoryList.data?.data ?? const [];
+    for (final Datum category in categories) {
+      final String name = category.name?.trim().toLowerCase() ?? '';
+      if (_isDiningCategoryName(name)) return category;
+    }
+    return null;
+  }
+
+  bool _isDiningCategoryName(String name) {
+    if (name.isEmpty) return false;
+    return name.contains('dining') ||
+        name.contains('restaurant') ||
+        name.contains('food') ||
+        name.contains('cafe') ||
+        name.contains('café') ||
+        name.contains('coffee') ||
+        name.contains('bar');
+  }
+
   Future<List<nearby.Datum>> _loadGreatDealsNearby() async {
     if (AppVariables.latitude == null || AppVariables.longitude == null) {
       return const [];
@@ -305,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen>
     final String? listingType = merchant.merchantListingType?.trim();
     return listingType != null &&
         listingType.isNotEmpty &&
-        listingType.toLowerCase() != 'official_tsdc';
+        listingType.toLowerCase() == 'public_deal';
   }
 
   @override
@@ -454,7 +504,9 @@ class _HomeScreenState extends State<HomeScreen>
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(999),
-            onTap: _toggleGreatDealsMode,
+            onTap: _isGreatDealsMode
+                ? _toggleGreatDealsMode
+                : _openDiningDealsNearby,
             child: Ink(
               padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 11.h),
               decoration: BoxDecoration(

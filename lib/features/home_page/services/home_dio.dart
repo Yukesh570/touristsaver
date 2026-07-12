@@ -299,7 +299,9 @@ class DioHome {
 
   // Get All Merchant for category and sub category by location
   Future<MerchantGetAllResModel?> getAllMerchant(
-      {required int pageNumber, required int categoryId}) async {
+      {required int pageNumber,
+      required int categoryId,
+      String? merchantListingType}) async {
     String? countryId = await Pref().readData(key: userChosenLocationID);
     String? stateId =
         await Pref().readData(key: userChosenLocationStateID) == 'null' ||
@@ -328,8 +330,11 @@ class DioHome {
       Dio dio = AppVariables.accessToken != null
           ? await getClient()
           : await getClientNoToken();
+      final String listingTypeQuery = merchantListingType == null
+          ? ''
+          : '&merchantListingType=$merchantListingType';
       Response<String> response = await dio.get(
-          '$allMerchant?category=$categoryId&$enterLocationId&page=$pageNumber&order_by=popularOrder&ordering=ASC&fields=merchantName,maxDiscount,latlon&lang=${AppVariables.selectedLanguageNow}');
+          '$allMerchant?category=$categoryId&$enterLocationId&page=$pageNumber&order_by=popularOrder&ordering=ASC&fields=merchantName,maxDiscount,latlon,merchantListingType&lang=${AppVariables.selectedLanguageNow}$listingTypeQuery');
       return merchantGetAllResModelFromJson(response.data!);
     } catch (e) {
       return null;
@@ -368,7 +373,7 @@ class DioHome {
     try {
       Dio dio = await getClientNoToken();
       Response<String> response = await dio.get(
-          '$allMerchant?$enterLocationId&page=$pageNumber&isPopularFlag=true&order_by=popularOrder&ordering=ASC&limit=10&fields=merchantName,maxDiscount&lang=${AppVariables.selectedLanguageNow}');
+          '$allMerchant?$enterLocationId&page=$pageNumber&isPopularFlag=true&order_by=popularOrder&ordering=ASC&limit=10&fields=merchantName,maxDiscount,merchantListingType&lang=${AppVariables.selectedLanguageNow}');
 
       return merchantGetAllResModelFromJson(response.data!);
     } catch (e) {
@@ -415,10 +420,10 @@ class DioHome {
 
       if (name == 'null' || name == null) {
         response = await dio.get(
-            '$allMerchant?$enterLocationId&page=$pageNumber&order_by=verifiedDate&ordering=DESC&limit=10&fields=merchantName,maxDiscount,latlon&lang=${AppVariables.selectedLanguageNow}');
+            '$allMerchant?$enterLocationId&page=$pageNumber&order_by=verifiedDate&ordering=DESC&limit=10&fields=merchantName,maxDiscount,latlon,merchantListingType&lang=${AppVariables.selectedLanguageNow}');
       } else {
         response = await dio.get(
-            '$allMerchant?$enterLocationId&page=$pageNumber&merchantName__substring=$name&order_by=verifiedDate&ordering=DESC&limit=10&fields=merchantName,maxDiscount,latlon&lang=${AppVariables.selectedLanguageNow}');
+            '$allMerchant?$enterLocationId&page=$pageNumber&merchantName__substring=$name&order_by=verifiedDate&ordering=DESC&limit=10&fields=merchantName,maxDiscount,latlon,merchantListingType&lang=${AppVariables.selectedLanguageNow}');
       }
 
       // 2. Parse the data
@@ -462,7 +467,7 @@ class DioHome {
     try {
       Dio dio = await getClientNoToken();
       Response<String> response = await dio.get(
-          '$allMerchant?$enterLocationId&page=$pageNumber&order_by=maxDiscount&ordering=DESC&limit=10&fields=merchantName,maxDiscount&lang=${AppVariables.selectedLanguageNow}');
+          '$allMerchant?$enterLocationId&page=$pageNumber&order_by=maxDiscount&ordering=DESC&limit=10&fields=merchantName,maxDiscount,merchantListingType&lang=${AppVariables.selectedLanguageNow}');
 
       return merchantGetAllResModelFromJson(response.data!);
     } catch (e) {

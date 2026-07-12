@@ -8,6 +8,10 @@ import 'package:touristsaver/models/response/nearby_res.dart' as nearby;
 import 'package:touristsaver/models/response/search_merchant_res.dart'
     as search;
 
+const String merchantListingTypeDiscountOffer = 'discount_offer';
+const String merchantListingTypePublicDeal = 'public_deal';
+const String merchantListingTypeConciergeListing = 'concierge_listing';
+
 class MerchantSummary {
   const MerchantSummary({
     required this.merchantId,
@@ -23,6 +27,7 @@ class MerchantSummary {
     this.categoryLabel,
     this.latitude,
     this.longitude,
+    this.merchantListingType,
   });
 
   final int merchantId;
@@ -38,6 +43,13 @@ class MerchantSummary {
   final String? categoryLabel;
   final double? latitude;
   final double? longitude;
+  final String? merchantListingType;
+
+  bool get isDiscountOffer =>
+      merchantListingType == merchantListingTypeDiscountOffer;
+  bool get isPublicDeal => merchantListingType == merchantListingTypePublicDeal;
+  bool get isConciergeListing =>
+      merchantListingType == merchantListingTypeConciergeListing;
 
   bool get hasLocation => latitude != null && longitude != null;
 
@@ -53,6 +65,7 @@ class MerchantSummary {
     String? categoryLabel,
     double? latitude,
     double? longitude,
+    String? merchantListingType,
   }) {
     return MerchantSummary(
       merchantId: merchantId,
@@ -68,6 +81,7 @@ class MerchantSummary {
       categoryLabel: categoryLabel ?? this.categoryLabel,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      merchantListingType: merchantListingType ?? this.merchantListingType,
     );
   }
 }
@@ -103,6 +117,7 @@ class MerchantSummaryAdapters {
       ),
       isFavourite: merchant.favoriteMerchant != null,
       categoryLabel: categoryLabel,
+      merchantListingType: merchant.merchantListingType,
     );
   }
 
@@ -136,6 +151,7 @@ class MerchantSummaryAdapters {
         merchant.city?.toString(),
         merchant.streetInfo,
       ]),
+      merchantListingType: merchant.merchantListingType,
     );
   }
 
@@ -158,6 +174,7 @@ class MerchantSummaryAdapters {
       distanceKm: merchant.distance,
       isFavourite: merchant.favoriteMerchant != null,
       areaLabel: _joinLabels([merchant.statename, merchant.countryname]),
+      merchantListingType: merchant.merchantListingType,
     );
   }
 
@@ -181,6 +198,7 @@ class MerchantSummaryAdapters {
       longitude: merchant.longitude,
       distanceKm: merchant.distance,
       isFavourite: merchant.favoritemerchant != null,
+      merchantListingType: merchant.merchantListingType,
     );
   }
 

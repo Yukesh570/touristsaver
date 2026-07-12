@@ -89,6 +89,7 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
 
   bool isLoading = false;
   late bool _redemptionComplete = widget.initialRedemptionComplete;
+  bool _reviewInvitationShown = false;
   DateTime _now = DateTime.now();
   Timer? _clockTimer;
 
@@ -162,26 +163,6 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
                     label: 'Edit Bill Amount',
                     icon: Icons.edit_outlined,
                     onTap: _editBillAmount,
-                  ),
-                ],
-                if (_canLeaveReview) ...[
-                  SizedBox(height: 6.h),
-                  TextButton.icon(
-                    onPressed: isLoading ? null : _completeAndReview,
-                    icon: Icon(
-                      Icons.star_outline_rounded,
-                      color: _primaryBlue,
-                      size: 21.sp,
-                    ),
-                    label: Text(
-                      'Leave a Review',
-                      style: TextStyle(
-                        color: _primaryBlue,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'Sans',
-                      ),
-                    ),
                   ),
                 ],
               ],
@@ -395,22 +376,10 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       return;
     }
     if (widget.isProfileClaim) {
-      _redeemProfileClaim(onSuccess: _finishToSavings);
+      _redeemProfileClaim(onSuccess: _showReviewInvitation);
       return;
     }
-    _redeemDiscount(onSuccess: _finishToSavings);
-  }
-
-  void _completeAndReview() {
-    if (_redemptionComplete) {
-      _openReview();
-      return;
-    }
-    if (widget.isProfileClaim) {
-      _redeemProfileClaim(onSuccess: _openReview);
-      return;
-    }
-    _redeemDiscount(onSuccess: _openReview);
+    _redeemDiscount(onSuccess: _showReviewInvitation);
   }
 
   Future<void> _redeemProfileClaim({required VoidCallback onSuccess}) async {
@@ -499,6 +468,65 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
 
   void _finishToSavings() {
     navigateToBottomTab(context, 3);
+  }
+
+  Future<void> _showReviewInvitation() async {
+    if (!mounted) return;
+    if (!_canLeaveReview || _reviewInvitationShown) {
+      _finishToSavings();
+      return;
+    }
+
+    _reviewInvitationShown = true;
+
+    final bool leaveReview = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              title: Text(
+                'How was your experience at ${widget.merchantName}?',
+                style: const TextStyle(
+                  color: _headingColor,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Sans',
+                ),
+              ),
+              content: const Text(
+                'Your review helps other TouristSaver members discover great places and contributes to your Community recognition.',
+                style: TextStyle(
+                  color: _bodyColor,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                  fontFamily: 'Sans',
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Maybe Later'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Leave a Review'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (!mounted) return;
+
+    if (leaveReview) {
+      _openReview();
+      return;
+    }
+
+    _finishToSavings();
   }
 
   void _openReview() {

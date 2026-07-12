@@ -113,6 +113,7 @@ class Merchant {
     this.charityId,
     this.merchantImageInfo,
     this.favoriteMerchant,
+    this.merchantListingType,
   });
 
   final int? id;
@@ -159,6 +160,7 @@ class Merchant {
   final int? charityId;
   final MerchantImageInfo? merchantImageInfo;
   final FavoriteMerchant? favoriteMerchant;
+  final String? merchantListingType;
 
   factory Merchant.fromJson(Map<String, dynamic> json) => Merchant(
         id: json["id"],
@@ -213,6 +215,7 @@ class Merchant {
         favoriteMerchant: json["favoriteMerchant"] == null
             ? null
             : FavoriteMerchant.fromJson(json),
+        merchantListingType: json["merchantListingType"],
       );
 }
 

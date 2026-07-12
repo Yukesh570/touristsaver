@@ -17,6 +17,8 @@ class MerchantDiscoveryState {
     this.selectedRadiusKm,
     this.selectedSort = 'Distance',
     this.bestOfferFirst = false,
+    this.publicDealsOnly = false,
+    this.favouritesOnly = false,
     this.isLoading = false,
     this.error,
     this.results = const [],
@@ -32,6 +34,8 @@ class MerchantDiscoveryState {
   final double? selectedRadiusKm;
   final String selectedSort;
   final bool bestOfferFirst;
+  final bool publicDealsOnly;
+  final bool favouritesOnly;
   final bool isLoading;
   final String? error;
   final List<MerchantSummary> results;
@@ -58,6 +62,8 @@ class MerchantDiscoveryState {
     Object? selectedRadiusKm = _unset,
     String? selectedSort,
     bool? bestOfferFirst,
+    bool? publicDealsOnly,
+    bool? favouritesOnly,
     bool? isLoading,
     Object? error = _unset,
     List<MerchantSummary>? results,
@@ -77,6 +83,8 @@ class MerchantDiscoveryState {
           : selectedRadiusKm as double?,
       selectedSort: selectedSort ?? this.selectedSort,
       bestOfferFirst: bestOfferFirst ?? this.bestOfferFirst,
+      publicDealsOnly: publicDealsOnly ?? this.publicDealsOnly,
+      favouritesOnly: favouritesOnly ?? this.favouritesOnly,
       isLoading: isLoading ?? this.isLoading,
       error: error == _unset ? this.error : error as String?,
       results: results ?? this.results,

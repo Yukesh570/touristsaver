@@ -44,6 +44,7 @@ class Datum {
     this.createdAt,
     this.merchantImageInfo,
     this.favoriteMerchant,
+    this.merchantListingType,
   });
 
   int? id;
@@ -55,6 +56,7 @@ class Datum {
   DateTime? createdAt;
   MerchantImageInfo? merchantImageInfo;
   FavoriteMerchant? favoriteMerchant;
+  String? merchantListingType;
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
         id: json["id"],
@@ -74,6 +76,7 @@ class Datum {
         favoriteMerchant: json["favoriteMerchant"] == null
             ? null
             : FavoriteMerchant.fromJson(json["favoriteMerchant"]),
+        merchantListingType: json["merchantListingType"],
       );
 
   Datum copyWith({
@@ -85,6 +88,7 @@ class Datum {
     DateTime? createdAt,
     MerchantImageInfo? merchantImageInfo,
     FavoriteMerchant? favoriteMerchant,
+    String? merchantListingType,
   }) =>
       Datum(
         id: id ?? this.id,
@@ -95,6 +99,7 @@ class Datum {
         createdAt: createdAt ?? this.createdAt,
         merchantImageInfo: merchantImageInfo ?? this.merchantImageInfo,
         favoriteMerchant: favoriteMerchant ?? this.favoriteMerchant,
+        merchantListingType: merchantListingType ?? this.merchantListingType,
       );
 }
 

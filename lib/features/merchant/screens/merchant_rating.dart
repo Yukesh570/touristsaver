@@ -42,6 +42,11 @@ class _MerchantRatingState extends State<MerchantRating> {
   IconData? _selectedIcon;
   Future<dartz.Either<ErrorResModel, GetAllMerchantReviewsResModel>?>?
       getMerchantReviews;
+
+  String get _merchantDisplayName =>
+      widget.merchantName?.trim().isNotEmpty == true
+          ? widget.merchantName!.trim()
+          : 'this merchant';
   Future<dartz.Either<ErrorResModel, GetAllMerchantReviewsResModel>?>?
       getMerchantReview() async {
     dartz.Either<ErrorResModel, GetAllMerchantReviewsResModel>?
@@ -255,7 +260,7 @@ class _MerchantRatingState extends State<MerchantRating> {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  'Be the first to review this merchant',
+                  'Be the first to review $_merchantDisplayName',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: _headingColor,
@@ -266,7 +271,7 @@ class _MerchantRatingState extends State<MerchantRating> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Share your experience and help other TouristSaver members discover great places.',
+                  'Share your experience and help other TouristSaver members discover this great place.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: _bodyColor,

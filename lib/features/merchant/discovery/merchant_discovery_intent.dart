@@ -8,6 +8,7 @@ class MerchantDiscoveryLaunchIntent {
     this.openSubcategorySelector = true,
     this.focusSearch = false,
     this.showBestOffers = false,
+    this.publicDealsOnly = false,
   });
 
   final int token;
@@ -16,6 +17,7 @@ class MerchantDiscoveryLaunchIntent {
   final bool openSubcategorySelector;
   final bool focusSearch;
   final bool showBestOffers;
+  final bool publicDealsOnly;
 }
 
 class MerchantDiscoveryTabRequest {
@@ -57,12 +59,14 @@ class MerchantDiscoveryIntentStore {
     required int categoryId,
     required String categoryName,
     bool openSubcategorySelector = true,
+    bool publicDealsOnly = false,
   }) {
     _pendingIntent = MerchantDiscoveryLaunchIntent(
       token: ++_nextToken,
       categoryId: categoryId,
       categoryName: categoryName,
       openSubcategorySelector: openSubcategorySelector,
+      publicDealsOnly: publicDealsOnly,
     );
   }
 
