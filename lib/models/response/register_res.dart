@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:touristsaver/common/models/premium_code_classification.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
 
 RegisterResModel registerResModelFromJson(String str) =>
     RegisterResModel.fromJson(json.decode(str));
@@ -44,6 +45,7 @@ class Data {
   final String? discount;
   final bool? isGiveaway;
   final bool? complimentaryPremiumCode;
+  final DiscoveryMembershipContext? discoveryMembership;
 
   bool get isPremiumMember =>
       memberInfo?.memberType?.trim().toLowerCase() == 'premium';
@@ -62,6 +64,8 @@ class Data {
   bool get shouldShowPremiumWelcomeAfterRegistration =>
       isPremiumMember && hasExplicitComplimentaryPremiumCode;
 
+  bool get isDiscoveryMember => discoveryMembership != null;
+
   Data({
     this.showFreePiiinks,
     this.accessToken,
@@ -73,6 +77,7 @@ class Data {
     this.discount,
     this.isGiveaway,
     this.complimentaryPremiumCode,
+    this.discoveryMembership,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -90,6 +95,8 @@ class Data {
         discount: json["discount"]?.toString(),
         isGiveaway: json["isGiveaway"],
         complimentaryPremiumCode: json["complimentaryPremiumCode"],
+        discoveryMembership:
+            DiscoveryMembershipContext.fromRegistrationJson(json),
       );
 
   Map<String, dynamic> toJson() => {
@@ -103,6 +110,7 @@ class Data {
         "discount": discount,
         "isGiveaway": isGiveaway,
         "complimentaryPremiumCode": complimentaryPremiumCode,
+        "discoveryMembership": discoveryMembership?.toJson(),
       };
 }
 

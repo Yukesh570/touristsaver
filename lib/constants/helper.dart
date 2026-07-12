@@ -112,6 +112,7 @@ class AuthInterceptor extends Interceptor {
       await Pref().removeData('notificationsCount');
       await Pref().removeData(saveUserID);
       await Pref().removeData(saveCurrency);
+      await Pref().removeData(discoveryMembershipPreferenceKey);
       await Pref().removeData(savePublishableKey);
       await Pref().removeData(userChosenLocationStateID);
       await Pref().removeData(userChosenLocationRegionID);

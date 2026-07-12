@@ -6,6 +6,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
@@ -498,6 +499,20 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                             await Pref().writeData(
                                 key: 'savePassword', value: widget.password);
                             AppVariables.isLocalAuthEnabled = false;
+
+                            final discoveryMembership =
+                                res.data!.discoveryMembership;
+                            if (discoveryMembership != null) {
+                              await const DiscoveryMembershipStore()
+                                  .save(discoveryMembership);
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              context.pushReplacementNamed(
+                                'discovery-membership-welcome',
+                                extra: discoveryMembership.toRouteExtra(),
+                              );
+                              return;
+                            }
 
                             if (res.data!
                                 .shouldShowPremiumWelcomeAfterRegistration) {

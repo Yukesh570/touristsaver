@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/common/utils.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
@@ -100,6 +101,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   bool? hideRemoveAccountButton;
   bool _isBiometricsSupported = true;
   String? _versionBuildLabel;
+  DiscoveryMembershipContext? _discoveryMembership;
 
   bool isHidden = true;
   bool isHidden1 = true;
@@ -129,6 +131,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     fetchShowCharity();
     getPiiinkInfo();
     _loadVersionBuildInfo();
+    _loadDiscoveryMembership();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       localAuth.isDeviceSupported().then((bool isSupported) {
@@ -138,6 +141,12 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
         });
       });
     });
+  }
+
+  Future<void> _loadDiscoveryMembership() async {
+    final membership = await const DiscoveryMembershipStore().read();
+    if (!mounted) return;
+    setState(() => _discoveryMembership = membership);
   }
 
   String? _firstNotEmpty(List<String?> values) {
@@ -444,6 +453,11 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
             isEmailVerified: isEmailVerified,
           ),
         ),
+        if (_discoveryMembership?.isActive == true)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
+            child: _discoveryMembershipCard(_discoveryMembership!),
+          ),
         if (_showLaunchDeferredProfileSections) ...[
           _ProfileSection(
             title: 'My Travel Preferences',
@@ -526,6 +540,71 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _discoveryMembershipCard(DiscoveryMembershipContext membership) {
+    final int? remainingDays = membership.daysRemaining();
+    final double? discovered = membership.effectiveSavingsConsumedAmount;
+    final double? cap = membership.effectiveSavingsCapAmount;
+    final String currency = membership.displayCurrency;
+    final NumberFormat money = NumberFormat('#,##0.00');
+
+    return _ProfileCard(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.explore_rounded, color: _profileBrandBlue, size: 25),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Discovery Membership',
+                  style: TextStyle(
+                    color: _profileNavy,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (discovered != null || cap != null) ...[
+            const SizedBox(height: 14),
+            Text(
+              discovered != null && cap != null
+                  ? 'Savings Discovered: $currency${money.format(discovered)} of $currency${money.format(cap)}'
+                  : discovered != null
+                      ? 'Savings Discovered: $currency${money.format(discovered)}'
+                      : 'Savings Available: $currency${money.format(cap)}',
+              style: const TextStyle(
+                color: _profileNavy,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          if (remainingDays != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Days Remaining: $remainingDays',
+              style: const TextStyle(
+                color: _profileNavy,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          const Text(
+            'Community Journey',
+            style: TextStyle(
+              color: _profileBrandBlue,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -1371,6 +1450,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     await Pref().removeData('notificationsCount');
     await Pref().removeData(saveUserID);
     await Pref().removeData(saveCurrency);
+    await Pref().removeData(discoveryMembershipPreferenceKey);
     await Pref().removeData(savePublishableKey);
     await Pref().removeData(userChosenLocationStateID);
     await Pref().removeData(userChosenLocationRegionID);
@@ -1502,6 +1582,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
                                 await Pref().removeData('notificationsCount');
                                 await Pref().removeData(saveUserID);
                                 await Pref().removeData(saveCurrency);
+                                await Pref().removeData(
+                                    discoveryMembershipPreferenceKey);
                                 await Pref().removeData(savePublishableKey);
                                 await Pref()
                                     .removeData(userChosenLocationStateID);

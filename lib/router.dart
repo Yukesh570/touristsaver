@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/models/merchant_summary.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/common/widgets/bottom_navigation_bar.dart';
 import 'package:touristsaver/common/widgets/congrats.dart';
 import 'package:touristsaver/common/widgets/paid_free.dart';
@@ -42,6 +43,7 @@ import 'package:touristsaver/features/profile/screens/profile_screen.dart';
 import 'package:touristsaver/features/recommend/screens/recommend_screen.dart';
 import 'package:touristsaver/features/register/screens/num_otp_screen.dart';
 import 'package:touristsaver/features/register/screens/register_screen.dart';
+import 'package:touristsaver/features/register/screens/discovery_membership_welcome_screen.dart';
 import 'package:touristsaver/features/terms_conditions/screens/terms_first.dart';
 import 'package:touristsaver/features/transaction/screens/transaction.dart';
 import 'package:touristsaver/features/terms_conditions/screens/terms_condition_screens.dart';
@@ -397,6 +399,17 @@ final GoRouter goRouter = GoRouter(
             ? RegistrationPremiumOfferContext.fromRouteExtra(extra)
             : null;
         return PaidFreeScreen(initialOfferContext: initialOfferContext);
+      },
+    ),
+    GoRoute(
+      path: '/discovery-membership-welcome',
+      name: 'discovery-membership-welcome',
+      builder: (context, state) {
+        final Object? extra = state.extra;
+        final membership = extra is Map<String, dynamic>
+            ? DiscoveryMembershipContext.fromRouteExtra(extra)
+            : extra as DiscoveryMembershipContext;
+        return DiscoveryMembershipWelcomeScreen(membership: membership);
       },
     ),
     //Transfer Piiinks

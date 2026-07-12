@@ -1819,6 +1819,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             bool? validityResult = await checkEmailAndPhoneNo();
 
                             if (validityResult == false) {
+                              final bool isDiscoveryInvitation =
+                                  await DioRegister()
+                                      .validateDiscoveryInvitationCode(
+                                code: premiumController.text,
+                                countryId: selectedCountryID!,
+                              );
+                              if (isDiscoveryInvitation) {
+                                sendPhoneOtp();
+                                return;
+                              }
                               // 2. Validate the premium code (with an empty issuer code)
                               var preRes = await DioRegister().premiumVal(
                                 premiumValidityReqModel:
@@ -1881,20 +1891,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   checkPremium() async {
     //If premium code is not empty but issuer code is empty following code be executed
     final String premiumCodeInput = premiumController.text.trim().toUpperCase();
-    final String? issuerCodeForPremium =
-        premiumCodeInput.isEmpty ? null : _issuerCodeForPremiumCode();
-
-    if (premiumCodeInput.isNotEmpty && issuerCodeForPremium == null) {
-      GlobalSnackBar.valid(
-          context, S.of(context).pleaseEnterIssuerCodeToUsePremiumCode);
-      setState(() {
-        isLoading = false;
-      });
-    }
-    // If premium code is not empty following code will be executed to register the user
-    else if (premiumCodeInput.isNotEmpty && issuerCodeForPremium != null) {
+    if (premiumCodeInput.isNotEmpty) {
       bool? validityResult = await checkEmailAndPhoneNo();
       if (validityResult == false) {
+        final bool isDiscoveryInvitation =
+            await DioRegister().validateDiscoveryInvitationCode(
+          code: premiumCodeInput,
+          countryId: selectedCountryID!,
+        );
+        if (isDiscoveryInvitation) {
+          sendPhoneOtp();
+          return;
+        }
+        final String? issuerCodeForPremium = _issuerCodeForPremiumCode();
+        if (issuerCodeForPremium == null) {
+          GlobalSnackBar.valid(
+              context, S.of(context).pleaseEnterIssuerCodeToUsePremiumCode);
+          setState(() {
+            isLoading = false;
+          });
+          return;
+        }
         var preRes = await DioRegister().premiumVal(
           premiumValidityReqModel: PremiumValidityReqModel(
             memberPremiumCode: premiumCodeInput,

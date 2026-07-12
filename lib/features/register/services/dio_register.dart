@@ -24,6 +24,25 @@ import '../../../models/response/country_wise_prefix_res_model.dart';
 import '../../../models/response/sms_validation_res_model.dart';
 
 class DioRegister {
+  Future<bool> validateDiscoveryInvitationCode({
+    required String code,
+    required int countryId,
+  }) async {
+    try {
+      final Dio dio = await getClientNoToken();
+      final Response<dynamic> response = await dio.post(
+        '/campaign-invitations/validate',
+        data: {'code': code.trim().toUpperCase(), 'countryId': countryId},
+      );
+      final dynamic body = response.data is String
+          ? jsonDecode(response.data as String)
+          : response.data;
+      return body is Map && body['valid'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<GetAppSlugResModel?> getAppSlugMessages(String? slug) async {
     String lang = await Pref().readData(key: 'locale') ?? 'en';
     try {

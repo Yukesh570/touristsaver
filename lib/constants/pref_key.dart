@@ -23,6 +23,8 @@ const String saveCountryID = 'countryID';
 
 // Save currency symbol
 const String saveCurrency = 'currency';
+const String discoveryMembershipPreferenceKey =
+    'discoveryMembershipEntitlement';
 
 // Save the country origin won't be changed
 const String saveCountryOriginID = 'countryOriginId';
