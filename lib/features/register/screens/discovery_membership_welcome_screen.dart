@@ -69,7 +69,7 @@ class DiscoveryMembershipWelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Explore local businesses, experiences and member savings while building your Community Journey.',
+                'Enjoy member savings on shopping, dining, attractions, tours and local experiences.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF63708A),
@@ -134,22 +134,15 @@ class _DiscoveryTermsCard extends StatelessWidget {
     if (membership.periodDays != null) {
       terms.add(_term(
         Icons.calendar_today_rounded,
-        'Days to Explore',
-        '${membership.periodDays}',
+        'Membership period',
+        '${membership.periodDays} days',
       ));
     }
     if (membership.effectiveSavingsCapAmount != null) {
       terms.add(_term(
         Icons.savings_outlined,
-        'Savings to Discover',
-        '${membership.displayCurrency}${NumberFormat('#,##0.##').format(membership.effectiveSavingsCapAmount)}',
-      ));
-    }
-    if (membership.inheritanceEnabled) {
-      terms.add(_term(
-        Icons.group_add_outlined,
-        'Invite Your Community',
-        'Enabled by your community campaign',
+        'Savings limit',
+        'Up to ${membership.displayCurrency}${NumberFormat('#,##0.##').format(membership.effectiveSavingsCapAmount)}',
       ));
     }
     if (terms.isEmpty) return const SizedBox.shrink();

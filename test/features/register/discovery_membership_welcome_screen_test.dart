@@ -34,9 +34,18 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
     expect(find.textContaining('Brisbane Community has invited'), findsOne);
-    expect(find.text('Days to Explore'), findsOne);
-    expect(find.text('Savings to Discover'), findsOne);
-    expect(find.text('Invite Your Community'), findsOne);
+    expect(find.text('Membership period'), findsOne);
+    expect(find.text('30 days'), findsOne);
+    expect(find.text('Savings limit'), findsOne);
+    expect(find.text(r'Up to A$25'), findsOne);
+    expect(find.text('Invite Your Community'), findsNothing);
+    expect(find.text('Enabled by your community campaign'), findsNothing);
+    expect(
+      find.text(
+        'Enjoy member savings on shopping, dining, attractions, tours and local experiences.',
+      ),
+      findsOne,
+    );
     expect(find.textContaining('free trial'), findsNothing);
 
     final startButton = find.byKey(const Key('start-discovering-button'));
@@ -46,7 +55,7 @@ void main() {
     expect(find.text('Home 0'), findsOne);
   });
 
-  testWidgets('hides invitation inheritance copy when disabled',
+  testWidgets('uses the generic welcome when source details are unavailable',
       (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
@@ -58,5 +67,39 @@ void main() {
 
     expect(find.text('Welcome to the TouristSaver Community'), findsOne);
     expect(find.text('Invite Your Community'), findsNothing);
+  });
+
+  testWidgets('remains balanced and scrollable on common phone sizes',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    for (final size in [const Size(320, 568), const Size(390, 844)]) {
+      tester.view.physicalSize = size;
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DiscoveryMembershipWelcomeScreen(
+            membership: DiscoveryMembershipContext(
+              sourceName: 'Griffith University Student Guild',
+              periodDays: 30,
+              savingsCapAmountMinor: 2500,
+              currencyCode: 'AUD',
+              inheritanceEnabled: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Membership period'), findsOne);
+      expect(find.text('Savings limit'), findsOne);
+      expect(find.text('Invite Your Community'), findsNothing);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('start-discovering-button')),
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 }
