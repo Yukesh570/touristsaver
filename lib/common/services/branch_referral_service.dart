@@ -8,15 +8,19 @@ class BranchRegistrationReferral {
   const BranchRegistrationReferral({
     this.issuerCode,
     this.memberReferralCode,
+    this.memberPremiumCode,
     this.campaign,
   });
 
   final String? issuerCode;
   final String? memberReferralCode;
+  final String? memberPremiumCode;
   final String? campaign;
 
   bool get hasRegistrationCode =>
-      issuerCode != null || memberReferralCode != null;
+      issuerCode != null ||
+      memberReferralCode != null ||
+      memberPremiumCode != null;
 
   factory BranchRegistrationReferral.fromPayload(Map<dynamic, dynamic> data) {
     final refType = _nonEmptyString(data['ref_type'])?.toLowerCase();
@@ -36,9 +40,17 @@ class BranchRegistrationReferral {
       );
     }
 
+    if (refCode != null && refType == 'campaign_invitation') {
+      return BranchRegistrationReferral(
+        memberPremiumCode: refCode,
+        campaign: _nonEmptyString(data['~campaign']),
+      );
+    }
+
     return BranchRegistrationReferral(
       issuerCode: _nonEmptyString(data['issuercode']),
       memberReferralCode: _nonEmptyString(data['memberReferralCode']),
+      memberPremiumCode: _nonEmptyString(data['memberPremiumCode']),
       campaign: _nonEmptyString(data['~campaign']),
     );
   }
@@ -57,6 +69,7 @@ Map<String, String> registrationQueryParametersFor(
   return {
     'issuercode': referral?.issuerCode ?? '',
     'memberReferralCode': referral?.memberReferralCode ?? '',
+    'memberPremiumCode': referral?.memberPremiumCode ?? '',
   };
 }
 
@@ -89,6 +102,7 @@ class BranchReferralService {
           'BRANCH_NORMALIZED: '
           'issuerCode=${referral.issuerCode}, '
           'memberReferralCode=${referral.memberReferralCode}, '
+          'memberPremiumCode=${referral.memberPremiumCode}, '
           'campaign=${referral.campaign}',
         );
 

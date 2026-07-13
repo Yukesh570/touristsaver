@@ -67,12 +67,14 @@ class _BottomBarState extends State<BottomBar> {
     debugPrint(
       'BRANCH_REGISTRATION_INPUTS: '
       'issuerCode=${referral.issuerCode}, '
-      'memberReferralCode=${referral.memberReferralCode}',
+      'memberReferralCode=${referral.memberReferralCode}, '
+      'memberPremiumCode=${referral.memberPremiumCode}',
     );
     Pref().setBool(key: 'isShownRegLog', value: true);
     context.pushNamed('register', queryParameters: {
       'issuercode': referral.issuerCode ?? '',
       'memberReferralCode': referral.memberReferralCode ?? '',
+      'memberPremiumCode': referral.memberPremiumCode ?? '',
     });
   }
 

@@ -12,6 +12,7 @@ void main() {
 
       expect(referral.issuerCode, 'ISSUER123');
       expect(referral.memberReferralCode, isNull);
+      expect(referral.memberPremiumCode, isNull);
       expect(referral.campaign, 'issuer_campaign');
     });
 
@@ -23,6 +24,7 @@ void main() {
 
       expect(referral.issuerCode, 'MERCHANT123');
       expect(referral.memberReferralCode, isNull);
+      expect(referral.memberPremiumCode, isNull);
     });
 
     test('maps member ref_type and ref_code to memberReferralCode', () {
@@ -33,6 +35,21 @@ void main() {
 
       expect(referral.issuerCode, isNull);
       expect(referral.memberReferralCode, 'MEMBER123');
+      expect(referral.memberPremiumCode, isNull);
+    });
+
+    test('maps campaign invitation ref_type and ref_code to memberPremiumCode',
+        () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        'ref_type': 'campaign_invitation',
+        'ref_code': 'GUSG2026',
+        '~campaign': 'gusg_discovery',
+      });
+
+      expect(referral.issuerCode, isNull);
+      expect(referral.memberReferralCode, isNull);
+      expect(referral.memberPremiumCode, 'GUSG2026');
+      expect(referral.campaign, 'gusg_discovery');
     });
 
     test('preserves both legacy registration fields', () {
@@ -43,6 +60,7 @@ void main() {
 
       expect(referral.issuerCode, 'LEGACY_ISSUER');
       expect(referral.memberReferralCode, 'LEGACY_MEMBER');
+      expect(referral.memberPremiumCode, isNull);
     });
 
     test('recognized ref_type takes precedence over legacy fields', () {
@@ -65,6 +83,7 @@ void main() {
       expect(registrationQueryParametersFor(referral), {
         'issuercode': 'AU0000000011',
         'memberReferralCode': '',
+        'memberPremiumCode': '',
       });
     });
 
@@ -76,6 +95,19 @@ void main() {
       expect(registrationQueryParametersFor(referral), {
         'issuercode': '',
         'memberReferralCode': '6123456789012345',
+        'memberPremiumCode': '',
+      });
+    });
+
+    test('builds registration parameters for a campaign invitation', () {
+      const referral = BranchRegistrationReferral(
+        memberPremiumCode: 'GUSG2026',
+      );
+
+      expect(registrationQueryParametersFor(referral), {
+        'issuercode': '',
+        'memberReferralCode': '',
+        'memberPremiumCode': 'GUSG2026',
       });
     });
 
@@ -83,6 +115,7 @@ void main() {
       expect(registrationQueryParametersFor(null), {
         'issuercode': '',
         'memberReferralCode': '',
+        'memberPremiumCode': '',
       });
     });
   });

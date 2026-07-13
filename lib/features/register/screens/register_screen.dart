@@ -46,8 +46,14 @@ class RegisterScreen extends StatefulWidget {
   static const String routeName = '/register';
   final String? issuercode;
   final String? memberReferralCode;
+  final String? memberPremiumCode;
 
-  const RegisterScreen({super.key, this.issuercode, this.memberReferralCode});
+  const RegisterScreen({
+    super.key,
+    this.issuercode,
+    this.memberReferralCode,
+    this.memberPremiumCode,
+  });
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -217,6 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // allCharityy = getAllCharityy();
       providerController.text = widget.issuercode ?? '';
       referralCodeController.text = widget.memberReferralCode ?? '';
+      premiumController.text = widget.memberPremiumCode ?? '';
       setState(() {});
     });
     super.initState();

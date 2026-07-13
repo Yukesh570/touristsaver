@@ -332,8 +332,13 @@ final GoRouter goRouter = GoRouter(
         final issuercode = state.uri.queryParameters['issuercode'] ?? '';
         final memberReferralCode =
             state.uri.queryParameters['memberReferralCode'] ?? '';
+        final memberPremiumCode =
+            state.uri.queryParameters['memberPremiumCode'] ?? '';
         return RegisterScreen(
-            issuercode: issuercode, memberReferralCode: memberReferralCode);
+          issuercode: issuercode,
+          memberReferralCode: memberReferralCode,
+          memberPremiumCode: memberPremiumCode,
+        );
       },
     ),
     //Log Profile Screen
