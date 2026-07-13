@@ -47,12 +47,14 @@ class RegisterScreen extends StatefulWidget {
   final String? issuercode;
   final String? memberReferralCode;
   final String? memberPremiumCode;
+  final String? discoveryInvitationCode;
 
   const RegisterScreen({
     super.key,
     this.issuercode,
     this.memberReferralCode,
     this.memberPremiumCode,
+    this.discoveryInvitationCode,
   });
 
   @override
@@ -1826,16 +1828,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             bool? validityResult = await checkEmailAndPhoneNo();
 
                             if (validityResult == false) {
-                              final bool isDiscoveryInvitation =
-                                  await DioRegister()
-                                      .validateDiscoveryInvitationCode(
-                                code: premiumController.text,
-                                countryId: selectedCountryID!,
-                              );
-                              if (isDiscoveryInvitation) {
-                                sendPhoneOtp();
-                                return;
-                              }
                               // 2. Validate the premium code (with an empty issuer code)
                               var preRes = await DioRegister().premiumVal(
                                 premiumValidityReqModel:
@@ -1898,18 +1890,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
   checkPremium() async {
     //If premium code is not empty but issuer code is empty following code be executed
     final String premiumCodeInput = premiumController.text.trim().toUpperCase();
+    final String discoveryInvitationCode =
+        widget.discoveryInvitationCode?.trim().toUpperCase() ?? '';
+    if (discoveryInvitationCode.isNotEmpty) {
+      final bool? validityResult = await checkEmailAndPhoneNo();
+      if (validityResult != false) {
+        setState(() => isLoading = false);
+        return;
+      }
+      final bool isValid = await DioRegister().validateDiscoveryInvitationCode(
+        code: discoveryInvitationCode,
+        countryId: selectedCountryID!,
+      );
+      if (isValid) {
+        sendPhoneOtp();
+      } else {
+        if (!mounted) return;
+        GlobalSnackBar.showError(
+          context,
+          'This Discovery invitation could not be verified. Please check the invitation and try again.',
+        );
+        setState(() => isLoading = false);
+      }
+      return;
+    }
     if (premiumCodeInput.isNotEmpty) {
       bool? validityResult = await checkEmailAndPhoneNo();
       if (validityResult == false) {
-        final bool isDiscoveryInvitation =
-            await DioRegister().validateDiscoveryInvitationCode(
-          code: premiumCodeInput,
-          countryId: selectedCountryID!,
-        );
-        if (isDiscoveryInvitation) {
-          sendPhoneOtp();
-          return;
-        }
         final String? issuerCodeForPremium = _issuerCodeForPremiumCode();
         if (issuerCodeForPremium == null) {
           GlobalSnackBar.valid(
@@ -2046,6 +2053,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'premium': premiumController.text.isEmpty
               ? 'null'
               : premiumController.text.trim().toUpperCase(),
+          'discoveryInvitationCode':
+              widget.discoveryInvitationCode?.trim().isEmpty == false
+                  ? widget.discoveryInvitationCode!.trim().toUpperCase()
+                  : 'null',
           'referralCode': referralCodeController.text.isEmpty
               ? 'null'
               : referralCodeController.text.trim(),

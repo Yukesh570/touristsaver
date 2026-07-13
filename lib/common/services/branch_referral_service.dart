@@ -9,18 +9,21 @@ class BranchRegistrationReferral {
     this.issuerCode,
     this.memberReferralCode,
     this.memberPremiumCode,
+    this.discoveryInvitationCode,
     this.campaign,
   });
 
   final String? issuerCode;
   final String? memberReferralCode;
   final String? memberPremiumCode;
+  final String? discoveryInvitationCode;
   final String? campaign;
 
   bool get hasRegistrationCode =>
       issuerCode != null ||
       memberReferralCode != null ||
-      memberPremiumCode != null;
+      memberPremiumCode != null ||
+      discoveryInvitationCode != null;
 
   factory BranchRegistrationReferral.fromPayload(Map<dynamic, dynamic> data) {
     final refType = _nonEmptyString(data['ref_type'])?.toLowerCase();
@@ -42,7 +45,7 @@ class BranchRegistrationReferral {
 
     if (refCode != null && refType == 'campaign_invitation') {
       return BranchRegistrationReferral(
-        memberPremiumCode: refCode,
+        discoveryInvitationCode: refCode,
         campaign: _nonEmptyString(data['~campaign']),
       );
     }
@@ -51,6 +54,7 @@ class BranchRegistrationReferral {
       issuerCode: _nonEmptyString(data['issuercode']),
       memberReferralCode: _nonEmptyString(data['memberReferralCode']),
       memberPremiumCode: _nonEmptyString(data['memberPremiumCode']),
+      discoveryInvitationCode: _nonEmptyString(data['discoveryInvitationCode']),
       campaign: _nonEmptyString(data['~campaign']),
     );
   }
@@ -70,6 +74,7 @@ Map<String, String> registrationQueryParametersFor(
     'issuercode': referral?.issuerCode ?? '',
     'memberReferralCode': referral?.memberReferralCode ?? '',
     'memberPremiumCode': referral?.memberPremiumCode ?? '',
+    'discoveryInvitationCode': referral?.discoveryInvitationCode ?? '',
   };
 }
 
@@ -103,6 +108,7 @@ class BranchReferralService {
           'issuerCode=${referral.issuerCode}, '
           'memberReferralCode=${referral.memberReferralCode}, '
           'memberPremiumCode=${referral.memberPremiumCode}, '
+          'discoveryInvitationCode=${referral.discoveryInvitationCode}, '
           'campaign=${referral.campaign}',
         );
 

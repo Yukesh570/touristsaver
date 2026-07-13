@@ -19,6 +19,7 @@ class RegisterReqModel {
       required this.password,
       required this.confirmPassword,
       required this.memberPremiumCode,
+      required this.discoveryInvitationCode,
       required this.memberReferralCode,
       required this.phoneNumberPrefix});
 
@@ -37,6 +38,7 @@ class RegisterReqModel {
   final String password;
   final String confirmPassword;
   final dynamic memberPremiumCode;
+  final dynamic discoveryInvitationCode;
   final dynamic memberReferralCode;
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +58,8 @@ class RegisterReqModel {
         "confirmPassword": confirmPassword,
         "memberPremiumCode":
             memberPremiumCode == 'null' ? null : memberPremiumCode,
+        "discoveryInvitationCode":
+            discoveryInvitationCode == 'null' ? null : discoveryInvitationCode,
         "memberReferralCode":
             memberReferralCode == 'null' ? null : memberReferralCode,
       };

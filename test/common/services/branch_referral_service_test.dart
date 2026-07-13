@@ -38,8 +38,7 @@ void main() {
       expect(referral.memberPremiumCode, isNull);
     });
 
-    test('maps campaign invitation ref_type and ref_code to memberPremiumCode',
-        () {
+    test('maps campaign invitation only to discoveryInvitationCode', () {
       final referral = BranchRegistrationReferral.fromPayload({
         'ref_type': 'campaign_invitation',
         'ref_code': 'GUSG2026',
@@ -48,7 +47,8 @@ void main() {
 
       expect(referral.issuerCode, isNull);
       expect(referral.memberReferralCode, isNull);
-      expect(referral.memberPremiumCode, 'GUSG2026');
+      expect(referral.memberPremiumCode, isNull);
+      expect(referral.discoveryInvitationCode, 'GUSG2026');
       expect(referral.campaign, 'gusg_discovery');
     });
 
@@ -84,6 +84,7 @@ void main() {
         'issuercode': 'AU0000000011',
         'memberReferralCode': '',
         'memberPremiumCode': '',
+        'discoveryInvitationCode': '',
       });
     });
 
@@ -96,18 +97,20 @@ void main() {
         'issuercode': '',
         'memberReferralCode': '6123456789012345',
         'memberPremiumCode': '',
+        'discoveryInvitationCode': '',
       });
     });
 
     test('builds registration parameters for a campaign invitation', () {
       const referral = BranchRegistrationReferral(
-        memberPremiumCode: 'GUSG2026',
+        discoveryInvitationCode: 'GUSG2026',
       );
 
       expect(registrationQueryParametersFor(referral), {
         'issuercode': '',
         'memberReferralCode': '',
-        'memberPremiumCode': 'GUSG2026',
+        'memberPremiumCode': '',
+        'discoveryInvitationCode': 'GUSG2026',
       });
     });
 
@@ -116,6 +119,7 @@ void main() {
         'issuercode': '',
         'memberReferralCode': '',
         'memberPremiumCode': '',
+        'discoveryInvitationCode': '',
       });
     });
   });

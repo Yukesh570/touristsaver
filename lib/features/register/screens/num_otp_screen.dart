@@ -51,6 +51,7 @@ class NumberOTPScreen extends StatefulWidget {
   final String phoneVerifiedBy;
   final String postalCode;
   final String premium;
+  final String discoveryInvitationCode;
   final String referralCode;
   const NumberOTPScreen({
     super.key,
@@ -66,6 +67,7 @@ class NumberOTPScreen extends StatefulWidget {
     required this.phNum,
     required this.postalCode,
     required this.premium,
+    required this.discoveryInvitationCode,
     required this.referralCode,
     required this.phoneVerifiedBy,
     required this.charityID,
@@ -444,6 +446,8 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                                   : widget.charityID,
                               issuerCode: widget.issuerCode,
                               memberPremiumCode: widget.premium,
+                              discoveryInvitationCode:
+                                  widget.discoveryInvitationCode,
                               memberReferralCode: widget.referralCode,
                               smsotp: otpControllerr1.text.trim(),
                             ),
@@ -663,6 +667,9 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
         'issuercode': widget.issuerCode == 'null' ? '' : widget.issuerCode,
         'memberReferralCode':
             widget.referralCode == 'null' ? '' : widget.referralCode,
+        'discoveryInvitationCode': widget.discoveryInvitationCode == 'null'
+            ? ''
+            : widget.discoveryInvitationCode,
       },
     );
   }
