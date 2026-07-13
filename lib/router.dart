@@ -320,6 +320,7 @@ final GoRouter goRouter = GoRouter(
             phNum: args['phNum'],
             postalCode: args['postalCode'],
             premium: args['premium'],
+            discoveryInvitationCode: args['discoveryInvitationCode'],
             referralCode: args['referralCode'],
             phoneVerifiedBy: args['phoneVerifiedBy'],
           );
@@ -334,10 +335,13 @@ final GoRouter goRouter = GoRouter(
             state.uri.queryParameters['memberReferralCode'] ?? '';
         final memberPremiumCode =
             state.uri.queryParameters['memberPremiumCode'] ?? '';
+        final discoveryInvitationCode =
+            state.uri.queryParameters['discoveryInvitationCode'] ?? '';
         return RegisterScreen(
           issuercode: issuercode,
           memberReferralCode: memberReferralCode,
           memberPremiumCode: memberPremiumCode,
+          discoveryInvitationCode: discoveryInvitationCode,
         );
       },
     ),
