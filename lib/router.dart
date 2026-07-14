@@ -8,6 +8,7 @@ import 'package:touristsaver/common/widgets/congrats.dart';
 import 'package:touristsaver/common/widgets/paid_free.dart';
 import 'package:touristsaver/features/app_intro/screens/first_choose_country.dart';
 import 'package:touristsaver/features/app_intro/screens/intro_screen.dart';
+import 'package:touristsaver/features/app_intro/screens/membership_country_screen.dart';
 import 'package:touristsaver/features/app_intro/screens/video_intro_screen.dart';
 import 'package:touristsaver/features/charity/screens/charity_list.dart';
 import 'package:touristsaver/features/charity/screens/view_all_charities.dart';
@@ -97,6 +98,15 @@ final GoRouter goRouter = GoRouter(
       name: 'video-screen',
       builder: (context, state) => VideoIntroScreen(
         returnRouteName: state.uri.queryParameters['returnTo'],
+      ),
+    ),
+    GoRoute(
+      path: '/membership-country',
+      name: 'membership-country',
+      builder: (context, state) => MembershipCountryScreen(
+        registrationQueryParameters: Map<String, String>.from(
+          state.uri.queryParameters,
+        ),
       ),
     ),
     //First Choose Country Screen
@@ -294,7 +304,6 @@ final GoRouter goRouter = GoRouter(
     //         confirmPassword: args['confirmPassword'],
     //         phonePrefix: args['phonePrefix'],
     //         phNum: args['phNum'],
-    //         postalCode: args['postalCode'],
     //         premium: args['premium'],
     //         referralCode: args['referralCode'],
     //         otpMedium: args['otpMedium'],
@@ -309,6 +318,7 @@ final GoRouter goRouter = GoRouter(
           return NumberOTPScreen(
             charityID: args['charityID'],
             countryID: args['countryID'],
+            membershipCountryId: args['membershipCountryId'],
             stateID: args['stateID'],
             issuerCode: args['issuerCode'],
             firstName: args['firstName'],
@@ -318,7 +328,8 @@ final GoRouter goRouter = GoRouter(
             confirmPassword: args['confirmPassword'],
             phonePrefix: args['phonePrefix'],
             phNum: args['phNum'],
-            postalCode: args['postalCode'],
+            residenceCountryReferenceId: args['residenceCountryReferenceId'],
+            residentialPostalCode: args['residentialPostalCode'],
             premium: args['premium'],
             discoveryInvitationCode: args['discoveryInvitationCode'],
             referralCode: args['referralCode'],
@@ -337,11 +348,15 @@ final GoRouter goRouter = GoRouter(
             state.uri.queryParameters['memberPremiumCode'] ?? '';
         final discoveryInvitationCode =
             state.uri.queryParameters['discoveryInvitationCode'] ?? '';
+        final membershipCountryId = int.tryParse(
+            state.uri.queryParameters['membershipCountryId'] ?? '');
         return RegisterScreen(
           issuercode: issuercode,
           memberReferralCode: memberReferralCode,
           memberPremiumCode: memberPremiumCode,
           discoveryInvitationCode: discoveryInvitationCode,
+          membershipCountryId: membershipCountryId,
+          membershipCountryLocked: membershipCountryId != null,
         );
       },
     ),

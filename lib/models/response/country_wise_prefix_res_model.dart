@@ -55,6 +55,13 @@ class Datum {
   final int? id;
   final String? phonePrefix;
   final String? countryName;
+  final String? countryShortName;
+  final String membershipStatus;
+  final bool membershipRegistrationEnabled;
+  final bool collectResidentialPostalCode;
+  final bool residentialPostalCodeRequired;
+  final String? residentialPostalCodeLabel;
+  final int? residentialPostalCodeMaxLength;
   final dynamic logoUrl;
   final DateTime? createdAt;
 
@@ -62,6 +69,13 @@ class Datum {
     this.id,
     this.phonePrefix,
     this.countryName,
+    this.countryShortName,
+    this.membershipStatus = 'unavailable',
+    this.membershipRegistrationEnabled = false,
+    this.collectResidentialPostalCode = false,
+    this.residentialPostalCodeRequired = false,
+    this.residentialPostalCodeLabel,
+    this.residentialPostalCodeMaxLength,
     this.logoUrl,
     this.createdAt,
   });
@@ -70,6 +84,16 @@ class Datum {
         id: json["id"],
         phonePrefix: json["phonePrefix"],
         countryName: json["countryName"],
+        countryShortName: json["countryShortName"],
+        membershipStatus: json["membershipStatus"] ?? 'unavailable',
+        membershipRegistrationEnabled:
+            json["membershipRegistrationEnabled"] == true,
+        collectResidentialPostalCode:
+            json["collectResidentialPostalCode"] == true,
+        residentialPostalCodeRequired:
+            json["residentialPostalCodeRequired"] == true,
+        residentialPostalCodeLabel: json["residentialPostalCodeLabel"],
+        residentialPostalCodeMaxLength: json["residentialPostalCodeMaxLength"],
         logoUrl: json["logoUrl"],
         createdAt: json["createdAt"] == null
             ? null
@@ -80,6 +104,13 @@ class Datum {
         "id": id,
         "phonePrefix": phonePrefix,
         "countryName": countryName,
+        "countryShortName": countryShortName,
+        "membershipStatus": membershipStatus,
+        "membershipRegistrationEnabled": membershipRegistrationEnabled,
+        "collectResidentialPostalCode": collectResidentialPostalCode,
+        "residentialPostalCodeRequired": residentialPostalCodeRequired,
+        "residentialPostalCodeLabel": residentialPostalCodeLabel,
+        "residentialPostalCodeMaxLength": residentialPostalCodeMaxLength,
         "logoUrl": logoUrl,
         "createdAt": createdAt?.toIso8601String(),
       };

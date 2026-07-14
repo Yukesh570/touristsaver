@@ -110,7 +110,7 @@ class DioHome {
       {double? latitude, double? longitude, double? radius}) async {
     try {
       Dio dio = await getClientNoToken();
-      Response<String> response = await dio.post(bannerList);
+      Response<String> response = await dio.get(bannerList);
       return (response.data!);
     } catch (e) {
       return null;

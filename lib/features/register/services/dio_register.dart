@@ -16,6 +16,7 @@ import 'package:touristsaver/models/response/get_app_slugs_res_model.dart';
 import 'package:touristsaver/models/response/reg_topup_res.dart';
 import 'package:touristsaver/models/response/register_res.dart';
 import 'package:touristsaver/models/response/resend_reg_num_otp_res.dart';
+import 'package:touristsaver/models/response/residence_country_res_model.dart';
 import 'package:touristsaver/models/response/top_up_stripe_res.dart';
 
 import '../../../constants/pref.dart';
@@ -62,6 +63,28 @@ class DioRegister {
       Response<String> response = await dio.get(getAllPhonePrefix);
       // log(response.data!);
       return countryWisePrefixResModelFromJson(response.data!);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<CountryWisePrefixResModel?> countryOptions() async {
+    try {
+      Dio dio = await getClientNoToken();
+      Response<String> response = await dio.get(
+        '$publicCountryList?limit=250&order_by=countryName&ordering=ASC',
+      );
+      return countryWisePrefixResModelFromJson(response.data!);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<ResidenceCountryResModel?> residenceCountries() async {
+    try {
+      final Dio dio = await getClientNoToken();
+      final Response<String> response = await dio.get(residenceCountryList);
+      return residenceCountryResModelFromJson(response.data!);
     } catch (e) {
       return null;
     }

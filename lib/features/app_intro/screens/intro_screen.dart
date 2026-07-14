@@ -24,7 +24,7 @@ class IntroScreen extends StatelessWidget {
     if (!context.mounted) return;
     final pendingReferral = BranchReferralService.takePendingReferral();
     context.goNamed(
-      'register',
+      'membership-country',
       queryParameters: registrationQueryParametersFor(pendingReferral),
     );
   }

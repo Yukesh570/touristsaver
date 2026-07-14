@@ -92,6 +92,11 @@ dev_dependencies:
   build_runner: ^2.3.3
   json_serializable: ^6.6.0
 
+# path_provider_foundation 2.6.0 has an iOS native-assets loader regression
+# (flutter/flutter#186794). Keep the plugin implementation until upstream fixes it.
+dependency_overrides:
+  path_provider_foundation: 2.5.1
+
 flutter_icons:
   image_path: "assets/images/touristsaver-app-logo.png"
   android: true

@@ -11,7 +11,9 @@ class RegisterReqModel {
       required this.firstname,
       required this.lastname,
       required this.email,
-      required this.postalCode,
+      required this.membershipCountryId,
+      required this.residenceCountryReferenceId,
+      required this.residentialPostalCode,
       required this.phoneNumber,
       required this.countryId,
       required this.stateId,
@@ -28,7 +30,9 @@ class RegisterReqModel {
   final String firstname;
   final String lastname;
   final String email;
-  final String postalCode;
+  final int membershipCountryId;
+  final int residenceCountryReferenceId;
+  final String? residentialPostalCode;
   final String phoneNumber;
   final int? charityId;
   final String phoneVerifiedBy;
@@ -48,7 +52,9 @@ class RegisterReqModel {
         "firstname": firstname,
         "lastname": lastname,
         "email": email,
-        "postalCode": postalCode,
+        "membershipCountryId": membershipCountryId,
+        "residenceCountryReferenceId": residenceCountryReferenceId,
+        "residentialPostalCode": residentialPostalCode,
         "phoneNumber": phoneNumber,
         "countryId": countryId,
         if (stateId != null) "stateId": stateId,

@@ -38,6 +38,7 @@ import 'package:touristsaver/generated/l10n.dart';
 class NumberOTPScreen extends StatefulWidget {
   static const String routeName = '/number-reg-otp';
   final int countryID;
+  final int membershipCountryId;
   final int charityID;
   final int? stateID;
   final String issuerCode;
@@ -49,13 +50,15 @@ class NumberOTPScreen extends StatefulWidget {
   final String phonePrefix;
   final String phNum;
   final String phoneVerifiedBy;
-  final String postalCode;
+  final int residenceCountryReferenceId;
+  final String? residentialPostalCode;
   final String premium;
   final String discoveryInvitationCode;
   final String referralCode;
   const NumberOTPScreen({
     super.key,
     required this.countryID,
+    required this.membershipCountryId,
     required this.stateID,
     required this.issuerCode,
     required this.firstName,
@@ -65,7 +68,8 @@ class NumberOTPScreen extends StatefulWidget {
     required this.confirmPassword,
     required this.phonePrefix,
     required this.phNum,
-    required this.postalCode,
+    required this.residenceCountryReferenceId,
+    required this.residentialPostalCode,
     required this.premium,
     required this.discoveryInvitationCode,
     required this.referralCode,
@@ -416,11 +420,10 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                           });
                           return;
                         }
-                        if (widget.stateID == null ||
-                            widget.postalCode.trim().isEmpty) {
+                        if (widget.stateID == null) {
                           GlobalSnackBar.showError(
                             context,
-                            'Australia registration details are missing. Please return and try again.',
+                            'Membership country details are missing. Please return and try again.',
                           );
                           setState(() {
                             isLoadingN = false;
@@ -435,7 +438,11 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                               email: widget.email,
                               password: widget.password,
                               confirmPassword: widget.confirmPassword,
-                              postalCode: widget.postalCode,
+                              membershipCountryId: widget.membershipCountryId,
+                              residenceCountryReferenceId:
+                                  widget.residenceCountryReferenceId,
+                              residentialPostalCode:
+                                  widget.residentialPostalCode,
                               phoneNumberPrefix: widget.phonePrefix,
                               phoneNumber: widget.phNum,
                               phoneVerifiedBy: widget.phoneVerifiedBy,
