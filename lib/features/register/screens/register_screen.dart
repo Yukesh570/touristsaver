@@ -1600,7 +1600,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         .trim()
                                         .isNotEmpty)
                                       _appliedAttributionLabel(
-                                          'Referral applied'),
+                                          'Your Discovery invitation has been recognised'),
 
                                     // Select Charity
 
@@ -1828,7 +1828,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     _gradientContinueButton(),
                                     SizedBox(height: 14.h),
                                     Text(
-                                      'Secure verification required before activation',
+                                      'Next step: verify your mobile',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         color:

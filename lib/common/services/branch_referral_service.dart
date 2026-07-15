@@ -36,7 +36,8 @@ class BranchRegistrationReferral {
       );
     }
 
-    if (refCode != null && refType == 'member') {
+    if (refCode != null &&
+        (refType == 'member' || refType == 'member_invitation')) {
       return BranchRegistrationReferral(
         memberReferralCode: refCode,
         campaign: _nonEmptyString(data['~campaign']),

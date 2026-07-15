@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/models/response/register_res.dart';
+import 'package:touristsaver/models/response/user_detail_res.dart' as profile;
 
 void main() {
   group('Discovery registration context', () {
@@ -52,6 +53,34 @@ void main() {
         });
         expect(data.discoveryMembership, isNull);
       }
+    });
+
+    test('maps Discovery Membership from profile response', () {
+      final response = profile.UserProfileResModel.fromJson({
+        'data': {
+          'status': 'Success',
+          'discoveryMembership': {
+            'active': true,
+            'entitlementId': 5790,
+            'campaignId': 1,
+            'campaignName': 'Bond University',
+            'expiryDate': '2026-08-14T00:00:00Z',
+            'allowMemberInvitations': true,
+          },
+          'results': {
+            'id': 5790,
+            'firstname': 'Mary',
+            'lastname': 'Ho',
+          },
+        },
+      });
+
+      final membership = response.data?.discoveryMembership;
+      expect(membership, isNotNull);
+      expect(membership?.isActive, isTrue);
+      expect(membership?.entitlementId, 5790);
+      expect(membership?.campaignName, 'Bond University');
+      expect(membership?.inheritanceEnabled, isTrue);
     });
 
     test('round-trips safely through route extra', () {

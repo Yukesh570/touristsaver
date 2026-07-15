@@ -424,6 +424,18 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   // Profile Section
   profileSection(UserProfileResModel userProfile) {
     final results = userProfile.data?.results;
+    final discoveryMembership =
+        userProfile.data?.discoveryMembership ?? _discoveryMembership;
+    if (userProfile.data?.discoveryMembership != null &&
+        userProfile.data!.discoveryMembership != _discoveryMembership) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final membership = userProfile.data!.discoveryMembership!;
+        await const DiscoveryMembershipStore().save(membership);
+        if (!mounted) return;
+        setState(() => _discoveryMembership = membership);
+      });
+    }
     final String memberName = _firstNotEmpty([
           '${results?.firstname ?? ''} ${results?.lastname ?? ''}'.trim(),
           results?.email,
@@ -453,10 +465,10 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
             isEmailVerified: isEmailVerified,
           ),
         ),
-        if (_discoveryMembership?.isActive == true)
+        if (discoveryMembership?.isActive == true)
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
-            child: _discoveryMembershipCard(_discoveryMembership!),
+            child: _discoveryMembershipCard(discoveryMembership!),
           ),
         if (_showLaunchDeferredProfileSections) ...[
           _ProfileSection(

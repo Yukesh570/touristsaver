@@ -38,6 +38,22 @@ void main() {
       expect(referral.memberPremiumCode, isNull);
     });
 
+    test('maps member_invitation ref_type and ref_code to memberReferralCode',
+        () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        'ref_type': 'member_invitation',
+        'ref_code': '6114793531410125',
+        'campaignId': 1,
+        '~campaign': 'Bond University',
+      });
+
+      expect(referral.issuerCode, isNull);
+      expect(referral.memberReferralCode, '6114793531410125');
+      expect(referral.memberPremiumCode, isNull);
+      expect(referral.discoveryInvitationCode, isNull);
+      expect(referral.campaign, 'Bond University');
+    });
+
     test('maps campaign invitation only to discoveryInvitationCode', () {
       final referral = BranchRegistrationReferral.fromPayload({
         'ref_type': 'campaign_invitation',

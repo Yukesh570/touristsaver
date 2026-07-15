@@ -164,6 +164,8 @@
 
 import 'dart:convert';
 
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
+
 UserProfileResModel userProfileResModelFromJson(String str) =>
     UserProfileResModel.fromJson(json.decode(str));
 
@@ -193,6 +195,7 @@ class Data {
   final String? issuerName;
   final int? issuerId;
   final String? issuerType;
+  final DiscoveryMembershipContext? discoveryMembership;
   final Results? results;
 
   Data({
@@ -201,6 +204,7 @@ class Data {
     this.issuerName,
     this.issuerId,
     this.issuerType,
+    this.discoveryMembership,
     this.results,
   });
 
@@ -210,6 +214,8 @@ class Data {
         issuerName: json["issuerName"],
         issuerId: json["issuerId"],
         issuerType: json["issuerType"],
+        discoveryMembership:
+            DiscoveryMembershipContext.fromRegistrationJson(json),
         results:
             json["results"] == null ? null : Results.fromJson(json["results"]),
       );
@@ -220,6 +226,7 @@ class Data {
         "issuerName": issuerName,
         "issuerId": issuerId,
         "issuerType": issuerType,
+        "discoveryMembership": discoveryMembership?.toJson(),
         "results": results?.toJson(),
       };
 }
