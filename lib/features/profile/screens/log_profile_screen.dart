@@ -174,6 +174,12 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
         icon: Icons.language_rounded,
         onTap: _openTouristSaverWebsite,
       ),
+      _ProfileActionItem(
+        title: 'Share to a Friend',
+        subtitle: 'Share your TouristSaver invitation with someone',
+        icon: Icons.group_add_outlined,
+        onTap: () => context.pushNamed('memberReferral'),
+      ),
     ];
 
     if (hideRecommendOption != true) {
@@ -188,12 +194,6 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     }
 
     actions.addAll([
-      _ProfileActionItem(
-        title: S.of(context).referAFriend,
-        subtitle: 'Share TouristSaver with someone',
-        icon: Icons.group_add_outlined,
-        onTap: () => context.pushNamed('memberReferral'),
-      ),
       _ProfileActionItem(
         title: S.of(context).editProfile,
         subtitle: 'Update your personal details',
@@ -603,6 +603,48 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
             style: TextStyle(
               color: _profileBrandBlue,
               fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                key: const Key('share-discovery-invitation'),
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => context.pushNamed('memberReferral'),
+                child: Ink(
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [_profileBrandBlue, _profileCtaCyan],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.ios_share_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      SizedBox(width: 9),
+                      Text(
+                        'Share Your Invitation',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],

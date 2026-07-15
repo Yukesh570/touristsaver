@@ -7,12 +7,11 @@ import 'package:touristsaver/common/widgets/custom_snackbar.dart';
 import 'package:touristsaver/common/widgets/error.dart';
 import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
 import 'package:touristsaver/features/profile/services/dio_membership.dart';
+import 'package:touristsaver/models/response/member_invitation_link_res.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../common/services/dio_common.dart';
 import '../../../common/widgets/custom_app_bar.dart';
-import '../../../models/response/piiink_info_res.dart';
 import '../../../models/response/user_detail_res.dart';
 import '../bloc/user_profile_blocs.dart';
 import '../bloc/user_profile_events.dart';
@@ -25,7 +24,9 @@ const Color _referralBorder = Color(0xFFE5EAF4);
 
 class MemberReferralScreen extends StatefulWidget {
   static const String routeName = "/memberReferral";
-  const MemberReferralScreen({super.key});
+  const MemberReferralScreen({super.key, this.dioMembership});
+
+  final DioMemberShip? dioMembership;
 
   @override
   State<MemberReferralScreen> createState() => _MemberReferralScreenState();
@@ -34,32 +35,29 @@ class MemberReferralScreen extends StatefulWidget {
 class _MemberReferralScreenState extends State<MemberReferralScreen> {
   bool shareLoad = false;
   bool copyLoad = false;
-  int? memRefKPI;
-  int? piiinkUponMemberReferral;
-
-  Future<void> getPiiinkInfo() async {
-    PiiinkInfoResModel? piiinkInfoResModel = await DioCommon().piiinkInfo();
-    setState(() {
-      memRefKPI = piiinkInfoResModel?.data?.memberReferTransactionKpi;
-      piiinkUponMemberReferral =
-          piiinkInfoResModel?.data?.piiinkUponMemberReferral;
-    });
-  }
+  late final DioMemberShip _dioMembership;
+  late Future<MemberInvitationLink> _invitationLinkFuture;
 
   @override
   void initState() {
-    getPiiinkInfo();
     super.initState();
+    _dioMembership = widget.dioMembership ?? DioMemberShip();
+    _invitationLinkFuture = _dioMembership.getMemberInvitationLink();
   }
 
-  final DioMemberShip _dioMembership = DioMemberShip();
+  void _retryInvitationLink() {
+    setState(() {
+      _invitationLinkFuture = _dioMembership.getMemberInvitationLink();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(
-          text: S.of(context).referAFriend,
+          text: 'Share to a Friend',
           icon: Icons.arrow_back_ios,
           onPressed: () {
             context.pop();
@@ -77,9 +75,21 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
               return const TouristSaverLoadingView();
             } else if (state is UserProfileLoadedState) {
               UserProfileResModel userProfile = state.userProfile;
-              return userProfile.data!.results!.uniqueMemberCode == null
-                  ? const Error1()
-                  : _referralContent(userProfile);
+              if (userProfile.data?.results?.uniqueMemberCode == null) {
+                return const Error1();
+              }
+              return FutureBuilder<MemberInvitationLink>(
+                future: _invitationLinkFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const TouristSaverLoadingView();
+                  }
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return _InvitationLinkError(onRetry: _retryInvitationLink);
+                  }
+                  return _referralContent(userProfile, snapshot.data!);
+                },
+              );
             } else if (state is UserProfileErrorState) {
               return const Error1();
             } else {
@@ -97,25 +107,30 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
     );
   }
 
-  Widget _referralContent(UserProfileResModel userProfile) {
+  Widget _referralContent(
+    UserProfileResModel userProfile,
+    MemberInvitationLink invitationLink,
+  ) {
     final String memberCode = userProfile.data!.results!.uniqueMemberCode ?? '';
-    final String referralLink =
-        'https://app.touristsaver.org/register?memberReferralCode=$memberCode';
+    final String referralLink = invitationLink.url;
+    final bool hasCampaignContext = invitationLink.hasCampaignContext;
+    final String campaignName =
+        invitationLink.campaignName ?? 'your Discovery campaign';
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _ReferralCard(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 38,
+                    height: 38,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
@@ -130,22 +145,26 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
                     child: const Icon(
                       Icons.card_giftcard_rounded,
                       color: Colors.white,
-                      size: 25,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
-                    'Invite friends to discover more with TouristSaver',
+                    hasCampaignContext
+                        ? 'Invite friends through $campaignName'
+                        : 'Invite friends to discover more with TouristSaver',
                     style: TextStyle(
                       color: _referralNavy,
-                      fontSize: 24.sp,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.w900,
                       height: 1.12,
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Share your QR code or referral link with friends. When they join, they can start discovering local savings, experiences and great deals nearby.',
+                    hasCampaignContext
+                        ? 'Share this invitation with friends. They can join TouristSaver and discover their member savings.'
+                        : 'Share your QR code or referral link with friends. When they join, they can start discovering local savings, experiences and great deals nearby.',
                     style: TextStyle(
                       color: _referralMuted,
                       fontSize: 14.sp,
@@ -156,12 +175,19 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            if (hasCampaignContext) ...[
+              const SizedBox(height: 10),
+              _CampaignInvitationContext(campaignName: campaignName),
+            ],
+            const SizedBox(height: 10),
             _ReferralCard(
+              padding: const EdgeInsets.all(13),
               child: Column(
                 children: [
                   Text(
-                    'Your referral QR code',
+                    hasCampaignContext
+                        ? 'Your invitation QR code'
+                        : 'Your referral QR code',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: _referralNavy,
@@ -179,26 +205,27 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 18.h),
+                  SizedBox(height: 12.h),
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: _referralBorder),
                     ),
                     child: QrImageView(
+                      key: ValueKey<String>('invitation-qr:$referralLink'),
                       data: referralLink,
-                      size: 200,
+                      size: 170,
                       version: QrVersions.auto,
                       backgroundColor: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 14.h),
+                  SizedBox(height: 10.h),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 9,
+                      vertical: 7,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF7F9FC),
@@ -216,7 +243,7 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 18.h),
+                  SizedBox(height: 12.h),
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final bool stackButtons = constraints.maxWidth < 330;
@@ -354,6 +381,114 @@ class _MemberReferralScreenState extends State<MemberReferralScreen> {
     setState(() {
       shareLoad = false;
     });
+  }
+}
+
+class _CampaignInvitationContext extends StatelessWidget {
+  const _CampaignInvitationContext({required this.campaignName});
+
+  final String campaignName;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ReferralCard(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0009FE).withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.explore_outlined,
+              color: Color(0xFF0009FE),
+              size: 21,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'This invitation is from',
+                  style: TextStyle(
+                    color: _referralMuted,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  campaignName,
+                  key: const Key('campaign-invitation-name'),
+                  style: TextStyle(
+                    color: _referralNavy,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Your friend will join through your invitation.',
+                  style: TextStyle(
+                    color: _referralMuted,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InvitationLinkError extends StatelessWidget {
+  const _InvitationLinkError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.link_off_rounded,
+              color: Color(0xFF63708A),
+              size: 42,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Your invitation link could not be loaded.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: _referralNavy,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              key: const Key('retry-invitation-link'),
+              onPressed: onRetry,
+              child: const Text('Try again'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

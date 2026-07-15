@@ -35,6 +35,7 @@ import '../../../constants/convert_to_map_of_string.dart';
 import '../../../models/request/nearby_req.dart';
 import '../../../models/response/app_version_log_model.dart' hide Datum;
 import '../../../models/response/category_list_res.dart';
+import '../../../models/response/member_growth_card_res.dart';
 import '../../../models/response/nearby_res.dart' as nearby;
 import '../../connectivity/screens/connectivity.dart';
 import '../../connectivity/screens/connectivity_screen.dart';
@@ -77,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isShowing = false;
   bool _isGreatDealsMode = false;
   Future<List<nearby.Datum>>? _greatDealsNearbyFuture;
+  Future<MemberGrowthCard?>? _growthCardFuture;
 
   // Banner data variable
 
@@ -361,6 +363,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    _growthCardFuture = DioHome().getMemberGrowthCard();
     getPiiinkInfo();
     fetchBanner(); // Added banner fetch
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -567,6 +570,206 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _memberGrowthCard() {
+    return FutureBuilder<MemberGrowthCard?>(
+      future: _growthCardFuture,
+      builder: (context, snapshot) {
+        final MemberGrowthCard? card = snapshot.data;
+        if (card == null || card.eligible != true) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(10.w, 0, 10.w, 12.h),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                color: const Color(0xFFE4EAF2),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        card.title,
+                        style: TextStyle(
+                          color: const Color(0xFF071126),
+                          fontFamily: 'Montserrat',
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ),
+                    if (card.recognitionLevel != null)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 9.w,
+                          vertical: 5.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF8FF),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: const Color(0xFFB8DFFF),
+                          ),
+                        ),
+                        child: Text(
+                          card.recognitionLevel!,
+                          style: TextStyle(
+                            color: const Color(0xFF005CA8),
+                            fontFamily: 'Montserrat',
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                SizedBox(height: 14.h),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final bool compact = constraints.maxWidth < 340;
+                    final List<Widget> stats = [
+                      _growthStat(
+                        icon: Icons.group_outlined,
+                        value: '${card.membersIntroduced}',
+                        label: 'Members introduced',
+                      ),
+                      _growthStat(
+                        icon: Icons.verified_user_outlined,
+                        value: '${card.activeMembers}',
+                        label: 'Active members',
+                      ),
+                      _growthStat(
+                        icon: Icons.savings_outlined,
+                        value:
+                            '${card.communitySavings.currency} ${_formatSavings(card.communitySavings.amount)}',
+                        label: 'Community savings',
+                      ),
+                      _growthStat(
+                        icon: Icons.storefront_outlined,
+                        value: '${card.merchantsIntroduced}',
+                        label: 'Merchants introduced',
+                      ),
+                    ];
+
+                    if (compact) {
+                      return Column(
+                        children: [
+                          for (int index = 0;
+                              index < stats.length;
+                              index++) ...[
+                            stats[index],
+                            if (index != stats.length - 1)
+                              SizedBox(height: 10.h),
+                          ],
+                        ],
+                      );
+                    }
+
+                    return Wrap(
+                      spacing: 10.w,
+                      runSpacing: 10.h,
+                      children: stats
+                          .map(
+                            (stat) => SizedBox(
+                              width: (constraints.maxWidth - 10.w) / 2,
+                              child: stat,
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _growthStat({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      constraints: BoxConstraints(minHeight: 74.h),
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FC),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: const Color(0xFFE8EEF6)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFF1B67A5),
+            size: 20.sp,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AutoSizeText(
+                  value,
+                  maxLines: 1,
+                  minFontSize: 11,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFF071126),
+                    fontFamily: 'Montserrat',
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0,
+                  ),
+                ),
+                SizedBox(height: 3.h),
+                Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFF667085),
+                    fontFamily: 'Sans',
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatSavings(num amount) {
+    if (amount % 1 == 0) return amount.toInt().toString();
+    return amount.toStringAsFixed(2);
+  }
+
   @override
   Widget build(BuildContext context) {
     // final localeData = context.read<LocaleCubit>().state;
@@ -606,6 +809,7 @@ class _HomeScreenState extends State<HomeScreen>
                               experienceBanner(),
                               const SizedBox(height: 10),
                             ],
+                            _memberGrowthCard(),
                             _greatDealsNearbyButton(),
                             const SizedBox(height: 20),
                             BestOffer(

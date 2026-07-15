@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:touristsaver/common/app_variables.dart';
@@ -10,6 +12,7 @@ import 'package:touristsaver/models/response/category_list_res.dart';
 import 'package:touristsaver/models/response/get_range_res.dart';
 import 'package:touristsaver/models/response/location_merchants_res_model.dart';
 import 'package:touristsaver/models/response/merchant_get_all_res.dart';
+import 'package:touristsaver/models/response/member_growth_card_res.dart';
 import 'package:touristsaver/models/response/nearby_res.dart';
 import 'package:touristsaver/models/response/search_merchant_res.dart';
 import 'package:touristsaver/models/response/slider_res.dart';
@@ -19,6 +22,23 @@ import '../../../models/response/get_nearby_merchants_res_model.dart';
 import '../../../models/response/cat_model.dart';
 
 class DioHome {
+  Future<MemberGrowthCard?> getMemberGrowthCard() async {
+    if (AppVariables.accessToken == null) return null;
+
+    try {
+      final Dio dio = await getClient();
+      final Response<dynamic> response = await dio.get(memberGrowthCard);
+      final dynamic rawData = response.data;
+      final Map<String, dynamic> json = rawData is String
+          ? jsonDecode(rawData) as Map<String, dynamic>
+          : rawData as Map<String, dynamic>;
+      return MemberGrowthCardResModel.fromJson(json).data;
+    } catch (e) {
+      debugPrint('Error fetching member growth card: $e');
+      return null;
+    }
+  }
+
   Future<String?> _selectedCountryId({int? fallbackCountryId}) async {
     final String? selectedCountryId =
         await Pref().readData(key: userChosenLocationID);

@@ -16,6 +16,8 @@ const allregion = '/region/getAllForApp';
 const allPostalCode = '/postalCode/getAll';
 const loginMember = '/auth/memberLogin';
 const oneMember = '/member/general/getOne';
+const memberGrowthCard = '/member/growth-card';
+const memberInvitationLink = '/member/invitation-link';
 const confirmApplyPiiinkURL = '/member/transaction/startApplyPiiink';
 const terminalConfirmApplyPiiinkURL =
     '/member/transaction/terminalStartApplyPiiink';

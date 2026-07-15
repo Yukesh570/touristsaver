@@ -22,22 +22,25 @@ class AboutScreen extends StatefulWidget {
 
 class _AboutScreenState extends State<AboutScreen> {
   String? _version;
+  String? _buildNumber;
 
-  Future<void> _getAppVersion() async {
+  Future<void> _getAppMetadata() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     final version = packageInfo.version;
+    final buildNumber = packageInfo.buildNumber;
 
     if (!mounted) return;
     setState(() {
       _version = version;
+      _buildNumber = buildNumber;
     });
   }
 
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _getAppVersion();
+      await _getAppMetadata();
     });
 
     super.initState();
@@ -117,7 +120,10 @@ class _AboutScreenState extends State<AboutScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    _VersionPill(version: _version),
+                    _VersionDetails(
+                      version: _version,
+                      buildNumber: _buildNumber,
+                    ),
                   ],
                 ),
               ),
@@ -196,10 +202,14 @@ class _AboutCard extends StatelessWidget {
   }
 }
 
-class _VersionPill extends StatelessWidget {
-  const _VersionPill({required this.version});
+class _VersionDetails extends StatelessWidget {
+  const _VersionDetails({
+    required this.version,
+    required this.buildNumber,
+  });
 
   final String? version;
+  final String? buildNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -207,17 +217,32 @@ class _VersionPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: _aboutPrimaryBlue.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _aboutPrimaryBlue.withValues(alpha: 0.10)),
       ),
-      child: AutoSizeText(
-        'Version ${version ?? ''}'.trim(),
-        maxLines: 1,
-        style: const TextStyle(
-          color: _aboutNavy,
-          fontSize: 13,
-          fontWeight: FontWeight.w800,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AutoSizeText(
+            'Version ${version ?? ''}'.trim(),
+            maxLines: 1,
+            style: const TextStyle(
+              color: _aboutNavy,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          AutoSizeText(
+            'Build ${buildNumber ?? ''}'.trim(),
+            maxLines: 1,
+            style: const TextStyle(
+              color: _aboutMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
