@@ -64,7 +64,7 @@
             <!-- For Deep Linking which helps in connecting app from the link when scanning QR code -->
             <meta-data 
               android:name="flutter_deeplinking_enabled"
-              android:value="true"
+              android:value="false"
             />
             <intent-filter android:autoVerify="true">
                 <data android:scheme="https"

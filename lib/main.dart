@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:touristsaver/constants/global_colors.dart';
+import 'package:touristsaver/constants/pref.dart';
+import 'package:touristsaver/constants/pref_key.dart';
 import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/features/charity/services/dio_charity.dart';
 import 'package:touristsaver/features/connectivity/cubit/internet_cubit.dart';
@@ -94,8 +96,55 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  StreamSubscription<BranchRegistrationReferral>? _referralSubscription;
+  bool _routerReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _referralSubscription = BranchReferralService.directIssuerReferrals
+        .listen(_openDirectIssuerRegistration);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _routerReady = true;
+      final pendingReferral = BranchReferralService.pendingDirectIssuerReferral;
+      if (pendingReferral != null) {
+        _openDirectIssuerRegistration(pendingReferral);
+      }
+    });
+  }
+
+  Future<void> _openDirectIssuerRegistration(
+    BranchRegistrationReferral referral,
+  ) async {
+    if (!_routerReady || !referral.isDirectIssuerRegistration) return;
+
+    final token = await Pref().readData(key: saveToken);
+    if (token != null && token.trim().isNotEmpty) {
+      BranchReferralService.markDirectIssuerHandled(referral);
+      return;
+    }
+    if (!mounted) return;
+
+    BranchReferralService.markDirectIssuerHandled(referral);
+    goRouter.goNamed(
+      'membership-country',
+      queryParameters: registrationQueryParametersFor(referral),
+    );
+  }
+
+  @override
+  void dispose() {
+    _referralSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

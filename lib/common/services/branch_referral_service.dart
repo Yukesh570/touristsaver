@@ -11,6 +11,7 @@ class BranchRegistrationReferral {
     this.memberPremiumCode,
     this.discoveryInvitationCode,
     this.campaign,
+    this.isDirectIssuerRegistration = false,
   });
 
   final String? issuerCode;
@@ -18,6 +19,7 @@ class BranchRegistrationReferral {
   final String? memberPremiumCode;
   final String? discoveryInvitationCode;
   final String? campaign;
+  final bool isDirectIssuerRegistration;
 
   bool get hasRegistrationCode =>
       issuerCode != null ||
@@ -26,6 +28,16 @@ class BranchRegistrationReferral {
       discoveryInvitationCode != null;
 
   factory BranchRegistrationReferral.fromPayload(Map<dynamic, dynamic> data) {
+    final directIssuerCode = data['+clicked_branch_link'] == false
+        ? _directIssuerCode(data['+non_branch_link'])
+        : null;
+    if (directIssuerCode != null) {
+      return BranchRegistrationReferral(
+        issuerCode: directIssuerCode,
+        isDirectIssuerRegistration: true,
+      );
+    }
+
     final refType = _nonEmptyString(data['ref_type'])?.toLowerCase();
     final refCode = _nonEmptyString(data['ref_code']);
 
@@ -60,6 +72,25 @@ class BranchRegistrationReferral {
     );
   }
 
+  static String? _directIssuerCode(dynamic link) {
+    final rawLink = _nonEmptyString(link);
+    final uri = rawLink == null ? null : Uri.tryParse(rawLink);
+    if (uri == null ||
+        uri.scheme.toLowerCase() != 'https' ||
+        uri.host.toLowerCase() != 'app.touristsaver.org' ||
+        uri.hasPort ||
+        uri.path != '/register') {
+      return null;
+    }
+
+    for (final parameter in uri.queryParameters.entries) {
+      if (parameter.key.toLowerCase() == 'issuercode') {
+        return _nonEmptyString(parameter.value);
+      }
+    }
+    return null;
+  }
+
   static String? _nonEmptyString(dynamic value) {
     if (value == null) return null;
     final result = value.toString().trim();
@@ -84,18 +115,33 @@ class BranchReferralService {
 
   static final StreamController<BranchRegistrationReferral> _controller =
       StreamController<BranchRegistrationReferral>.broadcast();
+  static final StreamController<BranchRegistrationReferral>
+      _directIssuerController =
+      StreamController<BranchRegistrationReferral>.broadcast();
 
   static StreamSubscription<Map>? _branchSubscription;
   static BranchRegistrationReferral? _pendingReferral;
+  static BranchRegistrationReferral? _pendingDirectIssuerReferral;
 
   static Stream<BranchRegistrationReferral> get referrals => _controller.stream;
+  static Stream<BranchRegistrationReferral> get directIssuerReferrals =>
+      _directIssuerController.stream;
   static BranchRegistrationReferral? get pendingReferral => _pendingReferral;
+  static BranchRegistrationReferral? get pendingDirectIssuerReferral =>
+      _pendingDirectIssuerReferral;
 
   static void start() {
     if (_branchSubscription != null) return;
 
     _branchSubscription = FlutterBranchSdk.listSession().listen(
       (data) {
+        final referral = BranchRegistrationReferral.fromPayload(data);
+        if (referral.isDirectIssuerRegistration) {
+          _pendingDirectIssuerReferral = referral;
+          _directIssuerController.add(referral);
+          return;
+        }
+
         const encoder = JsonEncoder.withIndent('  ');
         debugPrint(
           'BRANCH_PAYLOAD:\n${encoder.convert(Map<String, dynamic>.from(data))}',
@@ -103,7 +149,6 @@ class BranchReferralService {
 
         if (data['+clicked_branch_link'] != true) return;
 
-        final referral = BranchRegistrationReferral.fromPayload(data);
         debugPrint(
           'BRANCH_NORMALIZED: '
           'issuerCode=${referral.issuerCode}, '
@@ -132,6 +177,12 @@ class BranchReferralService {
   static void markHandled(BranchRegistrationReferral referral) {
     if (identical(_pendingReferral, referral)) {
       _pendingReferral = null;
+    }
+  }
+
+  static void markDirectIssuerHandled(BranchRegistrationReferral referral) {
+    if (identical(_pendingDirectIssuerReferral, referral)) {
+      _pendingDirectIssuerReferral = null;
     }
   }
 }

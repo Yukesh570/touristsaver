@@ -130,6 +130,7 @@ class _MySplashScreenState extends State<MySplashScreen> {
 
       // Wait splash time before deciding where to go
       Timer(Duration(seconds: splashtime), () async {
+        if (!mounted) return;
         if (isLoggedIn) {
           showBottomBar();
         } else if (BranchReferralService.pendingReferral?.hasRegistrationCode ==
