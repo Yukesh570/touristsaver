@@ -66,6 +66,71 @@ void main() {
       );
     });
 
+    test('uses link-specific wording for a link-originated rejection', () {
+      final invalid = RegistrationCodeResolution.fromJson({
+        'valid': false,
+        'category': null,
+        'reason': 'INVALID_CODE',
+      });
+
+      expect(
+        registrationCodeValidationMessage(
+          invalid,
+          manuallyEntered: false,
+        ),
+        unavailableInvitationLinkMessage,
+      );
+      expect(
+        shouldClearPendingInvitationAfterValidationFailure(
+          resolution: invalid,
+          manuallyEntered: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test('keeps manual-code wording for a code the member typed', () {
+      final invalid = RegistrationCodeResolution.fromJson({
+        'valid': false,
+        'category': null,
+        'reason': 'INVALID_CODE',
+      });
+
+      expect(
+        registrationCodeValidationMessage(
+          invalid,
+          manuallyEntered: true,
+        ),
+        'We couldn’t verify this code. Please check it and try again.',
+      );
+      expect(
+        shouldClearPendingInvitationAfterValidationFailure(
+          resolution: invalid,
+          manuallyEntered: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not clear link attribution for a backend outage', () {
+      final unavailable = RegistrationCodeResolution.unavailable();
+
+      expect(
+        registrationCodeValidationMessage(
+          unavailable,
+          manuallyEntered: false,
+        ),
+        contains('unavailable'),
+      );
+      expect(
+        shouldClearPendingInvitationAfterValidationFailure(
+          resolution: unavailable,
+          manuallyEntered: false,
+        ),
+        isFalse,
+      );
+    });
+
     test('maps eligibility reasons to clear member-safe messages', () {
       RegistrationCodeResolution failure(String reason) =>
           RegistrationCodeResolution(

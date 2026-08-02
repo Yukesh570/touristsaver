@@ -176,6 +176,25 @@ String registrationCodeErrorMessage(RegistrationCodeResolution resolution) {
   }
 }
 
+const String unavailableInvitationLinkMessage =
+    'This invitation link is no longer available. You can still continue without an invitation.';
+
+String registrationCodeValidationMessage(
+  RegistrationCodeResolution resolution, {
+  required bool manuallyEntered,
+}) {
+  if (!manuallyEntered && resolution.backendReached) {
+    return unavailableInvitationLinkMessage;
+  }
+  return registrationCodeErrorMessage(resolution);
+}
+
+bool shouldClearPendingInvitationAfterValidationFailure({
+  required RegistrationCodeResolution resolution,
+  required bool manuallyEntered,
+}) =>
+    !resolution.valid && resolution.backendReached && !manuallyEntered;
+
 bool registrationCodeReplacementRequired({
   required String? pendingDiscoveryCode,
   required String candidateCode,

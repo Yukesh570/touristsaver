@@ -9,7 +9,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:touristsaver/constants/global_colors.dart';
 import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
+import 'package:touristsaver/common/models/registration_code_resolution.dart';
 import 'package:touristsaver/common/services/branch_referral_service.dart';
+import 'package:touristsaver/common/widgets/custom_snackbar.dart';
 import 'package:touristsaver/features/charity/services/dio_charity.dart';
 import 'package:touristsaver/features/connectivity/cubit/internet_cubit.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
@@ -107,6 +109,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   StreamSubscription<BranchRegistrationReferral>? _referralSubscription;
   StreamSubscription<BranchRegistrationReferral>? _discoverySubscription;
+  StreamSubscription<void>? _unavailableInvitationSubscription;
   bool _routerReady = false;
 
   @override
@@ -116,13 +119,30 @@ class _MyAppState extends State<MyApp> {
         .listen(_openDirectIssuerRegistration);
     _discoverySubscription =
         BranchReferralService.discoveryReferrals.listen(_openDiscoveryIntro);
+    _unavailableInvitationSubscription = BranchReferralService
+        .unavailableInvitationLinks
+        .listen((_) => _showUnavailableInvitationLink());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _routerReady = true;
       final pendingReferral = BranchReferralService.pendingDirectIssuerReferral;
       if (pendingReferral != null) {
         _openDirectIssuerRegistration(pendingReferral);
       }
+      _showUnavailableInvitationLink();
     });
+  }
+
+  void _showUnavailableInvitationLink() {
+    if (!_routerReady || !mounted) return;
+    final context = navigatorKey.currentContext;
+    if (context == null ||
+        !BranchReferralService.takePendingUnavailableInvitationNotice()) {
+      return;
+    }
+    GlobalSnackBar.showError(
+      context,
+      unavailableInvitationLinkMessage,
+    );
   }
 
   Future<void> _openDiscoveryIntro(
@@ -162,6 +182,7 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     _referralSubscription?.cancel();
     _discoverySubscription?.cancel();
+    _unavailableInvitationSubscription?.cancel();
     super.dispose();
   }
 

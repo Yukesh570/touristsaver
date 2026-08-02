@@ -2118,17 +2118,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
     if (!mounted) return;
     if (!resolution.valid) {
+      final manuallyEntered = manualCode.isNotEmpty;
+      final shouldClearPending =
+          shouldClearPendingInvitationAfterValidationFailure(
+        resolution: resolution,
+        manuallyEntered: manuallyEntered,
+      );
+      if (shouldClearPending) {
+        await BranchReferralService.clearPendingDiscoveryReferral(
+          code: pendingDiscoveryCode,
+        );
+        if (!mounted) return;
+      }
       GlobalSnackBar.showError(
         context,
-        registrationCodeErrorMessage(resolution),
+        registrationCodeValidationMessage(
+          resolution,
+          manuallyEntered: manuallyEntered,
+        ),
       );
       setState(() {
         isLoading = false;
-        _registrationCodeValidationFailed = true;
+        if (shouldClearPending) {
+          _currentRegistrationCode = null;
+          _currentRegistrationCodeResolution = null;
+          _registrationCodeValidationFailed = false;
+        } else {
+          _registrationCodeValidationFailed = true;
+        }
       });
-      if (manualCode.isEmpty && resolution.backendReached) {
-        _offerOrdinaryRegistrationWithoutInvitation();
-      }
       return;
     }
 
@@ -2285,31 +2303,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ) ??
         false;
-  }
-
-  void _offerOrdinaryRegistrationWithoutInvitation() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'You can remove this invitation and continue with ordinary registration.',
-        ),
-        action: SnackBarAction(
-          label: 'Remove',
-          onPressed: () async {
-            final code = _currentRegistrationCode;
-            await BranchReferralService.clearPendingDiscoveryReferral(
-              code: code,
-            );
-            if (!mounted) return;
-            setState(() {
-              _currentRegistrationCode = null;
-              _currentRegistrationCodeResolution = null;
-              _registrationCodeValidationFailed = false;
-            });
-          },
-        ),
-      ),
-    );
   }
 
   //Invalid Premium Code

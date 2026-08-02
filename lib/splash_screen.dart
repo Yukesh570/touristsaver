@@ -36,6 +36,12 @@ Future<bool> checkWalletBalance() async {
   }
 }
 
+Future<String?> hydratePersistedAccessToken(Pref pref) async {
+  final String? token = await pref.readData(key: saveToken);
+  AppVariables.accessToken = token;
+  return token;
+}
+
 class _MySplashScreenState extends State<MySplashScreen> {
   //Using in_app_update package for force update only in android
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
@@ -125,7 +131,7 @@ class _MySplashScreenState extends State<MySplashScreen> {
       if (notificationsCount != null && notificationsCount != 0) {
         AppVariables.notificationLabel.value = notificationsCount;
       }
-      String? token = await pref.readData(key: saveToken);
+      String? token = await hydratePersistedAccessToken(pref);
       bool isLoggedIn = token != null && token.isNotEmpty;
 
       // Wait splash time before deciding where to go

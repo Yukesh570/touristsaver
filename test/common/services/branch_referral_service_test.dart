@@ -173,6 +173,23 @@ void main() {
       expect(referral.type, BranchReferralType.directIssuer);
     });
 
+    test('an unresolved trusted short link is never treated as a code', () {
+      final payload = {
+        '+clicked_branch_link': false,
+        '+non_branch_link': 'https://app.touristsaver.org/INVALID44b',
+      };
+      final referral = BranchRegistrationReferral.fromPayload(payload);
+
+      expect(
+        BranchRegistrationReferral.isUnresolvedTrustedShortLinkPayload(
+          payload,
+        ),
+        isTrue,
+      );
+      expect(referral.hasRegistrationCode, isFalse);
+      expect(referral.type, BranchReferralType.unknown);
+    });
+
     test('recognizes the issuer query key case-insensitively', () {
       final referral = BranchRegistrationReferral.fromPayload({
         '+clicked_branch_link': false,

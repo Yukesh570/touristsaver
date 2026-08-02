@@ -131,6 +131,25 @@ class BranchRegistrationReferral {
     );
   }
 
+  static bool isUnresolvedTrustedShortLinkPayload(
+    Map<dynamic, dynamic> data,
+  ) {
+    if (data['+clicked_branch_link'] != false) return false;
+
+    final rawLink = _nonEmptyString(data['+non_branch_link']);
+    final uri = rawLink == null ? null : Uri.tryParse(rawLink);
+    if (uri == null ||
+        uri.scheme.toLowerCase() != 'https' ||
+        uri.host.toLowerCase() != 'app.touristsaver.org' ||
+        uri.hasPort ||
+        uri.path == '/register' ||
+        uri.pathSegments.length != 1) {
+      return false;
+    }
+
+    return RegExp(r'^[A-Za-z0-9_-]{6,}$').hasMatch(uri.pathSegments.single);
+  }
+
   Map<String, dynamic> toJson() => {
         'discoveryInvitationCode': discoveryInvitationCode,
         'campaign': campaign,
@@ -230,17 +249,22 @@ class BranchReferralService {
   static final StreamController<BranchRegistrationReferral>
       _discoveryController =
       StreamController<BranchRegistrationReferral>.broadcast();
+  static final StreamController<void> _unavailableInvitationController =
+      StreamController<void>.broadcast();
 
   static StreamSubscription<Map>? _branchSubscription;
   static BranchRegistrationReferral? _pendingReferral;
   static BranchRegistrationReferral? _pendingDirectIssuerReferral;
   static BranchRegistrationReferral? _pendingDiscoveryReferral;
+  static bool _pendingUnavailableInvitationNotice = false;
 
   static Stream<BranchRegistrationReferral> get referrals => _controller.stream;
   static Stream<BranchRegistrationReferral> get directIssuerReferrals =>
       _directIssuerController.stream;
   static Stream<BranchRegistrationReferral> get discoveryReferrals =>
       _discoveryController.stream;
+  static Stream<void> get unavailableInvitationLinks =>
+      _unavailableInvitationController.stream;
   static BranchRegistrationReferral? get pendingReferral => _pendingReferral;
   static BranchRegistrationReferral? get pendingDirectIssuerReferral =>
       _pendingDirectIssuerReferral;
@@ -274,7 +298,9 @@ class BranchReferralService {
     if (_branchSubscription != null) return;
 
     _branchSubscription = FlutterBranchSdk.listSession().listen(
-      (data) {
+      (data) async {
+        if (await handleUnresolvedInvitationLinkPayload(data)) return;
+
         final referral = BranchRegistrationReferral.fromPayload(data);
         if (referral.isDirectIssuerRegistration) {
           _pendingDirectIssuerReferral = referral;
@@ -320,6 +346,28 @@ class BranchReferralService {
     if (identical(_pendingDirectIssuerReferral, referral)) {
       _pendingDirectIssuerReferral = null;
     }
+  }
+
+  static Future<bool> handleUnresolvedInvitationLinkPayload(
+    Map<dynamic, dynamic> data,
+  ) async {
+    if (!BranchRegistrationReferral.isUnresolvedTrustedShortLinkPayload(data)) {
+      return false;
+    }
+
+    if (_pendingReferral?.isDiscoveryInvitation == true) {
+      _pendingReferral = null;
+    }
+    await clearPendingDiscoveryReferral();
+    _pendingUnavailableInvitationNotice = true;
+    _unavailableInvitationController.add(null);
+    return true;
+  }
+
+  static bool takePendingUnavailableInvitationNotice() {
+    if (!_pendingUnavailableInvitationNotice) return false;
+    _pendingUnavailableInvitationNotice = false;
+    return true;
   }
 
   static Future<void> replacePendingDiscoveryReferral(

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:touristsaver/common/models/registration_code_resolution.dart';
 import 'package:touristsaver/common/services/branch_referral_service.dart';
 
 void main() {
@@ -9,6 +10,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     BranchReferralService.resetPendingDiscoveryInMemory();
     await BranchReferralService.clearPendingDiscoveryReferral();
+    BranchReferralService.takePendingUnavailableInvitationNotice();
   });
 
   test('restores a pending canonical Discovery invitation after restart',
@@ -92,5 +94,57 @@ void main() {
     await BranchReferralService.restorePendingDiscoveryReferral();
 
     expect(BranchReferralService.pendingDiscoveryReferral, isNull);
+  });
+
+  test('an unresolved trusted short link clears stale Discovery attribution',
+      () async {
+    await BranchReferralService.replacePendingDiscoveryReferral(
+      const BranchRegistrationReferral(
+        discoveryInvitationCode: '333BUTTERFLY',
+        type: BranchReferralType.discoveryInvitation,
+      ),
+    );
+
+    final handled =
+        await BranchReferralService.handleUnresolvedInvitationLinkPayload({
+      '+clicked_branch_link': false,
+      '+non_branch_link': 'https://app.touristsaver.org/INVALID44b',
+    });
+
+    expect(handled, isTrue);
+    expect(BranchReferralService.pendingDiscoveryReferral, isNull);
+    BranchReferralService.resetPendingDiscoveryInMemory();
+    await BranchReferralService.restorePendingDiscoveryReferral();
+    expect(BranchReferralService.pendingDiscoveryReferral, isNull);
+    expect(
+      BranchReferralService.takePendingUnavailableInvitationNotice(),
+      isTrue,
+    );
+  });
+
+  test('a backend outage preserves pending Discovery attribution', () async {
+    await BranchReferralService.replacePendingDiscoveryReferral(
+      const BranchRegistrationReferral(
+        discoveryInvitationCode: '333BUTTERFLY',
+        type: BranchReferralType.discoveryInvitation,
+      ),
+    );
+    final resolution = RegistrationCodeResolution.unavailable();
+
+    if (shouldClearPendingInvitationAfterValidationFailure(
+      resolution: resolution,
+      manuallyEntered: false,
+    )) {
+      await BranchReferralService.clearPendingDiscoveryReferral(
+        code: '333BUTTERFLY',
+      );
+    }
+
+    BranchReferralService.resetPendingDiscoveryInMemory();
+    await BranchReferralService.restorePendingDiscoveryReferral();
+    expect(
+      BranchReferralService.pendingDiscoveryReferral?.discoveryInvitationCode,
+      '333BUTTERFLY',
+    );
   });
 }
