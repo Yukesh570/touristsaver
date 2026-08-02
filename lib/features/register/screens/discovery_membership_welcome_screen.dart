@@ -40,8 +40,23 @@ class DiscoveryMembershipWelcomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              if (membership.campaignName != null) ...[
+                Text(
+                  membership.campaignName!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF111C44),
+                    fontSize: 18,
+                    height: 1.3,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               Text(
-                membership.sourceName == null &&
+                membership.invitationName == null &&
+                        membership.communityGroupName == null &&
+                        membership.sourceName == null &&
                         membership.communityName == null &&
                         membership.campaignName == null
                     ? 'Welcome to the TouristSaver Community'

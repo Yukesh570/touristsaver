@@ -9,6 +9,8 @@ class DiscoveryMembershipContext {
     this.entitlementId,
     this.campaignId,
     this.campaignName,
+    this.invitationName,
+    this.communityGroupName,
     this.sourceType,
     this.sourceName,
     this.communityName,
@@ -31,6 +33,8 @@ class DiscoveryMembershipContext {
   final int? entitlementId;
   final int? campaignId;
   final String? campaignName;
+  final String? invitationName;
+  final String? communityGroupName;
   final String? sourceType;
   final String? sourceName;
   final String? communityName;
@@ -49,6 +53,8 @@ class DiscoveryMembershipContext {
   final int generation;
 
   String get displayCommunityName =>
+      invitationName ??
+      communityGroupName ??
       sourceName ??
       communityName ??
       campaignName ??
@@ -96,6 +102,8 @@ class DiscoveryMembershipContext {
         'entitlementId': entitlementId,
         'campaignId': campaignId,
         'campaignName': campaignName,
+        'invitationName': invitationName,
+        'communityGroupName': communityGroupName,
         'sourceType': sourceType,
         'sourceName': sourceName,
         'communityName': communityName,
@@ -125,6 +133,12 @@ class DiscoveryMembershipContext {
       entitlementId: _int(json, const ['entitlementId']),
       campaignId: _int(json, const ['campaignId']),
       campaignName: _string(json, const ['campaignName', 'campaign_name']),
+      invitationName:
+          _string(json, const ['invitationName', 'invitation_name']),
+      communityGroupName: _string(
+        json,
+        const ['communityGroupName', 'community_group_name'],
+      ),
       sourceType: _string(json, const ['sourceType', 'source_type']),
       sourceName: _string(json, const ['sourceName', 'source_name']),
       communityName: _string(json, const [
@@ -180,8 +194,8 @@ class DiscoveryMembershipContext {
         'savingsDiscovered',
         'verifiedSavings',
       ]),
-      savingsConsumedAmountMinor:
-          _int(json, const ['savingsConsumedMinor', 'savingsConsumedAmountMinor']),
+      savingsConsumedAmountMinor: _int(
+          json, const ['savingsConsumedMinor', 'savingsConsumedAmountMinor']),
       inheritanceEnabled: _bool(json, const [
             'allowMemberInvitations',
             'allowsMemberInvites',
@@ -193,8 +207,7 @@ class DiscoveryMembershipContext {
           false,
       maximumInvitationGeneration:
           _int(json, const ['maximumInvitationGeneration']),
-      generation:
-          _int(json, const ['invitationGeneration', 'generation']) ?? 0,
+      generation: _int(json, const ['invitationGeneration', 'generation']) ?? 0,
     );
   }
 

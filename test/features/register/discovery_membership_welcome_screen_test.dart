@@ -8,6 +8,8 @@ void main() {
   testWidgets('shows configured terms and enters existing Home experience',
       (tester) async {
     const membership = DiscoveryMembershipContext(
+      campaignName: 'Blue Butterfly Launch Gold Coast',
+      invitationName: 'Carrara Markets - July 2026',
       communityName: 'Brisbane Community',
       periodDays: 30,
       savingsCapAmount: 25,
@@ -33,7 +35,11 @@ void main() {
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
-    expect(find.textContaining('Brisbane Community has invited'), findsOne);
+    expect(find.text('Blue Butterfly Launch Gold Coast'), findsOne);
+    expect(
+      find.textContaining('Carrara Markets - July 2026 has invited'),
+      findsOne,
+    );
     expect(find.text('Membership period'), findsOne);
     expect(find.text('30 days'), findsOne);
     expect(find.text('Savings limit'), findsOne);

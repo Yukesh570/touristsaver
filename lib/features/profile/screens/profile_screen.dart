@@ -68,7 +68,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(text: S.of(context).profile),
+        child: CustomAppBar(
+          text: S.of(context).profile,
+          showLeading: false,
+        ),
       ),
       body: BlocBuilder<ConnectivityCubit, ConnectivityState>(
         builder: (context, state) {

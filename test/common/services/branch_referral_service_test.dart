@@ -56,6 +56,7 @@ void main() {
 
     test('maps campaign invitation only to discoveryInvitationCode', () {
       final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
         'ref_type': 'campaign_invitation',
         'ref_code': 'GUSG2026',
         '~campaign': 'gusg_discovery',
@@ -66,6 +67,97 @@ void main() {
       expect(referral.memberPremiumCode, isNull);
       expect(referral.discoveryInvitationCode, 'GUSG2026');
       expect(referral.campaign, 'gusg_discovery');
+      expect(referral.type, BranchReferralType.discoveryInvitation);
+    });
+
+    test('uses registrationCode when it is the only canonical code field', () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'discovery-membership',
+        'ref_type': 'campaign_invitation',
+        'registrationCode': '333BUTTERFLY',
+      });
+
+      expect(referral.discoveryInvitationCode, '333BUTTERFLY');
+      expect(referral.type, BranchReferralType.discoveryInvitation);
+      expect(referral.hasDiscoveryCodeDiscrepancy, isFalse);
+    });
+
+    test('uses registrationCode when matching ref_code is also present', () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'discovery-membership',
+        'ref_type': 'campaign_invitation',
+        'registrationCode': '333BUTTERFLY',
+        'ref_code': '333BUTTERFLY',
+      });
+
+      expect(referral.discoveryInvitationCode, '333BUTTERFLY');
+      expect(referral.hasDiscoveryCodeDiscrepancy, isFalse);
+    });
+
+    test('uses ref_code as a legacy Discovery fallback', () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'discovery-membership',
+        'ref_type': 'campaign_invitation',
+        'ref_code': '333BUTTERFLY',
+      });
+
+      expect(referral.discoveryInvitationCode, '333BUTTERFLY');
+      expect(referral.type, BranchReferralType.discoveryInvitation);
+    });
+
+    test('canonical registrationCode wins and flags a conflicting ref_code',
+        () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'discovery-membership',
+        'ref_type': 'campaign_invitation',
+        'registrationCode': '333BUTTERFLY',
+        'ref_code': 'DIFFERENT-CODE',
+      });
+
+      expect(referral.discoveryInvitationCode, '333BUTTERFLY');
+      expect(referral.hasDiscoveryCodeDiscrepancy, isTrue);
+    });
+
+    test('does not manufacture a Discovery code when both fields are missing',
+        () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'discovery-membership',
+        'ref_type': 'campaign_invitation',
+      });
+
+      expect(referral.discoveryInvitationCode, isNull);
+      expect(referral.type, BranchReferralType.unknown);
+    });
+
+    test('does not classify malformed canonical metadata as Discovery', () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'premium-membership',
+        'ref_type': 'campaign_invitation',
+        'registrationCode': '333BUTTERFLY',
+      });
+
+      expect(referral.discoveryInvitationCode, isNull);
+      expect(referral.type, BranchReferralType.unknown);
+    });
+
+    test(
+        'does not treat ref_code with an explicit non-Discovery feature as Discovery',
+        () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'premium-membership',
+        'ref_type': 'campaign_invitation',
+        'ref_code': 'SAVER20',
+      });
+
+      expect(referral.discoveryInvitationCode, isNull);
+      expect(referral.type, BranchReferralType.unknown);
     });
 
     test('maps a direct issuer registration URL delivered by Branch', () {
@@ -78,6 +170,7 @@ void main() {
       expect(referral.issuerCode, 'AU0000000011');
       expect(referral.hasRegistrationCode, isTrue);
       expect(referral.isDirectIssuerRegistration, isTrue);
+      expect(referral.type, BranchReferralType.directIssuer);
     });
 
     test('recognizes the issuer query key case-insensitively', () {
@@ -125,6 +218,7 @@ void main() {
 
       expect(referral.issuerCode, isNull);
       expect(referral.isDirectIssuerRegistration, isFalse);
+      expect(referral.type, BranchReferralType.unknown);
     });
 
     test('does not trust an issuer code on another path', () {
@@ -136,6 +230,7 @@ void main() {
 
       expect(referral.issuerCode, isNull);
       expect(referral.isDirectIssuerRegistration, isFalse);
+      expect(referral.type, BranchReferralType.unknown);
     });
 
     test('ignores a trusted registration URL without an issuer code', () {
@@ -146,6 +241,7 @@ void main() {
 
       expect(referral.hasRegistrationCode, isFalse);
       expect(referral.isDirectIssuerRegistration, isFalse);
+      expect(referral.type, BranchReferralType.unknown);
     });
 
     test('keeps clicked Discovery referrals on the existing path', () {
@@ -160,6 +256,7 @@ void main() {
       expect(referral.discoveryInvitationCode, 'GUSG2026');
       expect(referral.issuerCode, isNull);
       expect(referral.isDirectIssuerRegistration, isFalse);
+      expect(referral.type, BranchReferralType.discoveryInvitation);
     });
 
     test('keeps clicked member referrals on the existing path', () {
@@ -171,6 +268,7 @@ void main() {
 
       expect(referral.memberReferralCode, '6114793531410125');
       expect(referral.isDirectIssuerRegistration, isFalse);
+      expect(referral.type, BranchReferralType.memberInvitation);
     });
 
     test('keeps legacy Branch Premium referrals on the existing path', () {
@@ -181,6 +279,7 @@ void main() {
 
       expect(referral.memberPremiumCode, 'SAVER20');
       expect(referral.isDirectIssuerRegistration, isFalse);
+      expect(referral.type, BranchReferralType.premiumReferral);
     });
 
     test('ordinary sessions have no registration attribution', () {
@@ -226,6 +325,7 @@ void main() {
         'memberReferralCode': '',
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
+        'registrationCode': '',
       });
     });
 
@@ -239,19 +339,22 @@ void main() {
         'memberReferralCode': '6123456789012345',
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
+        'registrationCode': '',
       });
     });
 
     test('builds registration parameters for a campaign invitation', () {
       const referral = BranchRegistrationReferral(
         discoveryInvitationCode: 'GUSG2026',
+        type: BranchReferralType.discoveryInvitation,
       );
 
       expect(registrationQueryParametersFor(referral), {
         'issuercode': '',
         'memberReferralCode': '',
         'memberPremiumCode': '',
-        'discoveryInvitationCode': 'GUSG2026',
+        'discoveryInvitationCode': '',
+        'registrationCode': 'GUSG2026',
       });
     });
 
@@ -261,7 +364,28 @@ void main() {
         'memberReferralCode': '',
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
+        'registrationCode': '',
       });
+    });
+
+    test(
+        'Discovery warm links open Intro only for logged-out users outside registration',
+        () {
+      expect(
+        shouldOpenDiscoveryIntro(authToken: null, currentPath: '/login'),
+        isTrue,
+      );
+      expect(
+        shouldOpenDiscoveryIntro(
+          authToken: 'logged-in-token',
+          currentPath: '/bottom-bar/0',
+        ),
+        isFalse,
+      );
+      expect(
+        shouldOpenDiscoveryIntro(authToken: null, currentPath: '/register'),
+        isFalse,
+      );
     });
   });
 }

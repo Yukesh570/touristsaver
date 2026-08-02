@@ -332,6 +332,7 @@ final GoRouter goRouter = GoRouter(
             residentialPostalCode: args['residentialPostalCode'],
             premium: args['premium'],
             discoveryInvitationCode: args['discoveryInvitationCode'],
+            registrationCode: args['registrationCode'] ?? 'null',
             referralCode: args['referralCode'],
             phoneVerifiedBy: args['phoneVerifiedBy'],
           );
@@ -348,6 +349,8 @@ final GoRouter goRouter = GoRouter(
             state.uri.queryParameters['memberPremiumCode'] ?? '';
         final discoveryInvitationCode =
             state.uri.queryParameters['discoveryInvitationCode'] ?? '';
+        final registrationCode =
+            state.uri.queryParameters['registrationCode'] ?? '';
         final membershipCountryId = int.tryParse(
             state.uri.queryParameters['membershipCountryId'] ?? '');
         return RegisterScreen(
@@ -355,6 +358,7 @@ final GoRouter goRouter = GoRouter(
           memberReferralCode: memberReferralCode,
           memberPremiumCode: memberPremiumCode,
           discoveryInvitationCode: discoveryInvitationCode,
+          registrationCode: registrationCode,
           membershipCountryId: membershipCountryId,
           membershipCountryLocked: membershipCountryId != null,
         );

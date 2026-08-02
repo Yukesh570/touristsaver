@@ -354,12 +354,9 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
                 return const SizedBox.shrink();
               }
 
-              final hasBalance = snapshot.data ?? false;
-
               return CustomAppBar(
                 text: S.of(context).profile,
-                icon: hasBalance ? null : Icons.arrow_back_ios,
-                onPressed: () => context.pop(),
+                showLeading: false,
               );
             },
           ),

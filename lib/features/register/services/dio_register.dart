@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:touristsaver/constants/helper.dart';
 import 'package:touristsaver/constants/url_end_point.dart';
+import 'package:touristsaver/common/models/registration_code_resolution.dart';
 import 'package:touristsaver/models/error_res.dart';
 import 'package:touristsaver/models/request/confirm_topup_req.dart';
 import 'package:touristsaver/models/request/premium_validity_req.dart';
@@ -25,22 +26,35 @@ import '../../../models/response/country_wise_prefix_res_model.dart';
 import '../../../models/response/sms_validation_res_model.dart';
 
 class DioRegister {
-  Future<bool> validateDiscoveryInvitationCode({
+  DioRegister({Dio? registrationCodeClient})
+      : _registrationCodeClient = registrationCodeClient;
+
+  final Dio? _registrationCodeClient;
+
+  Future<RegistrationCodeResolution> resolveRegistrationCode({
     required String code,
     required int countryId,
   }) async {
     try {
-      final Dio dio = await getClientNoToken();
+      final Dio dio = _registrationCodeClient ?? await getClientNoToken();
       final Response<dynamic> response = await dio.post(
-        '/campaign-invitations/validate',
-        data: {'code': code.trim().toUpperCase(), 'countryId': countryId},
+        '/registration-codes/resolve',
+        data: {
+          'code': code.trim(),
+          'countryId': countryId,
+        },
       );
       final dynamic body = response.data is String
           ? jsonDecode(response.data as String)
           : response.data;
-      return body is Map && body['valid'] == true;
+      if (body is Map) {
+        return RegistrationCodeResolution.fromJson(
+          Map<String, dynamic>.from(body),
+        );
+      }
+      return RegistrationCodeResolution.unavailable();
     } catch (_) {
-      return false;
+      return RegistrationCodeResolution.unavailable();
     }
   }
 

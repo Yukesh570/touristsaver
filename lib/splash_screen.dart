@@ -133,8 +133,7 @@ class _MySplashScreenState extends State<MySplashScreen> {
         if (!mounted) return;
         if (isLoggedIn) {
           showBottomBar();
-        } else if (BranchReferralService.pendingReferral?.hasRegistrationCode ==
-            true) {
+        } else if (BranchReferralService.hasPendingRegistrationReferral) {
           showIntro();
         } else if (acc == 'true') {
           showlogin();

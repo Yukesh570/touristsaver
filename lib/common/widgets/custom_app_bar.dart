@@ -19,6 +19,7 @@ class CustomAppBar extends StatelessWidget {
   final double? fontSize;
   final FontWeight? fontWeight;
   final bool reserveEmptyActions;
+  final bool showLeading;
   final double? leadingWidth;
   final double? titleSpacing;
 
@@ -39,6 +40,7 @@ class CustomAppBar extends StatelessWidget {
     this.fontSize,
     this.fontWeight,
     this.reserveEmptyActions = true,
+    this.showLeading = true,
     this.leadingWidth,
     this.titleSpacing,
   });
@@ -58,14 +60,17 @@ class CustomAppBar extends StatelessWidget {
             ]),
       ),
       elevation: 0.0,
+      automaticallyImplyLeading: showLeading,
       leadingWidth: leadingWidth,
       titleSpacing: titleSpacing,
-      leading: IconButton(
-        icon: Icon(icon),
-        color: Colors.black.withValues(alpha: 0.8),
-        onPressed: onPressed,
-        iconSize: 20,
-      ),
+      leading: showLeading
+          ? IconButton(
+              icon: Icon(icon),
+              color: Colors.black.withValues(alpha: 0.8),
+              onPressed: onPressed,
+              iconSize: 20,
+            )
+          : null,
 
       title: Tooltip(
         message: text,

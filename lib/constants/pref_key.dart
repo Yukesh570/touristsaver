@@ -25,6 +25,8 @@ const String saveCountryID = 'countryID';
 const String saveCurrency = 'currency';
 const String discoveryMembershipPreferenceKey =
     'discoveryMembershipEntitlement';
+const String pendingDiscoveryRegistrationReferralKey =
+    'pendingDiscoveryRegistrationReferral';
 
 // Save the country origin won't be changed
 const String saveCountryOriginID = 'countryOriginId';

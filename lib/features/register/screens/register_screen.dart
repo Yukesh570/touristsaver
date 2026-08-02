@@ -9,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:touristsaver/common/models/registration_code_resolution.dart';
+import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
@@ -49,6 +51,7 @@ class RegisterScreen extends StatefulWidget {
   final String? memberReferralCode;
   final String? memberPremiumCode;
   final String? discoveryInvitationCode;
+  final String? registrationCode;
   final int? membershipCountryId;
   final bool membershipCountryLocked;
 
@@ -58,6 +61,7 @@ class RegisterScreen extends StatefulWidget {
     this.memberReferralCode,
     this.memberPremiumCode,
     this.discoveryInvitationCode,
+    this.registrationCode,
     this.membershipCountryId,
     this.membershipCountryLocked = false,
   });
@@ -101,6 +105,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isHidden1 = true;
 
   bool _isPromoExpanded = false;
+  String? _currentRegistrationCode;
+  RegistrationCodeResolution? _currentRegistrationCodeResolution;
+  bool _registrationCodeValidationFailed = false;
 
   static const Color _primaryBlue = Color(0xFF0009FE);
   static const Color _ctaCyan = Color(0xFF18C6FF);
@@ -242,9 +249,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       providerController.text = widget.issuercode ?? '';
       referralCodeController.text = widget.memberReferralCode ?? '';
       premiumController.text = widget.memberPremiumCode ?? '';
+      _currentRegistrationCode = _nonEmptyCode(widget.registrationCode) ??
+          _nonEmptyCode(widget.discoveryInvitationCode);
       setState(() {});
     });
     super.initState();
+  }
+
+  String? _nonEmptyCode(String? value) {
+    final code = value?.trim() ?? '';
+    return code.isEmpty || code.toLowerCase() == 'null' ? null : code;
   }
 
   @override
@@ -492,7 +506,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Have a promo code?',
+                        'Have a promo or invitation code?',
                         style: TextStyle(
                           color: const Color(0xFF101B4D),
                           fontSize: 14.sp,
@@ -504,7 +518,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Your discount will be applied on the payment screen',
+                          'We’ll verify your code before you continue.',
                           maxLines: 1,
                           style: TextStyle(
                             color: _softText,
@@ -1596,11 +1610,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     _promoCodeSection(),
                                     const SizedBox(height: 15),
 
-                                    if (referralCodeController.text
-                                        .trim()
-                                        .isNotEmpty)
+                                    if (_currentRegistrationCode != null &&
+                                        !_registrationCodeValidationFailed)
                                       _appliedAttributionLabel(
-                                          'Your Discovery invitation has been recognised'),
+                                        _currentRegistrationCodeResolution
+                                                    ?.displayName !=
+                                                null
+                                            ? 'Invitation detected: ${_currentRegistrationCodeResolution!.displayName}'
+                                            : 'Your Discovery invitation has been recognised',
+                                      ),
 
                                     // Select Charity
 
@@ -2071,34 +2089,133 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  //Check Premium
+  // Check a pending canonical invitation, a manually entered registration
+  // code, or an unchanged legacy Branch Premium code.
   checkPremium() async {
-    //If premium code is not empty but issuer code is empty following code be executed
-    final String premiumCodeInput = premiumController.text.trim().toUpperCase();
-    final String discoveryInvitationCode =
-        widget.discoveryInvitationCode?.trim().toUpperCase() ?? '';
-    if (discoveryInvitationCode.isNotEmpty) {
-      final bool? validityResult = await checkEmailAndPhoneNo();
-      if (validityResult != false) {
-        setState(() => isLoading = false);
-        return;
-      }
-      final bool isValid = await DioRegister().validateDiscoveryInvitationCode(
-        code: discoveryInvitationCode,
-        countryId: selectedCountryID!,
+    final String manualCode = premiumController.text.trim().toUpperCase();
+    final String? pendingDiscoveryCode = _currentRegistrationCode;
+    final String? legacyBranchPremiumCode =
+        _nonEmptyCode(widget.memberPremiumCode);
+
+    if (manualCode.isNotEmpty &&
+        legacyBranchPremiumCode != null &&
+        manualCode == legacyBranchPremiumCode.toUpperCase() &&
+        pendingDiscoveryCode == null) {
+      await _validateLegacyPremiumCode(manualCode);
+      return;
+    }
+
+    final String? codeToResolve =
+        manualCode.isNotEmpty ? manualCode : pendingDiscoveryCode;
+    if (codeToResolve == null) {
+      sendPhoneOtp();
+      return;
+    }
+
+    final resolution = await DioRegister().resolveRegistrationCode(
+      code: codeToResolve,
+      countryId: selectedCountryID!,
+    );
+    if (!mounted) return;
+    if (!resolution.valid) {
+      GlobalSnackBar.showError(
+        context,
+        registrationCodeErrorMessage(resolution),
       );
-      if (isValid) {
-        sendPhoneOtp();
-      } else {
-        if (!mounted) return;
-        GlobalSnackBar.showError(
-          context,
-          'This Discovery invitation could not be verified. Please check the invitation and try again.',
-        );
-        setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+        _registrationCodeValidationFailed = true;
+      });
+      if (manualCode.isEmpty && resolution.backendReached) {
+        _offerOrdinaryRegistrationWithoutInvitation();
       }
       return;
     }
+
+    if (manualCode.isEmpty &&
+        pendingDiscoveryCode != null &&
+        !resolution.isDiscovery) {
+      GlobalSnackBar.showError(
+        context,
+        'This link does not resolve to a Discovery invitation. The invitation has not been applied.',
+      );
+      setState(() {
+        isLoading = false;
+        _registrationCodeValidationFailed = true;
+      });
+      return;
+    }
+
+    final bool replacesPendingDiscovery = registrationCodeReplacementRequired(
+          pendingDiscoveryCode: pendingDiscoveryCode,
+          candidateCode: codeToResolve,
+        ) ||
+        (manualCode.isNotEmpty &&
+            pendingDiscoveryCode != null &&
+            !resolution.isDiscovery);
+    if (replacesPendingDiscovery) {
+      final confirmed = await _confirmRegistrationCodeReplacement(
+        resolution,
+      );
+      if (!mounted) return;
+      if (!confirmed) {
+        setState(() => isLoading = false);
+        return;
+      }
+      if (resolution.isDiscovery) {
+        await BranchReferralService.replacePendingDiscoveryReferral(
+          BranchRegistrationReferral(
+            discoveryInvitationCode: codeToResolve,
+            campaign: resolution.campaignName,
+            invitationName: resolution.invitationName,
+            type: BranchReferralType.discoveryInvitation,
+          ),
+        );
+      } else {
+        await BranchReferralService.clearPendingDiscoveryReferral(
+          code: pendingDiscoveryCode,
+        );
+      }
+    }
+    if (!replacesPendingDiscovery &&
+        manualCode.isNotEmpty &&
+        resolution.isDiscovery &&
+        pendingDiscoveryCode == null) {
+      await BranchReferralService.replacePendingDiscoveryReferral(
+        BranchRegistrationReferral(
+          discoveryInvitationCode: codeToResolve,
+          campaign: resolution.campaignName,
+          invitationName: resolution.invitationName,
+          type: BranchReferralType.discoveryInvitation,
+        ),
+      );
+    }
+
+    _currentRegistrationCode = codeToResolve;
+    _currentRegistrationCodeResolution = resolution;
+    _registrationCodeValidationFailed = false;
+    final application = RegistrationCodeApplication.fromResolution(
+      code: codeToResolve,
+      resolution: resolution,
+    );
+    premiumController.text = application.localPremiumCode ?? '';
+    if (application.memberReferralCode != null) {
+      referralCodeController.text = application.memberReferralCode!;
+    }
+    if (application.issuerCode != null) {
+      providerController.text = application.issuerCode!;
+    }
+
+    final bool? validityResult = await checkEmailAndPhoneNo();
+    if (!mounted) return;
+    if (validityResult == false) {
+      sendPhoneOtp();
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _validateLegacyPremiumCode(String premiumCodeInput) async {
     if (premiumCodeInput.isNotEmpty) {
       bool? validityResult = await checkEmailAndPhoneNo();
       if (validityResult == false) {
@@ -2135,9 +2252,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
       }
     } else {
-      // If premium code and issuer code both are empty following code will be executed to register the user
       sendPhoneOtp();
     }
+  }
+
+  Future<bool> _confirmRegistrationCodeReplacement(
+    RegistrationCodeResolution replacement,
+  ) async {
+    final replacementType = replacement.isPremium
+        ? 'Premium offer'
+        : replacement.isDiscovery
+            ? 'Discovery invitation'
+            : 'registration attribution';
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Replace detected invitation?'),
+            content: Text(
+              'A Discovery invitation is already linked to this registration. '
+              'Using this $replacementType will replace it. The two offers cannot be combined.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Keep invitation'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Replace'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void _offerOrdinaryRegistrationWithoutInvitation() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'You can remove this invitation and continue with ordinary registration.',
+        ),
+        action: SnackBarAction(
+          label: 'Remove',
+          onPressed: () async {
+            final code = _currentRegistrationCode;
+            await BranchReferralService.clearPendingDiscoveryReferral(
+              code: code,
+            );
+            if (!mounted) return;
+            setState(() {
+              _currentRegistrationCode = null;
+              _currentRegistrationCodeResolution = null;
+              _registrationCodeValidationFailed = false;
+            });
+          },
+        ),
+      ),
+    );
   }
 
   //Invalid Premium Code
@@ -2236,10 +2408,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'premium': premiumController.text.isEmpty
               ? 'null'
               : premiumController.text.trim().toUpperCase(),
-          'discoveryInvitationCode':
-              widget.discoveryInvitationCode?.trim().isEmpty == false
-                  ? widget.discoveryInvitationCode!.trim().toUpperCase()
-                  : 'null',
+          'discoveryInvitationCode': 'null',
+          'registrationCode': _currentRegistrationCode ?? 'null',
           'referralCode': referralCodeController.text.isEmpty
               ? 'null'
               : referralCodeController.text.trim(),

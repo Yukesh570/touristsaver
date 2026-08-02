@@ -37,6 +37,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await BranchReferralService.restorePendingDiscoveryReferral();
   await FlutterBranchSdk.init();
   BranchReferralService.start();
   // FlutterBranchSdk
@@ -105,6 +106,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   StreamSubscription<BranchRegistrationReferral>? _referralSubscription;
+  StreamSubscription<BranchRegistrationReferral>? _discoverySubscription;
   bool _routerReady = false;
 
   @override
@@ -112,6 +114,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _referralSubscription = BranchReferralService.directIssuerReferrals
         .listen(_openDirectIssuerRegistration);
+    _discoverySubscription =
+        BranchReferralService.discoveryReferrals.listen(_openDiscoveryIntro);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _routerReady = true;
       final pendingReferral = BranchReferralService.pendingDirectIssuerReferral;
@@ -119,6 +123,20 @@ class _MyAppState extends State<MyApp> {
         _openDirectIssuerRegistration(pendingReferral);
       }
     });
+  }
+
+  Future<void> _openDiscoveryIntro(
+    BranchRegistrationReferral referral,
+  ) async {
+    if (!_routerReady || !referral.isDiscoveryInvitation) return;
+
+    final token = await Pref().readData(key: saveToken);
+    if (!mounted) return;
+
+    final path = goRouter.routerDelegate.currentConfiguration.uri.path;
+    if (shouldOpenDiscoveryIntro(authToken: token, currentPath: path)) {
+      goRouter.goNamed('intro-screen');
+    }
   }
 
   Future<void> _openDirectIssuerRegistration(
@@ -143,6 +161,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _referralSubscription?.cancel();
+    _discoverySubscription?.cancel();
     super.dispose();
   }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:touristsaver/constants/global_colors.dart';
 import 'package:touristsaver/generated/l10n.dart';
 
 class GlobalSnackBar {
@@ -20,19 +19,43 @@ class GlobalSnackBar {
         SnackBar(
           elevation: 0.0,
           behavior: SnackBarBehavior.fixed,
-          content: Text(message),
+          padding: EdgeInsets.zero,
+          content: Container(
+            padding: const EdgeInsets.only(left: 16.0, right: 8.0),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0009FE), Color(0xFF18C6FF)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                  child: Text(
+                    S.of(context).ok,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
           duration: const Duration(seconds: 3),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16.0),
                 topRight: Radius.circular(16.0)),
           ),
-          backgroundColor: GlobalColors.appColor1,
-          action: SnackBarAction(
-            textColor: Colors.white,
-            label: S.of(context).ok,
-            onPressed: () {},
-          ),
+          clipBehavior: Clip.antiAlias,
+          backgroundColor: Colors.transparent,
         ),
       );
   }

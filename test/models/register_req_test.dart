@@ -64,6 +64,38 @@ void main() {
       expect(request.toJson()['discoveryInvitationCode'], isNull);
       expect(request.toJson()['residentialPostalCode'], isNull);
     });
+
+    test('sends one canonical registrationCode without competing fields', () {
+      final request = RegisterReqModel(
+        smsotp: '123456',
+        charityId: null,
+        phoneVerifiedBy: 'sms',
+        firstname: 'Discovery',
+        lastname: 'Member',
+        email: 'discovery@example.com',
+        membershipCountryId: 3,
+        residenceCountryReferenceId: 14,
+        residentialPostalCode: '4000',
+        phoneNumber: '400000002',
+        countryId: 3,
+        stateId: 1,
+        issuerCode: 'LEGACY-ISSUER',
+        password: 'password123',
+        confirmPassword: 'password123',
+        memberPremiumCode: 'SAVER20',
+        discoveryInvitationCode: 'LEGACY-DISCOVERY',
+        memberReferralCode: 'LEGACY-MEMBER',
+        registrationCode: '333BUTTERFLY',
+        phoneNumberPrefix: '+61',
+      );
+
+      final json = request.toJson();
+      expect(json['registrationCode'], '333BUTTERFLY');
+      expect(json['issuerCode'], isNull);
+      expect(json['memberPremiumCode'], isNull);
+      expect(json['discoveryInvitationCode'], isNull);
+      expect(json['memberReferralCode'], isNull);
+    });
   });
 
   group('Country options', () {

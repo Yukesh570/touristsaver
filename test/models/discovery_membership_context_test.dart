@@ -17,6 +17,8 @@ void main() {
             'campaignId': 900,
             'executionCampaignId': 45,
             'campaignName': 'Tier 1 Community Invitation',
+            'invitationName': 'Carrara Markets - July 2026',
+            'communityGroupName': 'Carrara Markets',
             'sourceType': 'community',
             'sourceName': 'Brisbane Community',
             'startDate': '2026-07-12T00:00:00Z',
@@ -36,6 +38,9 @@ void main() {
       final membership = response.data?.discoveryMembership;
       expect(membership, isNotNull);
       expect(membership?.sourceName, 'Brisbane Community');
+      expect(membership?.invitationName, 'Carrara Markets - July 2026');
+      expect(membership?.communityGroupName, 'Carrara Markets');
+      expect(membership?.displayCommunityName, 'Carrara Markets - July 2026');
       expect(membership?.sourceType, 'community');
       expect(membership?.periodDays, 30);
       expect(membership?.savingsCapAmountMinor, 2500);

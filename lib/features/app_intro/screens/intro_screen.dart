@@ -22,7 +22,8 @@ class IntroScreen extends StatelessWidget {
   Future<void> _goToRegister(BuildContext context) async {
     await _markWelcomeSeen();
     if (!context.mounted) return;
-    final pendingReferral = BranchReferralService.takePendingReferral();
+    final pendingReferral = BranchReferralService.pendingDiscoveryReferral ??
+        BranchReferralService.takePendingReferral();
     context.goNamed(
       'membership-country',
       queryParameters: registrationQueryParametersFor(pendingReferral),

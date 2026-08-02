@@ -6,38 +6,48 @@ import 'package:touristsaver/features/register/screens/register_screen.dart';
 import 'package:touristsaver/models/request/register_req.dart';
 
 void main() {
-  const issuerCode = 'AU0000000011';
+  const registrationCode = '333BUTTERFLY';
 
-  test('retains the exact direct issuer code through registration contracts',
+  test('retains one canonical Discovery code through registration contracts',
       () {
-    const referral = BranchRegistrationReferral(
-      issuerCode: issuerCode,
-      isDirectIssuerRegistration: true,
-    );
+    final referral = BranchRegistrationReferral.fromPayload({
+      '+clicked_branch_link': true,
+      'feature': 'discovery-membership',
+      'ref_type': 'campaign_invitation',
+      'registrationCode': registrationCode,
+      'ref_code': registrationCode,
+      'campaign': 'Blue Butterfly Launch Gold Coast',
+      'invitationName': 'Carrara Markets - July 2026',
+    });
 
     final membershipCountry = MembershipCountryScreen(
       registrationQueryParameters: registrationQueryParametersFor(referral),
     );
     expect(
-      membershipCountry.registrationQueryParameters['issuercode'],
-      issuerCode,
+      membershipCountry.registrationQueryParameters['registrationCode'],
+      registrationCode,
+    );
+    expect(
+      membershipCountry.registrationQueryParameters['discoveryInvitationCode'],
+      isEmpty,
     );
 
     final register = RegisterScreen(
-      issuercode: membershipCountry.registrationQueryParameters['issuercode'],
+      registrationCode:
+          membershipCountry.registrationQueryParameters['registrationCode'],
       membershipCountryId: 3,
       membershipCountryLocked: true,
     );
-    expect(register.issuercode, issuerCode);
+    expect(register.registrationCode, registrationCode);
 
     final otp = NumberOTPScreen(
       countryID: 3,
       membershipCountryId: 3,
       stateID: 1,
-      issuerCode: register.issuercode!,
-      firstName: 'Issuer',
+      issuerCode: 'null',
+      firstName: 'Discovery',
       lastName: 'Test',
-      email: 'issuer-test@example.com',
+      email: 'discovery-test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
       phonePrefix: '+61',
@@ -46,12 +56,12 @@ void main() {
       residentialPostalCode: '4000',
       premium: 'null',
       discoveryInvitationCode: 'null',
-      registrationCode: 'null',
+      registrationCode: register.registrationCode!,
       referralCode: 'null',
       phoneVerifiedBy: 'sms',
       charityID: 0,
     );
-    expect(otp.issuerCode, issuerCode);
+    expect(otp.registrationCode, registrationCode);
 
     final request = RegisterReqModel(
       smsotp: '123456',
@@ -71,10 +81,14 @@ void main() {
       confirmPassword: otp.confirmPassword,
       memberPremiumCode: otp.premium,
       discoveryInvitationCode: otp.discoveryInvitationCode,
+      registrationCode: otp.registrationCode,
       memberReferralCode: otp.referralCode,
       phoneNumberPrefix: otp.phonePrefix,
     );
 
-    expect(request.toJson()['issuerCode'], issuerCode);
+    final json = request.toJson();
+    expect(json['registrationCode'], registrationCode);
+    expect(json['discoveryInvitationCode'], isNull);
+    expect(json['memberPremiumCode'], isNull);
   });
 }

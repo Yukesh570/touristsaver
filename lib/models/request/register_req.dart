@@ -23,6 +23,7 @@ class RegisterReqModel {
       required this.memberPremiumCode,
       required this.discoveryInvitationCode,
       required this.memberReferralCode,
+      this.registrationCode,
       required this.phoneNumberPrefix});
 
   final String phoneNumberPrefix;
@@ -44,29 +45,51 @@ class RegisterReqModel {
   final dynamic memberPremiumCode;
   final dynamic discoveryInvitationCode;
   final dynamic memberReferralCode;
+  final dynamic registrationCode;
 
-  Map<String, dynamic> toJson() => {
-        "phoneNumberPrefix": phoneNumberPrefix,
-        "SMSOTP": smsotp,
-        "phoneVerifiedBy": phoneVerifiedBy,
-        "firstname": firstname,
-        "lastname": lastname,
-        "email": email,
-        "membershipCountryId": membershipCountryId,
-        "residenceCountryReferenceId": residenceCountryReferenceId,
-        "residentialPostalCode": residentialPostalCode,
-        "phoneNumber": phoneNumber,
-        "countryId": countryId,
-        if (stateId != null) "stateId": stateId,
-        "charityId": charityId,
-        "issuerCode": issuerCode == 'null' ? null : issuerCode,
-        "password": password,
-        "confirmPassword": confirmPassword,
-        "memberPremiumCode":
-            memberPremiumCode == 'null' ? null : memberPremiumCode,
-        "discoveryInvitationCode":
-            discoveryInvitationCode == 'null' ? null : discoveryInvitationCode,
-        "memberReferralCode":
-            memberReferralCode == 'null' ? null : memberReferralCode,
-      };
+  Map<String, dynamic> toJson() {
+    final canonicalRegistrationCode =
+        registrationCode == null || registrationCode == 'null'
+            ? null
+            : registrationCode;
+    return {
+      "phoneNumberPrefix": phoneNumberPrefix,
+      "SMSOTP": smsotp,
+      "phoneVerifiedBy": phoneVerifiedBy,
+      "firstname": firstname,
+      "lastname": lastname,
+      "email": email,
+      "membershipCountryId": membershipCountryId,
+      "residenceCountryReferenceId": residenceCountryReferenceId,
+      "residentialPostalCode": residentialPostalCode,
+      "phoneNumber": phoneNumber,
+      "countryId": countryId,
+      if (stateId != null) "stateId": stateId,
+      "charityId": charityId,
+      "issuerCode": canonicalRegistrationCode != null
+          ? null
+          : issuerCode == 'null'
+              ? null
+              : issuerCode,
+      "password": password,
+      "confirmPassword": confirmPassword,
+      "memberPremiumCode": canonicalRegistrationCode != null
+          ? null
+          : memberPremiumCode == 'null'
+              ? null
+              : memberPremiumCode,
+      "discoveryInvitationCode": canonicalRegistrationCode != null
+          ? null
+          : discoveryInvitationCode == 'null'
+              ? null
+              : discoveryInvitationCode,
+      "memberReferralCode": canonicalRegistrationCode != null
+          ? null
+          : memberReferralCode == 'null'
+              ? null
+              : memberReferralCode,
+      if (canonicalRegistrationCode != null)
+        "registrationCode": canonicalRegistrationCode,
+    };
+  }
 }

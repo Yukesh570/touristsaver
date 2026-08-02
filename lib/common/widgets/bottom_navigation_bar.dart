@@ -64,13 +64,6 @@ class _BottomBarState extends State<BottomBar> {
     BranchReferralService.markHandled(referral);
     if (!mounted || AppVariables.accessToken != null) return;
 
-    debugPrint(
-      'BRANCH_REGISTRATION_INPUTS: '
-      'issuerCode=${referral.issuerCode}, '
-      'memberReferralCode=${referral.memberReferralCode}, '
-      'memberPremiumCode=${referral.memberPremiumCode}, '
-      'discoveryInvitationCode=${referral.discoveryInvitationCode}',
-    );
     Pref().setBool(key: 'isShownRegLog', value: true);
     context.pushNamed('register', queryParameters: {
       'issuercode': referral.issuerCode ?? '',

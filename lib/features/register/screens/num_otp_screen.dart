@@ -8,6 +8,7 @@ import 'package:touristsaver/common/app_variables.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
+import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
@@ -54,6 +55,7 @@ class NumberOTPScreen extends StatefulWidget {
   final String? residentialPostalCode;
   final String premium;
   final String discoveryInvitationCode;
+  final String registrationCode;
   final String referralCode;
   const NumberOTPScreen({
     super.key,
@@ -72,6 +74,7 @@ class NumberOTPScreen extends StatefulWidget {
     required this.residentialPostalCode,
     required this.premium,
     required this.discoveryInvitationCode,
+    required this.registrationCode,
     required this.referralCode,
     required this.phoneVerifiedBy,
     required this.charityID,
@@ -455,12 +458,19 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                               memberPremiumCode: widget.premium,
                               discoveryInvitationCode:
                                   widget.discoveryInvitationCode,
+                              registrationCode: widget.registrationCode,
                               memberReferralCode: widget.referralCode,
                               smsotp: otpControllerr1.text.trim(),
                             ),
                           );
 
                           if (res is RegisterResModel) {
+                            if (widget.registrationCode != 'null') {
+                              await BranchReferralService
+                                  .clearPendingDiscoveryReferral(
+                                code: widget.registrationCode,
+                              );
+                            }
                             // After success sending to the choosing page of free or paid {User or Member will already be created before going to this page}
                             // Saving the token
                             await Pref().writeData(
@@ -677,6 +687,9 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
         'discoveryInvitationCode': widget.discoveryInvitationCode == 'null'
             ? ''
             : widget.discoveryInvitationCode,
+        'registrationCode':
+            widget.registrationCode == 'null' ? '' : widget.registrationCode,
+        'memberPremiumCode': widget.premium == 'null' ? '' : widget.premium,
       },
     );
   }
