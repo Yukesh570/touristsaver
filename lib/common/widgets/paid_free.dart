@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
+import 'package:touristsaver/common/services/registration_access_session.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
@@ -21,6 +22,7 @@ import 'package:touristsaver/features/top_up/bloc/mem_pack_bloc.dart';
 import 'package:touristsaver/features/top_up/bloc/mem_pack_event.dart';
 import 'package:touristsaver/features/top_up/bloc/mem_pack_state.dart';
 import 'package:touristsaver/features/top_up/services/top_up_dio.dart';
+import 'package:touristsaver/features/wallet/services/dio_wallet.dart';
 import 'package:touristsaver/models/request/confirm_topup_req.dart';
 import 'package:touristsaver/models/request/premium_topup_req.dart';
 import 'package:touristsaver/models/request/top_up_stripe_req.dart';
@@ -32,14 +34,18 @@ import 'package:touristsaver/models/response/pre_topup_paid_res.dart';
 import 'package:touristsaver/models/response/premium_validity_res.dart';
 import 'package:touristsaver/models/response/top_up_stripe_res.dart';
 import 'package:touristsaver/generated/l10n.dart';
-import 'package:touristsaver/splash_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PaidFreeScreen extends StatefulWidget {
   static const String routeName = '/paid-free';
-  const PaidFreeScreen({super.key, this.initialOfferContext});
+  const PaidFreeScreen({
+    super.key,
+    this.initialOfferContext,
+    this.pendingRegistrationAccess = false,
+  });
 
   final RegistrationPremiumOfferContext? initialOfferContext;
+  final bool pendingRegistrationAccess;
 
   @override
   State<PaidFreeScreen> createState() => _PaidFreeScreenState();
@@ -166,6 +172,7 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
           showHeader: index == 0,
           countryID: countryId,
           premiumData: premiumData,
+          pendingRegistrationAccess: widget.pendingRegistrationAccess,
           registrationImageUrl: registrationImageUrl, // Pass it here!
         );
       },
@@ -329,85 +336,103 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
   Widget build(BuildContext context) {
     String appBarTitle = "Premium Membership";
     const Color primaryBlue = Color(0xFF0009FE);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFF8FAFE),
-      appBar: AppBar(
+    return PopScope(
+      canPop: !widget.pendingRegistrationAccess,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (!didPop && widget.pendingRegistrationAccess) {
+          await RegistrationAccessSession.abandon();
+          if (context.mounted) context.goNamed('intro-screen');
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: const Color(0xFFF8FAFE),
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.person_outline,
-            color: primaryBlue,
-            size: 22.sp,
-          ),
-          onPressed: () => context.push('/log-profile'),
-        ),
-        title: Text(
-          appBarTitle,
-          style: GoogleFonts.nunito(
-            color: const Color(0xFF111C44),
-            fontSize: 22.sp,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-      body: Stack(children: [
-        BlocProvider.value(
-          value: _memPackAllBloc,
-          child: Builder(
-            builder: (context) {
-              return ScrollConfiguration(
-                behavior: const ScrollBehavior(),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  scrollDirection: Axis.vertical,
-                  child: Container(
-                    padding: EdgeInsets.only(bottom: 28.h),
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height,
-                    ),
-                    alignment: Alignment.topCenter,
-                    child: BlocBuilder<MemPackAllBloc, MemPackAllState>(
-                      builder: (context, state) {
-                        if (state is MemPackAllLoadingState) {
-                          return const CustomAllLoader();
-                        } else if (state is MemPackAllLoadedState) {
-                          MemberShipPackageResModel memPackAll =
-                              state.memPackAll;
-                          return memPackAll.data!.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 10.0, horizontal: 10.0),
-                                  child: NoDataFound(
-                                    titleText: S.of(context).noTopUpAvailable,
-                                    bodyText: S
-                                        .of(context)
-                                        .noTopupPacakgeAvailableForNow,
-                                    image: "assets/images/oops.png",
-                                  ),
-                                )
-                              : Column(
-                                  children: [
-                                    piiinkLoaded(memPackAll, countryId),
-                                  ],
-                                );
-                        } else if (state is MemPackAllErrorState) {
-                          return const Error1();
-                        } else {
-                          return const SizedBox();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              );
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF8FAFE),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(
+              widget.pendingRegistrationAccess
+                  ? Icons.close
+                  : Icons.person_outline,
+              color: primaryBlue,
+              size: 22.sp,
+            ),
+            onPressed: () async {
+              if (widget.pendingRegistrationAccess) {
+                await RegistrationAccessSession.abandon();
+                if (context.mounted) context.goNamed('intro-screen');
+                return;
+              }
+              context.push('/log-profile');
             },
           ),
+          title: Text(
+            appBarTitle,
+            style: GoogleFonts.nunito(
+              color: const Color(0xFF111C44),
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
         ),
-      ]),
+        body: Stack(children: [
+          BlocProvider.value(
+            value: _memPackAllBloc,
+            child: Builder(
+              builder: (context) {
+                return ScrollConfiguration(
+                  behavior: const ScrollBehavior(),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                    child: Container(
+                      padding: EdgeInsets.only(bottom: 28.h),
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height,
+                      ),
+                      alignment: Alignment.topCenter,
+                      child: BlocBuilder<MemPackAllBloc, MemPackAllState>(
+                        builder: (context, state) {
+                          if (state is MemPackAllLoadingState) {
+                            return const CustomAllLoader();
+                          } else if (state is MemPackAllLoadedState) {
+                            MemberShipPackageResModel memPackAll =
+                                state.memPackAll;
+                            return memPackAll.data!.isEmpty
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10.0, horizontal: 10.0),
+                                    child: NoDataFound(
+                                      titleText: S.of(context).noTopUpAvailable,
+                                      bodyText: S
+                                          .of(context)
+                                          .noTopupPacakgeAvailableForNow,
+                                      image: "assets/images/oops.png",
+                                    ),
+                                  )
+                                : Column(
+                                    children: [
+                                      piiinkLoaded(memPackAll, countryId),
+                                    ],
+                                  );
+                          } else if (state is MemPackAllErrorState) {
+                            return const Error1();
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ]),
+      ),
     );
   }
 }
@@ -423,6 +448,7 @@ class TopUpWidget extends StatefulWidget {
     this.premiumData,
     this.registrationImageUrl,
     this.showHeader = false,
+    this.pendingRegistrationAccess = false,
   });
   final String? countryID;
   final int? index;
@@ -430,6 +456,7 @@ class TopUpWidget extends StatefulWidget {
   final dynamic premiumData;
   final String? registrationImageUrl;
   final bool showHeader;
+  final bool pendingRegistrationAccess;
 
   @override
   State<TopUpWidget> createState() => _TopUpWidgetState();
@@ -487,6 +514,22 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     );
   }
 
+  Future<void> _exitPendingRegistrationAfterFailure() async {
+    if (!widget.pendingRegistrationAccess) return;
+    await RegistrationAccessSession.abandon();
+    if (mounted) context.goNamed('intro-screen');
+  }
+
+  Future<bool> _backendConfirmsActivePremium() async {
+    try {
+      final wallet = await DioWallet().getUniverslUserWallet();
+      final expiry = wallet?.data?.premiumExpiryDate;
+      return expiry != null && expiry.isAfter(DateTime.now());
+    } catch (_) {
+      return false;
+    }
+  }
+
   String _selectedPackageCreditAmount() {
     final credits =
         widget.memPackAll?.data?[widget.index ?? 0].universalPiiinks;
@@ -494,8 +537,15 @@ class _TopUpWidgetState extends State<TopUpWidget> {
   }
 
   Future<void> _handleFreeMemberShip() async {
-    bool isLoggedIn = AppVariables.accessToken != null &&
-        AppVariables.accessToken!.isNotEmpty;
+    if (widget.pendingRegistrationAccess) {
+      GlobalSnackBar.showError(
+        context,
+        'Complimentary membership could not be confirmed. Please log in and try again.',
+      );
+      await _exitPendingRegistrationAfterFailure();
+      return;
+    }
+    bool isLoggedIn = RegistrationAccessSession.apiToken?.isNotEmpty == true;
 
     if (!isLoggedIn) {
       context.pushNamed('login');
@@ -529,8 +579,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     FocusManager.instance.primaryFocus?.unfocus();
     await Future.delayed(const Duration(milliseconds: 300));
 
-    bool isLoggedIn = AppVariables.accessToken != null &&
-        AppVariables.accessToken!.isNotEmpty;
+    bool isLoggedIn = RegistrationAccessSession.apiToken?.isNotEmpty == true;
 
     if (!isLoggedIn) {
       _dismissPaymentConfirmation(paymentContext);
@@ -549,37 +598,46 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     );
     final String? codeToSend = paymentPreview.memberPremiumCodeForPaymentIntent;
 
-    var res = await DioTopUpStripe().topUpStripe(
-      topUpStripeReqModel: TopUpStripeReqModel(
-        paymentGateway: 'stripe',
-        memberPremiumCode: codeToSend,
-        membershipPackageId:
-            widget.memPackAll!.data![widget.index!].id.toString(),
-        countryId: widget.countryID,
-      ),
-    );
+    try {
+      var res = await DioTopUpStripe().topUpStripe(
+        topUpStripeReqModel: TopUpStripeReqModel(
+          paymentGateway: 'stripe',
+          memberPremiumCode: codeToSend,
+          membershipPackageId:
+              widget.memPackAll!.data![widget.index!].id.toString(),
+          countryId: widget.countryID,
+        ),
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (res is TopUpStripeResModel) {
+      if (res is! TopUpStripeResModel) {
+        setState(() => isLoading = false);
+        GlobalSnackBar.showError(context, S.of(context).serverError);
+        await _exitPendingRegistrationAfterFailure();
+        return;
+      }
+
       if (res.clientSecret == null || res.clientSecret!.isEmpty) {
-        setState(() {
-          isLoading = false;
-        });
-
-        bool canGoHome = await checkWalletBalance();
-        if (!context.mounted) return;
-
-        if (canGoHome) {
+        setState(() => isLoading = false);
+        final complimentaryActivationConfirmed =
+            await _backendConfirmsActivePremium();
+        if (!mounted) return;
+        if (complimentaryActivationConfirmed) {
+          if (widget.pendingRegistrationAccess) {
+            await RegistrationAccessSession.grant();
+          }
           _dismissPaymentConfirmation(paymentContext);
           await _navigateToActivationSuccess(
             creditAmount: _selectedPackageCreditAmount(),
           );
         } else {
           _dismissPaymentConfirmation(paymentContext);
-          await _navigateToActivationSuccess(
-            creditAmount: _selectedPackageCreditAmount(),
+          GlobalSnackBar.showError(
+            context,
+            'Membership activation could not be confirmed. Please try again.',
           );
+          await _exitPendingRegistrationAfterFailure();
         }
         return;
       }
@@ -603,14 +661,19 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       });
 
       // WAIT for the payment to completely finish
-      final bool paymentSuccess = await displayPaymentSheet(
+      final ConfirmTopUpResModel? confirmation = await displayPaymentSheet(
         res.clientSecret,
         showActivationProcessing: showActivationProcessing,
       );
 
       if (!mounted) return;
 
-      if (paymentSuccess) {
+      if (confirmation != null) {
+        if (widget.pendingRegistrationAccess) {
+          await RegistrationAccessSession.grant(
+            authoritativeToken: confirmation.data?.accessToken,
+          );
+        }
         // Replace the GoRouter page while the full-screen processing route is
         // still covering it. Removing the underlying page also removes its
         // pageless confirmation route, so the membership page is never shown.
@@ -621,11 +684,20 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         setState(() {
           isLoading = false;
         });
+        _dismissPaymentConfirmation(paymentContext);
+        await _exitPendingRegistrationAfterFailure();
       }
+    } catch (_) {
+      if (mounted) {
+        setState(() => isLoading = false);
+        _dismissPaymentConfirmation(paymentContext);
+        GlobalSnackBar.showError(context, S.of(context).stripePaymentFail);
+      }
+      await _exitPendingRegistrationAfterFailure();
     }
   }
 
-  Future<bool> displayPaymentSheet(
+  Future<ConfirmTopUpResModel?> displayPaymentSheet(
     String? clientSecret, {
     required VoidCallback showActivationProcessing,
   }) async {
@@ -644,8 +716,12 @@ class _TopUpWidgetState extends State<TopUpWidget> {
           ),
         );
 
-        if (confirm is ConfirmTopUpResModel && confirm.status == 'success') {
-          return true;
+        final isConfirmed = widget.pendingRegistrationAccess
+            ? isAuthoritativePaidMembershipConfirmation(confirm)
+            : confirm is ConfirmTopUpResModel &&
+                confirm.status?.trim().toLowerCase() == 'success';
+        if (isConfirmed) {
+          return confirm;
         }
 
         if (mounted) {
@@ -655,14 +731,14 @@ class _TopUpWidgetState extends State<TopUpWidget> {
           );
         }
       }
-      return false;
+      return null;
     } on StripeException {
-      if (!mounted) return false;
+      if (!mounted) return null;
       GlobalSnackBar.showError(
           context, S.of(context).thePaymentHasBeenCanceled);
-      return false;
+      return null;
     } catch (e) {
-      return false;
+      return null;
     }
   }
 

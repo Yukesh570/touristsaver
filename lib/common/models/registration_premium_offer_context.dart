@@ -8,6 +8,7 @@ class RegistrationPremiumOfferContext {
     required this.packageId,
     required this.premiumCodeIsPaid,
     required this.isGiveaway,
+    this.pendingRegistrationAccess = false,
   });
 
   final String memberPremiumCode;
@@ -15,6 +16,7 @@ class RegistrationPremiumOfferContext {
   final int? packageId;
   final bool? premiumCodeIsPaid;
   final bool isGiveaway;
+  final bool pendingRegistrationAccess;
 
   bool get hasCode => memberPremiumCode.trim().isNotEmpty;
 
@@ -29,7 +31,10 @@ class RegistrationPremiumOfferContext {
     };
   }
 
-  Map<String, dynamic> toRouteExtra() => toPremiumData();
+  Map<String, dynamic> toRouteExtra() => {
+        ...toPremiumData(),
+        'pendingRegistrationAccess': pendingRegistrationAccess,
+      };
 
   factory RegistrationPremiumOfferContext.fromRegistrationResponse({
     required String memberPremiumCode,
@@ -41,6 +46,7 @@ class RegistrationPremiumOfferContext {
       packageId: data.packageId,
       premiumCodeIsPaid: data.premiumCodeIsPaid,
       isGiveaway: data.isGiveaway == true,
+      pendingRegistrationAccess: true,
     );
   }
 
@@ -53,6 +59,7 @@ class RegistrationPremiumOfferContext {
       packageId: _asInt(extra['packageId'] ?? extra['membershipPackageId']),
       premiumCodeIsPaid: _asBool(extra['premiumCodeIsPaid']),
       isGiveaway: extra['isGiveaway'] == true,
+      pendingRegistrationAccess: extra['pendingRegistrationAccess'] == true,
     );
   }
 

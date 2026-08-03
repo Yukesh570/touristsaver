@@ -584,32 +584,10 @@ class _CountryNumberChangedVerificationState
           GlobalSnackBar.showError(context, S.of(context).stripePaymentFail);
         }
       });
-    } on Exception catch (e) {
-      if (e is StripeException) {
-        var res = await Stripe.instance.retrievePaymentIntent(clientSecret!);
-        // print(res);
-
-        // Confirming the stripe payment in backend
-        var confirm = await DioTopUpStripe().confirmTopUp(
-            confirmTopUpReqModel: ConfirmTopUpReqModel(
-                paymentIntent: res.id,
-                paymentIntentClientSecret: res.clientSecret));
-        if (!mounted) return;
-        if (confirm is ConfirmTopUpResModel) {
-          if (confirm.status == 'failed') {
-            GlobalSnackBar.showError(context, S.of(context).paymentFailed);
-          } else {
-            GlobalSnackBar.showError(context, S.of(context).paymentFailed);
-          }
-        } else {
-          GlobalSnackBar.showError(
-              context, S.of(context).thePaymentHasBeenCanceled);
-        }
-        // print("Error from Stripe: ${e.error.localizedMessage}");
-      } else {
-        // print("Unforeseen error: ${e}");
-        return;
-      }
+    } on StripeException {
+      if (!mounted) return;
+      GlobalSnackBar.showError(
+          context, S.of(context).thePaymentHasBeenCanceled);
     } catch (e) {
       // print("exception:$e");
       return;

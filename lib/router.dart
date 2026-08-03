@@ -426,7 +426,11 @@ final GoRouter goRouter = GoRouter(
         final initialOfferContext = extra is Map<String, dynamic>
             ? RegistrationPremiumOfferContext.fromRouteExtra(extra)
             : null;
-        return PaidFreeScreen(initialOfferContext: initialOfferContext);
+        return PaidFreeScreen(
+          initialOfferContext: initialOfferContext,
+          pendingRegistrationAccess: extra is Map<String, dynamic> &&
+              extra['pendingRegistrationAccess'] == true,
+        );
       },
     ),
     GoRoute(

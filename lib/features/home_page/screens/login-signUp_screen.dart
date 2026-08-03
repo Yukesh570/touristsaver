@@ -13,6 +13,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
+import 'package:touristsaver/common/services/registration_access_session.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
@@ -480,8 +481,17 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
     );
     if (res is LoginResModel) {
       if (res.status == 'Success') {
-        // Saving the token
-        Pref().writeData(key: saveToken, value: res.data!.accessToken!);
+        final loginToken = res.data?.accessToken?.trim();
+        if (loginToken == null || loginToken.isEmpty) {
+          if (!mounted) return;
+          GlobalSnackBar.showError(
+            context,
+            'Login access could not be verified. Please try again.',
+          );
+          setState(() => isLoading = false);
+          return;
+        }
+        await RegistrationAccessSession.begin(loginToken);
         // save Issuer Type
         Pref().writeData(key: issuerType, value: res.data!.user!.issuerType!);
         // Saving the Country ID
@@ -519,6 +529,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
         // Calling the user profile to save the country origin ID and user ID
         UserProfileResModel? countryOriginID =
             await DioMemberShip().getUserProfile();
+        bool membershipAllowsAccess = false;
         if (countryOriginID is UserProfileResModel) {
           //originCountryId
           Pref().writeData(
@@ -528,7 +539,13 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
           Pref().writeData(
               key: saveUserID,
               value: countryOriginID.data!.results!.id.toString());
+          membershipAllowsAccess = memberProfileAllowsAuthenticatedAccess(
+            memberType: countryOriginID.data?.results?.memberType,
+            discoveryIsActive:
+                countryOriginID.data?.discoveryMembership?.isActive == true,
+          );
         } else {
+          await RegistrationAccessSession.abandon();
           if (!mounted) return;
           GlobalSnackBar.showError(
               context,
@@ -538,6 +555,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
           setState(() {
             isLoading = false;
           });
+          return;
         }
 
         //Calling API to fetch the stripe key
@@ -559,13 +577,24 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
             isLoading = false;
           });
         }
-        AppVariables.initNotifications = true;
-        AppVariables.accessToken = res.data!.accessToken;
-        checkSavedCredentials(res.data!.accessToken!);
-        // Navigating to the Next Screen after successful login
-        if (!mounted) return;
-        context
-            .pushReplacementNamed('bottom-bar', pathParameters: {'page': '4'});
+        if (membershipAllowsAccess) {
+          await RegistrationAccessSession.grant(
+            authoritativeToken: loginToken,
+          );
+          AppVariables.initNotifications = true;
+          checkSavedCredentials(loginToken);
+          if (!mounted) return;
+          context.pushReplacementNamed('bottom-bar',
+              pathParameters: {'page': '4'});
+        } else {
+          if (!mounted) return;
+          context.pushReplacementNamed(
+            'paid-free',
+            extra: const <String, dynamic>{
+              'pendingRegistrationAccess': true,
+            },
+          );
+        }
       }
     } else if (res is ErrorResModel) {
       if (!mounted) return;

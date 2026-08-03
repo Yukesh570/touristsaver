@@ -26,6 +26,12 @@ void main() {
       expect(preview.payableAmount, closeTo(2.97, 0.001));
       expect(preview.memberPremiumCodeForPaymentIntent, 'CHREST1234');
       expect(context.packageId, 9);
+      expect(context.pendingRegistrationAccess, isTrue);
+      expect(
+        RegistrationPremiumOfferContext.fromRouteExtra(context.toRouteExtra())
+            .pendingRegistrationAccess,
+        isTrue,
+      );
     });
 
     test('20% code produces AUD 79.20 and sends original code', () {

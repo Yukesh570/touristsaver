@@ -9,6 +9,7 @@ import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
 
 import '../common/app_variables.dart';
+import '../common/services/registration_access_session.dart';
 import '../common/services/device_info.dart';
 import '../common/widgets/custom_snackbar.dart';
 import '../router.dart';
@@ -18,8 +19,8 @@ const baseUrl = AppEnvironment.apiBaseUrl;
 // For user with token or logged in
 Future<Dio> getClient() async {
   final Dio dio = Dio();
-  String token;
-  token = await Pref().readData(key: saveToken);
+  final String? token = RegistrationAccessSession.apiToken ??
+      await Pref().readData(key: saveToken);
   String lang = await Pref().readData(key: 'locale') ?? 'en';
   String deviceId = await getDeviceId();
   String myPlatform = Platform.isAndroid
@@ -116,6 +117,7 @@ class AuthInterceptor extends Interceptor {
       await Pref().removeData(savePublishableKey);
       await Pref().removeData(userChosenLocationStateID);
       await Pref().removeData(userChosenLocationRegionID);
+      await RegistrationAccessSession.abandon();
       AppVariables.accessToken = null;
       AppVariables.notificationLabel.value = 0;
       AppVariables.initNotifications = false;

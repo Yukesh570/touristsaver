@@ -9,6 +9,7 @@ import 'package:touristsaver/common/models/registration_premium_offer_context.da
 import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/branch_referral_service.dart';
+import 'package:touristsaver/common/services/registration_access_session.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
@@ -465,17 +466,32 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                           );
 
                           if (res is RegisterResModel) {
+                            final registrationToken =
+                                res.data?.accessToken?.trim();
+                            if (registrationToken == null ||
+                                registrationToken.isEmpty) {
+                              if (!mounted) return;
+                              GlobalSnackBar.showError(
+                                context,
+                                'Registration access could not be verified. Please log in and try again.',
+                              );
+                              setState(() {
+                                isLoadingN = false;
+                              });
+                              return;
+                            }
+                            await RegistrationAccessSession.begin(
+                              registrationToken,
+                            );
                             if (widget.registrationCode != 'null') {
                               await BranchReferralService
                                   .clearPendingDiscoveryReferral(
                                 code: widget.registrationCode,
                               );
                             }
-                            // After success sending to the choosing page of free or paid {User or Member will already be created before going to this page}
-                            // Saving the token
-                            await Pref().writeData(
-                                key: saveToken, value: res.data!.accessToken!);
-                            AppVariables.accessToken = res.data!.accessToken!;
+                            // The registration token remains memory-only until
+                            // Discovery, complimentary Premium, or paid Premium
+                            // access has been authoritatively confirmed.
                             await Pref().setBool(
                               key: 'showFreePiiinks',
                               value: res.data?.showFreePiiinks ?? false,
@@ -515,28 +531,37 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                             await Pref().writeData(
                                 key: saveCurrency, value: currencySymbol);
                             AppVariables.currency = currencySymbol;
-                            await Pref().writeData(
-                                key: 'saveUsername', value: widget.phNum);
-                            await Pref().writeData(
-                                key: 'savePassword', value: widget.password);
                             AppVariables.isLocalAuthEnabled = false;
 
                             final discoveryMembership =
                                 res.data!.discoveryMembership;
-                            if (discoveryMembership != null) {
+                            final accessDecision =
+                                registrationAccessDecision(res.data!);
+                            if (accessDecision ==
+                                RegistrationAccessDecision.discovery) {
+                              final confirmedDiscoveryMembership =
+                                  discoveryMembership!;
+                              await RegistrationAccessSession.grant(
+                                authoritativeToken: registrationToken,
+                              );
                               await const DiscoveryMembershipStore()
-                                  .save(discoveryMembership);
+                                  .save(confirmedDiscoveryMembership);
                               if (!mounted) return;
                               ScaffoldMessenger.of(context).clearSnackBars();
                               context.pushReplacementNamed(
                                 'discovery-membership-welcome',
-                                extra: discoveryMembership.toRouteExtra(),
+                                extra:
+                                    confirmedDiscoveryMembership.toRouteExtra(),
                               );
                               return;
                             }
 
-                            if (res.data!
-                                .shouldShowPremiumWelcomeAfterRegistration) {
+                            if (accessDecision ==
+                                RegistrationAccessDecision
+                                    .complimentaryPremium) {
+                              await RegistrationAccessSession.grant(
+                                authoritativeToken: registrationToken,
+                              );
                               final recognition =
                                   widget.premium.trim().isEmpty ||
                                           widget.premium == 'null'
@@ -572,6 +597,7 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
 
                               initializeFlutterStripe();
                             } else {
+                              await RegistrationAccessSession.abandon();
                               if (!mounted) return;
                               GlobalSnackBar.showError(
                                   context,
@@ -581,6 +607,8 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                               setState(() {
                                 isLoadingN = false;
                               });
+                              context.goNamed('intro-screen');
+                              return;
                             }
 
                             if (!mounted) return;
@@ -597,7 +625,11 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                                     : null;
                             context.pushReplacementNamed(
                               'paid-free',
-                              extra: registrationPremiumContext?.toRouteExtra(),
+                              extra:
+                                  registrationPremiumContext?.toRouteExtra() ??
+                                      const <String, dynamic>{
+                                        'pendingRegistrationAccess': true,
+                                      },
                             );
                           } else if (res is ErrorResModel) {
                             if (!mounted) return;
@@ -625,6 +657,7 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                             return;
                           }
                         } catch (error) {
+                          await RegistrationAccessSession.abandon();
                           if (mounted) {
                             GlobalSnackBar.showError(
                               context,
@@ -839,29 +872,10 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
           GlobalSnackBar.showError(context, S.of(context).stripePaymentFail);
         }
       });
-    } on Exception catch (e) {
-      if (e is StripeException) {
-        var sheetRes =
-            await Stripe.instance.retrievePaymentIntent(clientSecret!);
-        var confirm = await DioRegister().regTopup(
-            regTopUpReqModel: ConfirmTopUpReqModel(
-                paymentIntent: sheetRes.id,
-                paymentIntentClientSecret: sheetRes.clientSecret));
-        if (!mounted) return;
-
-        if (confirm is RegTopUpResModel) {
-          if (confirm.status != 'success') {
-            GlobalSnackBar.showError(context, S.of(context).paymentFailed);
-          } else {
-            GlobalSnackBar.showError(context, S.of(context).paymentFailed);
-          }
-        } else {
-          GlobalSnackBar.showError(
-              context, S.of(context).thePaymentHasBeenCanceled);
-        }
-      } else {
-        return;
-      }
+    } on StripeException {
+      if (!mounted) return;
+      GlobalSnackBar.showError(
+          context, S.of(context).thePaymentHasBeenCanceled);
     } catch (e) {
       return;
     }
