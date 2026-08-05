@@ -24,6 +24,7 @@ import 'package:touristsaver/constants/style.dart';
 import 'package:touristsaver/features/details/bloc/details_blocs.dart';
 import 'package:touristsaver/features/details/bloc/details_events.dart';
 import 'package:touristsaver/features/details/bloc/details_states.dart';
+import 'package:touristsaver/features/details/models/public_deal_presentation.dart';
 import 'package:touristsaver/features/details/screens/carousel_widget.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
 import 'package:touristsaver/features/details/services/fav_or_not.dart';
@@ -548,6 +549,52 @@ class _DetailsScreenState extends State<DetailsScreen> {
         children: hoursListWidgets);
   }
 
+  Widget _buildPublicDealHoursHeader(String? rawHours) {
+    final PublicDealOpeningHoursRow today =
+        publicDealHoursForWeekday(rawHours, DateTime.now().weekday);
+    return _headerText('Today', ' · ${today.value}', Colors.black87);
+  }
+
+  Widget _buildPublicDealOpeningHoursList(String? rawHours) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: parsePublicDealOpeningHours(rawHours)
+          .map((PublicDealOpeningHoursRow row) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        row.weekday,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        row.value,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: row.value.toLowerCase() == 'closed'
+                              ? Colors.red.withValues(alpha: 0.8)
+                              : Colors.black.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ))
+          .toList(growable: false),
+    );
+  }
+
 //For locating merchant in google map
   onClicked(List<double>? latlang) async {
     if (!_hasLatLon(latlang)) {
@@ -588,6 +635,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool _isDiscountOfferListing(Data? merchant) {
     return merchant?.merchantListingType?.trim().toLowerCase() ==
         'discount_offer';
+  }
+
+  bool _isPublicDealListing(Data? merchant) {
+    return usesPublicDealPresentation(merchant?.merchantListingType);
   }
 
   String _publicListingLabel(String? listingType) {
@@ -944,8 +995,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final String? externalUrl = merchant?.externalUrl;
     final bool hasExternalUrl =
         externalUrl != null && externalUrl.trim().isNotEmpty;
-    final String ctaLabel =
-        merchant?.externalUrlLabel?.trim().isNotEmpty == true
+    final String ctaLabel = _isPublicDealListing(merchant)
+        ? 'More info'
+        : merchant?.externalUrlLabel?.trim().isNotEmpty == true
             ? merchant!.externalUrlLabel!.trim()
             : 'View offer';
 
@@ -1278,9 +1330,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
     addressDetail = _merchantAddress(merchantDetail.data);
 
     //To open the dial pad of the phone
+    final bool isPublicDealListing = _isPublicDealListing(merchantDetail.data);
+    final String? publicDealPhone = isPublicDealListing
+        ? usablePublicDealPhone(merchantDetail.data?.merchantPhoneNumber)
+        : null;
+
     callNum() async {
-      Uri phoneno = Uri.parse(
-          'tel:${merchantDetail.data!.merchantPhoneNumber.toString()}');
+      final String phone = publicDealPhone ??
+          merchantDetail.data!.merchantPhoneNumber.toString();
+      Uri phoneno = Uri.parse('tel:$phone');
       await launchUrl(phoneno);
     }
 
@@ -1471,8 +1529,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildDynamicHoursHeader(merchantDetail.data
-                                      ?.merchantWebsiteInfo?.openingHourInfo),
+                                  isPublicDealListing
+                                      ? _buildPublicDealHoursHeader(
+                                          merchantDetail
+                                              .data
+                                              ?.merchantWebsiteInfo
+                                              ?.openingHourInfo)
+                                      : _buildDynamicHoursHeader(merchantDetail
+                                          .data
+                                          ?.merchantWebsiteInfo
+                                          ?.openingHourInfo),
                                   const SizedBox(height: 4),
                                   Text(
                                     isHoursExpanded
@@ -1508,7 +1574,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               padding: const EdgeInsets.only(
                                   left: 36.0,
                                   bottom: 10.0), // Indents text to match header
-                              child: _buildOpeningHoursList(merchantDetail),
+                              child: isPublicDealListing
+                                  ? _buildPublicDealOpeningHoursList(
+                                      merchantDetail.data?.merchantWebsiteInfo
+                                          ?.openingHourInfo)
+                                  : _buildOpeningHoursList(merchantDetail),
                             )
                           : const SizedBox(width: double.infinity, height: 0),
                     ),
@@ -1544,39 +1614,42 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
-                Row(
-                  children: [
-                    _contactCircleIcon(Icons.phone_outlined),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: merchantDetail.data?.merchantPhoneNumber == ''
-                            ? () {}
-                            : merchantDetail.data?.merchantPhoneNumber != null
-                                ? callNum
-                                : () {},
-                        child: AutoSizeText(
-                          merchantDetail.data?.merchantPhoneNumber == ''
-                              ? S.of(context).noNumber
-                              : "${merchantDetail.data?.merchantPhoneNumber == null ? '' : merchantDetail.data?.country!.phonePrefix} ${merchantDetail.data?.merchantPhoneNumber ?? 'No Number'}",
-                          style: const TextStyle(
-                            shadows: [
-                              Shadow(color: Colors.black, offset: Offset(0, -5))
-                            ],
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.transparent,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.black,
-                            decorationThickness: 1,
-                            decorationStyle: TextDecorationStyle.solid,
+                if (!isPublicDealListing || publicDealPhone != null) ...[
+                  const SizedBox(height: 15),
+                  Row(
+                    children: [
+                      _contactCircleIcon(Icons.phone_outlined),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: merchantDetail.data?.merchantPhoneNumber == ''
+                              ? () {}
+                              : merchantDetail.data?.merchantPhoneNumber != null
+                                  ? callNum
+                                  : () {},
+                          child: AutoSizeText(
+                            merchantDetail.data?.merchantPhoneNumber == ''
+                                ? S.of(context).noNumber
+                                : "${merchantDetail.data?.merchantPhoneNumber == null ? '' : merchantDetail.data?.country!.phonePrefix} ${merchantDetail.data?.merchantPhoneNumber ?? 'No Number'}",
+                            style: const TextStyle(
+                              shadows: [
+                                Shadow(
+                                    color: Colors.black, offset: Offset(0, -5))
+                              ],
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.transparent,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.black,
+                              decorationThickness: 1,
+                              decorationStyle: TextDecorationStyle.solid,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 15),
 
                 // // Address
