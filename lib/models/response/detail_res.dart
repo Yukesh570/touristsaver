@@ -71,6 +71,7 @@ class Data {
     this.state,
     this.discountAtHourOfDay,
     this.merchantImageInfo,
+    this.publishedDiningDealOffers = const [],
   });
 
   final int? id;
@@ -123,6 +124,7 @@ class Data {
   final States? state;
   final double? discountAtHourOfDay;
   final MerchantImageInfo? merchantImageInfo;
+  final List<DiningDealOffer> publishedDiningDealOffers;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
         id: json["id"],
@@ -187,6 +189,77 @@ class Data {
         merchantImageInfo: json["__merchantImageInfo__"] == null
             ? null
             : MerchantImageInfo.fromJson(json["__merchantImageInfo__"]),
+        publishedDiningDealOffers: _diningDealOffersFromJson(
+          json["publishedDiningDealOffers"],
+        ),
+      );
+}
+
+List<DiningDealOffer> _diningDealOffersFromJson(dynamic value) {
+  if (value is! List) return const [];
+  return value
+      .whereType<Map>()
+      .map((item) => DiningDealOffer.fromJson(Map<String, dynamic>.from(item)))
+      .toList(growable: false);
+}
+
+class DiningDealOffer {
+  const DiningDealOffer({
+    this.id,
+    this.externalOfferRef,
+    this.title,
+    this.description,
+    this.dayOfWeek,
+    this.startTime,
+    this.endTime,
+    this.offerPrice,
+    this.regularPrice,
+    this.offerType,
+    this.conditions,
+    this.bookingRequired = false,
+    this.startDate,
+    this.endDate,
+    this.ongoingStatus,
+    this.sourceUrl,
+  });
+
+  final int? id;
+  final String? externalOfferRef;
+  final String? title;
+  final String? description;
+  final String? dayOfWeek;
+  final String? startTime;
+  final String? endTime;
+  final double? offerPrice;
+  final double? regularPrice;
+  final String? offerType;
+  final String? conditions;
+  final bool bookingRequired;
+  final String? startDate;
+  final String? endDate;
+  final String? ongoingStatus;
+  final String? sourceUrl;
+
+  factory DiningDealOffer.fromJson(Map<String, dynamic> json) =>
+      DiningDealOffer(
+        id: json["id"] is int
+            ? json["id"] as int
+            : int.tryParse('${json["id"]}'),
+        externalOfferRef: _stringFromJson(json["externalOfferRef"]),
+        title: _stringFromJson(json["title"]),
+        description: _stringFromJson(json["description"]),
+        dayOfWeek: _stringFromJson(json["dayOfWeek"]),
+        startTime: _stringFromJson(json["startTime"]),
+        endTime: _stringFromJson(json["endTime"]),
+        offerPrice: _doubleFromJson(json["offerPrice"]),
+        regularPrice: _doubleFromJson(json["regularPrice"]),
+        offerType: _stringFromJson(json["offerType"]),
+        conditions: _stringFromJson(json["conditions"]),
+        bookingRequired: _boolFromJson(json["bookingRequired"]) ?? false,
+        startDate: _stringFromJson(json["startDate"]),
+        endDate: _stringFromJson(json["endDate"]),
+        ongoingStatus: _stringFromJson(json["ongoingStatus"]),
+        sourceUrl: _stringFromJson(json["sourceUrl"]),
       );
 }
 

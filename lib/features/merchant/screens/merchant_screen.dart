@@ -200,7 +200,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
         final String activeCategoryName =
             activeIntent.categoryName?.trim() ?? '';
         if (activeCategoryId == null || activeCategoryName.isEmpty) return;
-        _discovery.setPublicDealsOnly(activeIntent.publicDealsOnly);
+        _discovery.setDiningDealsOnly(activeIntent.publicDealsOnly);
         await _loadCategory(activeCategoryId, activeCategoryName);
       }
     });
@@ -320,8 +320,8 @@ class _MerchantScreenState extends State<MerchantScreen> {
     _discovery.setBestOfferFirst(value);
   }
 
-  void _setPublicDealsOnly(bool value) {
-    _discovery.setPublicDealsOnly(value);
+  void _setDiningDealsOnly(bool value) {
+    _discovery.setDiningDealsOnly(value);
   }
 
   void _setFavouritesOnly(bool value) {
@@ -491,12 +491,12 @@ class _MerchantScreenState extends State<MerchantScreen> {
                             selectedSort: discoveryState.selectedSort,
                             selectedRadiusKm: discoveryState.selectedRadiusKm,
                             bestOfferFirst: discoveryState.bestOfferFirst,
-                            publicDealsOnly: discoveryState.publicDealsOnly,
+                            diningDealsOnly: discoveryState.diningDealsOnly,
                             favouritesOnly: discoveryState.favouritesOnly,
                             onSortSelected: _setSort,
                             onRadiusSelected: _setRadius,
                             onBestOfferChanged: _setBestOfferFirst,
-                            onPublicDealsOnlyChanged: _setPublicDealsOnly,
+                            onDiningDealsOnlyChanged: _setDiningDealsOnly,
                             onFavouritesOnlyChanged: _setFavouritesOnly,
                           ),
                         ),
@@ -969,24 +969,24 @@ class _FilterSortBar extends StatelessWidget {
     required this.selectedSort,
     required this.selectedRadiusKm,
     required this.bestOfferFirst,
-    required this.publicDealsOnly,
+    required this.diningDealsOnly,
     required this.favouritesOnly,
     required this.onSortSelected,
     required this.onRadiusSelected,
     required this.onBestOfferChanged,
-    required this.onPublicDealsOnlyChanged,
+    required this.onDiningDealsOnlyChanged,
     required this.onFavouritesOnlyChanged,
   });
 
   final String selectedSort;
   final double? selectedRadiusKm;
   final bool bestOfferFirst;
-  final bool publicDealsOnly;
+  final bool diningDealsOnly;
   final bool favouritesOnly;
   final ValueChanged<String> onSortSelected;
   final ValueChanged<double?> onRadiusSelected;
   final ValueChanged<bool> onBestOfferChanged;
-  final ValueChanged<bool> onPublicDealsOnlyChanged;
+  final ValueChanged<bool> onDiningDealsOnlyChanged;
   final ValueChanged<bool> onFavouritesOnlyChanged;
 
   @override
@@ -1004,9 +1004,9 @@ class _FilterSortBar extends StatelessWidget {
               onTap: () => onBestOfferChanged(!bestOfferFirst),
             ),
             _DiscoveryChip(
-              label: 'Public Deals',
-              selected: publicDealsOnly,
-              onTap: () => onPublicDealsOnlyChanged(!publicDealsOnly),
+              label: 'Dining Deals',
+              selected: diningDealsOnly,
+              onTap: () => onDiningDealsOnlyChanged(!diningDealsOnly),
             ),
             _DiscoveryChip(
               label: 'Favourites',

@@ -644,7 +644,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   String _publicListingLabel(String? listingType) {
     switch (listingType?.trim().toLowerCase()) {
       case 'public_deal':
-        return 'Public deal';
+        return 'Dining Deal';
       case 'concierge_listing':
         return 'Concierge listing';
       default:
@@ -788,43 +788,48 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 onTap: () => _showDirectClaimBillAmountSheet(merchantDetail),
               ),
             ],
-            SizedBox(height: 8.h),
-            Row(
-              children: [
-                Expanded(
-                  child: _secondaryOutlineButton(
-                    label: S.of(context).moreOffers,
-                    onTap: () {
-                      context.pushNamed('more-offers', extra: {
-                        'argImageList': imageList,
-                        'merchantID': widget.merchantID,
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: _secondaryOutlineButton(
-                    label: S.of(context).reviews,
-                    onTap: () {
-                      context.pushNamed(
-                        'merchant-rating',
-                        extra: {
-                          'merchantId': widget.merchantID,
-                          'merchantName': merchantDetail.data?.merchantName,
-                          'merchantLogo': merchantDetail
-                                  .data?.merchantImageInfo?.logoUrl ??
-                              merchantDetail.data?.merchantImageInfo?.slider1 ??
-                              merchantDetail.data?.merchantImageInfo?.slider2,
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _memberOfferActions(MerchantDetailResModel merchantDetail) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _secondaryOutlineButton(
+              label: S.of(context).moreOffers,
+              onTap: () {
+                context.pushNamed('more-offers', extra: {
+                  'argImageList': imageList,
+                  'merchantID': widget.merchantID,
+                });
+              },
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: _secondaryOutlineButton(
+              label: S.of(context).reviews,
+              onTap: () {
+                context.pushNamed(
+                  'merchant-rating',
+                  extra: {
+                    'merchantId': widget.merchantID,
+                    'merchantName': merchantDetail.data?.merchantName,
+                    'merchantLogo':
+                        merchantDetail.data?.merchantImageInfo?.logoUrl ??
+                            merchantDetail.data?.merchantImageInfo?.slider1 ??
+                            merchantDetail.data?.merchantImageInfo?.slider2,
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -995,9 +1000,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final String? externalUrl = merchant?.externalUrl;
     final bool hasExternalUrl =
         externalUrl != null && externalUrl.trim().isNotEmpty;
-    final String ctaLabel = _isPublicDealListing(merchant)
-        ? 'More info'
-        : merchant?.externalUrlLabel?.trim().isNotEmpty == true
+    final String ctaLabel =
+        merchant?.externalUrlLabel?.trim().isNotEmpty == true
             ? merchant!.externalUrlLabel!.trim()
             : 'View offer';
 
@@ -1081,7 +1085,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             hasDescription
                 ? _descriptionHtml(description)
                 : NoMerchantCard(text: S.of(context).noMerchantDescription),
-            if (hasExternalUrl) ...[
+            if (hasExternalUrl && !_isPublicDealListing(merchant)) ...[
               SizedBox(height: 16.h),
               _primaryGradientButton(
                 label: ctaLabel,
@@ -1092,6 +1096,212 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _venueSpecialsSection(MerchantDetailResModel merchantDetail) {
+    final List<DiningDealOffer> specials =
+        merchantDetail.data?.publishedDiningDealOffers ?? const [];
+    if (specials.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      key: const ValueKey('venue-specials-section'),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AutoSizeText('Venue Specials', style: topicStyle),
+          SizedBox(height: 10.h),
+          for (int index = 0; index < specials.length; index++) ...[
+            _venueSpecialCard(specials[index], merchantDetail.data?.country),
+            if (index != specials.length - 1) SizedBox(height: 10.h),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _venueSpecialCard(DiningDealOffer special, Country? country) {
+    final String? schedule = _venueSpecialSchedule(special);
+    final String? price = _venueSpecialPrice(special, country);
+    final String? description = special.description?.trim();
+    final String? conditions = special.conditions?.trim();
+    final String? sourceUrl = special.sourceUrl?.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: _borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0A236B).withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            special.title?.trim().isNotEmpty == true
+                ? special.title!.trim()
+                : 'Dining deal',
+            style: TextStyle(
+              color: _headingColor,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Sans',
+            ),
+          ),
+          if (schedule != null || price != null) ...[
+            SizedBox(height: 7.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 6.h,
+              children: [
+                if (schedule != null)
+                  _venueSpecialFact(Icons.schedule_rounded, schedule),
+                if (price != null)
+                  _venueSpecialFact(Icons.payments_outlined, price),
+              ],
+            ),
+          ],
+          if (description != null && description.isNotEmpty) ...[
+            SizedBox(height: 9.h),
+            Text(
+              description,
+              style: TextStyle(
+                color: _bodyColor,
+                fontSize: 13.sp,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          if (conditions != null && conditions.isNotEmpty) ...[
+            SizedBox(height: 7.h),
+            Text(
+              conditions,
+              style: TextStyle(
+                color: _bodyColor,
+                fontSize: 12.sp,
+                height: 1.35,
+              ),
+            ),
+          ],
+          if (special.bookingRequired) ...[
+            SizedBox(height: 7.h),
+            Text(
+              'Booking required',
+              style: TextStyle(
+                color: _headingColor,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+          if (sourceUrl != null && sourceUrl.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            InkWell(
+              onTap: () => _openExternalUrl(sourceUrl),
+              borderRadius: BorderRadius.circular(6.r),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 3.h),
+                child: Text(
+                  'Offer details',
+                  style: TextStyle(
+                    color: _primaryBlue,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w800,
+                    decoration: TextDecoration.underline,
+                    decorationColor: _primaryBlue,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _venueSpecialFact(IconData icon, String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF7FF),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.sp, color: _primaryBlue),
+          SizedBox(width: 5.w),
+          Text(
+            label,
+            style: TextStyle(
+              color: _headingColor,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _venueSpecialSchedule(DiningDealOffer special) {
+    final String? day = special.dayOfWeek?.trim();
+    final String? start = _formatOfferTime(special.startTime);
+    final String? end = _formatOfferTime(special.endTime);
+    final String? time = start == null
+        ? end
+        : end == null
+            ? start
+            : '$start–$end';
+    if (day == null || day.isEmpty) return time;
+    final String formattedDay =
+        '${day[0].toUpperCase()}${day.substring(1).toLowerCase()}';
+    return time == null ? formattedDay : '$formattedDay · $time';
+  }
+
+  String? _formatOfferTime(String? value) {
+    final String? time = value?.trim();
+    if (time == null || time.isEmpty) return null;
+    for (final String pattern in const ['HH:mm:ss', 'HH:mm']) {
+      try {
+        final DateTime parsedTime = DateFormat(pattern).parseStrict(time);
+        return DateFormat('h:mm a').format(parsedTime);
+      } on FormatException {
+        // Try the next supported backend time format.
+      }
+    }
+    return time;
+  }
+
+  String? _venueSpecialPrice(DiningDealOffer special, Country? country) {
+    final double? offerPrice = special.offerPrice;
+    final double? regularPrice = special.regularPrice;
+    if (offerPrice == null && regularPrice == null) return null;
+    final String symbol = country?.currencySymbol?.trim().isNotEmpty == true
+        ? country!.currencySymbol!.trim()
+        : r'$';
+    final bool prefix = country?.symbolIsPrefix != false;
+    String format(double value) {
+      final String amount = value == value.roundToDouble()
+          ? value.toStringAsFixed(0)
+          : value.toStringAsFixed(2);
+      return prefix ? '$symbol$amount' : '$amount $symbol';
+    }
+
+    if (offerPrice == null) return 'Usually ${format(regularPrice!)}';
+    if (regularPrice == null || regularPrice <= offerPrice) {
+      return format(offerPrice);
+    }
+    return '${format(offerPrice)} · usually ${format(regularPrice)}';
   }
 
   Widget _primaryGradientButton({
@@ -1412,6 +1622,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
         SizedBox(height: 12.h),
 
+        if (isDiscountOfferListing &&
+            merchantDetail.data!.publishedDiningDealOffers.isNotEmpty) ...[
+          _venueSpecialsSection(merchantDetail),
+          SizedBox(height: 20.h),
+        ],
+
         // Additional Information
         if (isDiscountOfferListing) ...[
           Padding(
@@ -1464,6 +1680,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             ),
                           ),
           ),
+          SizedBox(height: 14.h),
+          _memberOfferActions(merchantDetail),
         ],
 
         const SizedBox(height: 20),

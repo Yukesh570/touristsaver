@@ -17,7 +17,7 @@ class MerchantDiscoveryState {
     this.selectedRadiusKm,
     this.selectedSort = 'Distance',
     this.bestOfferFirst = false,
-    this.publicDealsOnly = false,
+    this.diningDealsOnly = false,
     this.favouritesOnly = false,
     this.isLoading = false,
     this.error,
@@ -34,7 +34,7 @@ class MerchantDiscoveryState {
   final double? selectedRadiusKm;
   final String selectedSort;
   final bool bestOfferFirst;
-  final bool publicDealsOnly;
+  final bool diningDealsOnly;
   final bool favouritesOnly;
   final bool isLoading;
   final String? error;
@@ -62,7 +62,7 @@ class MerchantDiscoveryState {
     Object? selectedRadiusKm = _unset,
     String? selectedSort,
     bool? bestOfferFirst,
-    bool? publicDealsOnly,
+    bool? diningDealsOnly,
     bool? favouritesOnly,
     bool? isLoading,
     Object? error = _unset,
@@ -83,7 +83,7 @@ class MerchantDiscoveryState {
           : selectedRadiusKm as double?,
       selectedSort: selectedSort ?? this.selectedSort,
       bestOfferFirst: bestOfferFirst ?? this.bestOfferFirst,
-      publicDealsOnly: publicDealsOnly ?? this.publicDealsOnly,
+      diningDealsOnly: diningDealsOnly ?? this.diningDealsOnly,
       favouritesOnly: favouritesOnly ?? this.favouritesOnly,
       isLoading: isLoading ?? this.isLoading,
       error: error == _unset ? this.error : error as String?,

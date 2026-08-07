@@ -109,17 +109,23 @@ class DioHome {
 
   // Nearby merchants by location Range Selected in viewAllPage
   Future<GetNearByMerchantsResModel?> getNearbyOffers(
-      {double? latitude, double? longitude, double? radius}) async {
+      {double? latitude,
+      double? longitude,
+      double? radius,
+      bool diningDealsOnly = false}) async {
     try {
       Dio dio = AppVariables.accessToken != null
           ? await getClient()
           : await getClientNoToken();
-      Response<String> response = await dio.post(nearByLocation, data: {
+      final Map<String, dynamic> requestData = {
         "latitude": latitude,
         "longitude": longitude,
         "radius": radius,
         "lang": AppVariables.selectedLanguageNow
-      });
+      };
+      if (diningDealsOnly) requestData["diningDealsOnly"] = true;
+      Response<String> response =
+          await dio.post(nearByLocation, data: requestData);
       return getNearByMerchantsResModelFromJson(response.data!);
     } catch (e) {
       return null;
@@ -140,7 +146,8 @@ class DioHome {
   // Popular Offers By Locations
   Future<dynamic> getBestOffers(
       {required NearByLocationReqModel nearByLocationReqModel,
-      int? limit}) async {
+      int? limit,
+      bool diningDealsOnly = false}) async {
     try {
       final String? countryId = await _selectedCountryId(
         fallbackCountryId: nearByLocationReqModel.countryId,
@@ -159,6 +166,7 @@ class DioHome {
         "countryShortName": nearByLocationReqModel.countryCode,
         "lang": AppVariables.selectedLanguageNow,
       };
+      if (diningDealsOnly) queryParameters["diningDealsOnly"] = true;
       if (countryId != null && countryId.isNotEmpty) {
         queryParameters["countryId"] = countryId;
       }
@@ -321,7 +329,7 @@ class DioHome {
   Future<MerchantGetAllResModel?> getAllMerchant(
       {required int pageNumber,
       required int categoryId,
-      String? merchantListingType}) async {
+      bool diningDealsOnly = false}) async {
     String? countryId = await Pref().readData(key: userChosenLocationID);
     String? stateId =
         await Pref().readData(key: userChosenLocationStateID) == 'null' ||
@@ -350,11 +358,8 @@ class DioHome {
       Dio dio = AppVariables.accessToken != null
           ? await getClient()
           : await getClientNoToken();
-      final String listingTypeQuery = merchantListingType == null
-          ? ''
-          : '&merchantListingType=$merchantListingType';
       Response<String> response = await dio.get(
-          '$allMerchant?category=$categoryId&$enterLocationId&page=$pageNumber&order_by=popularOrder&ordering=ASC&fields=merchantName,maxDiscount,latlon,merchantListingType&lang=${AppVariables.selectedLanguageNow}$listingTypeQuery');
+          '$allMerchant?category=$categoryId&$enterLocationId&page=$pageNumber&order_by=popularOrder&ordering=ASC&fields=merchantName,maxDiscount,latlon,merchantListingType&lang=${AppVariables.selectedLanguageNow}${diningDealsOnly ? '&diningDealsOnly=true' : ''}');
       return merchantGetAllResModelFromJson(response.data!);
     } catch (e) {
       return null;
@@ -497,14 +502,16 @@ class DioHome {
 
   // Search Merchant
   Future<SearchMerchantResModel?> getSearched(
-      {required String name, String? category}) async {
+      {required String name,
+      String? category,
+      bool diningDealsOnly = false}) async {
     String? countryId = await Pref().readData(key: userChosenLocationID);
     try {
       Dio dio = AppVariables.accessToken != null
           ? await getClient()
           : await getClientNoToken();
       Response<String> response = await dio.get(
-          '$searchMerchant/$name?countryId=$countryId&lang=${AppVariables.selectedLanguageNow}');
+          '$searchMerchant/$name?countryId=$countryId&lang=${AppVariables.selectedLanguageNow}${diningDealsOnly ? '&diningDealsOnly=true' : ''}');
       // log(response.data!);
       return searchMerchantResModelFromJson(response.data!);
     } catch (e) {

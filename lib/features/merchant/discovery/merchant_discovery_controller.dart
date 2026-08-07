@@ -53,14 +53,17 @@ class MerchantDiscoveryController extends ChangeNotifier {
         ),
       );
 
-      final response = await DioHome().getSearched(name: query);
+      final response = await DioHome().getSearched(
+        name: query,
+        diningDealsOnly: state.diningDealsOnly,
+      );
       if (_isStale(requestId) ||
           state.source != MerchantDiscoverySource.search ||
           state.searchText != query) {
         return;
       }
 
-      _rawResults = (response?.merchants ?? [])
+      final List<MerchantSummary> results = (response?.merchants ?? [])
           .map(
             (merchant) => MerchantSummaryAdapters.fromSearchMerchant(
               merchant,
@@ -70,6 +73,9 @@ class MerchantDiscoveryController extends ChangeNotifier {
           )
           .whereType<MerchantSummary>()
           .toList();
+      _rawResults = state.diningDealsOnly
+          ? deduplicateMerchantSummaries(results)
+          : results;
 
       _emit(
         state.copyWith(
@@ -99,12 +105,11 @@ class MerchantDiscoveryController extends ChangeNotifier {
     final response = await DioHome().getAllMerchant(
       pageNumber: 1,
       categoryId: categoryId,
-      merchantListingType:
-          state.publicDealsOnly ? merchantListingTypePublicDeal : null,
+      diningDealsOnly: state.diningDealsOnly,
     );
     if (_isStale(requestId)) return;
 
-    _rawResults = (response?.data ?? [])
+    final List<MerchantSummary> results = (response?.data ?? [])
         .map(
           (merchant) => MerchantSummaryAdapters.fromMerchantGetAll(
             merchant,
@@ -115,6 +120,8 @@ class MerchantDiscoveryController extends ChangeNotifier {
         )
         .whereType<MerchantSummary>()
         .toList();
+    _rawResults =
+        state.diningDealsOnly ? deduplicateMerchantSummaries(results) : results;
 
     _emit(
       state.copyWith(
@@ -181,13 +188,16 @@ class MerchantDiscoveryController extends ChangeNotifier {
       latitude: latitude,
       longitude: longitude,
       radius: radius,
+      diningDealsOnly: state.diningDealsOnly,
     );
     if (_isStale(requestId)) return;
 
-    _rawResults = (response?.data ?? [])
+    final List<MerchantSummary> results = (response?.data ?? [])
         .map(MerchantSummaryAdapters.fromNearbyViewAll)
         .whereType<MerchantSummary>()
         .toList();
+    _rawResults =
+        state.diningDealsOnly ? deduplicateMerchantSummaries(results) : results;
 
     _emit(
       state.copyWith(
@@ -247,13 +257,16 @@ class MerchantDiscoveryController extends ChangeNotifier {
         countryCode: AppVariables.countryCode,
         page: 1,
       ),
+      diningDealsOnly: state.diningDealsOnly,
     );
     if (_isStale(requestId)) return;
 
-    _rawResults = (response?.data ?? [])
+    final List<MerchantSummary> results = (response?.data ?? [])
         .map(MerchantSummaryAdapters.fromNearby)
         .whereType<MerchantSummary>()
         .toList();
+    _rawResults =
+        state.diningDealsOnly ? deduplicateMerchantSummaries(results) : results;
 
     _emit(
       state.copyWith(
@@ -340,15 +353,24 @@ class MerchantDiscoveryController extends ChangeNotifier {
     _refreshVisibleResults();
   }
 
-  void setPublicDealsOnly(bool value) {
-    _emit(state.copyWith(publicDealsOnly: value));
-    if (state.source == MerchantDiscoverySource.category &&
-        state.selectedCategoryId != null &&
-        state.selectedCategoryName != null) {
-      loadCategory(state.selectedCategoryId!, state.selectedCategoryName!);
-      return;
+  void setDiningDealsOnly(bool value) {
+    if (state.diningDealsOnly == value) return;
+    _emit(state.copyWith(diningDealsOnly: value));
+    switch (state.source) {
+      case MerchantDiscoverySource.search:
+        loadSearch(state.searchText);
+      case MerchantDiscoverySource.category:
+        if (state.selectedCategoryId != null &&
+            state.selectedCategoryName != null) {
+          loadCategory(state.selectedCategoryId!, state.selectedCategoryName!);
+        }
+      case MerchantDiscoverySource.nearMe:
+        loadNearMe();
+      case MerchantDiscoverySource.bestOffers:
+        loadBestOffers();
+      case MerchantDiscoverySource.none:
+        break;
     }
-    _refreshVisibleResults();
   }
 
   void clear() {
@@ -371,7 +393,7 @@ class MerchantDiscoveryController extends ChangeNotifier {
         selectedRadiusKm: null,
         selectedSort: 'Distance',
         bestOfferFirst: false,
-        publicDealsOnly: false,
+        diningDealsOnly: false,
         favouritesOnly: false,
         isLoading: false,
         error: null,
@@ -408,10 +430,6 @@ class MerchantDiscoveryController extends ChangeNotifier {
           .where((merchant) =>
               merchant.distanceKm != null && merchant.distanceKm! <= radius)
           .toList();
-    }
-
-    if (state.publicDealsOnly) {
-      results = results.where((merchant) => merchant.isPublicDeal).toList();
     }
 
     if (state.favouritesOnly) {
@@ -480,4 +498,13 @@ class MerchantDiscoveryController extends ChangeNotifier {
     _searchDebounce?.cancel();
     super.dispose();
   }
+}
+
+List<MerchantSummary> deduplicateMerchantSummaries(
+  Iterable<MerchantSummary> merchants,
+) {
+  final Set<int> seenIds = <int>{};
+  return merchants
+      .where((merchant) => seenIds.add(merchant.merchantId))
+      .toList(growable: false);
 }
