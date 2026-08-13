@@ -34,6 +34,11 @@ const Set<String> _missingPhoneSentinels = <String>{
 bool usesPublicDealPresentation(String? listingType) =>
     listingType?.trim().toLowerCase() == 'public_deal';
 
+bool usesStandardVenueInfoPresentation(String? listingType) {
+  final String? normalized = listingType?.trim().toLowerCase();
+  return normalized == 'public_deal' || normalized == 'discount_offer';
+}
+
 String? usablePublicDealPhone(String? value) {
   final String? trimmed = value?.trim();
   if (trimmed == null ||
@@ -51,6 +56,31 @@ String? usablePublicDealPhone(String? value) {
   return trimmed;
 }
 
+String? usableMerchantWebsite(String? value) {
+  final String? trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty || trimmed.contains(RegExp(r'\s'))) {
+    return null;
+  }
+  final bool hasUnsupportedScheme =
+      RegExp(r'^[a-zA-Z][a-zA-Z0-9+.-]*:').hasMatch(trimmed) &&
+          !trimmed.startsWith('http://') &&
+          !trimmed.startsWith('https://');
+  if (hasUnsupportedScheme) return null;
+
+  final String candidate =
+      trimmed.startsWith('http://') || trimmed.startsWith('https://')
+          ? trimmed
+          : 'https://$trimmed';
+  final Uri? uri = Uri.tryParse(candidate);
+  if (uri == null ||
+      (uri.scheme != 'http' && uri.scheme != 'https') ||
+      uri.host.isEmpty ||
+      !uri.host.contains('.')) {
+    return null;
+  }
+  return trimmed;
+}
+
 List<PublicDealOpeningHoursRow> parsePublicDealOpeningHours(String? rawHours) {
   final Map<String, String> values = <String, String>{};
   for (final String part in (rawHours ?? '').split(RegExp(r'[\n;]'))) {
@@ -59,14 +89,17 @@ List<PublicDealOpeningHoursRow> parsePublicDealOpeningHours(String? rawHours) {
     if (separator <= 0) continue;
     final String suppliedDay =
         line.substring(0, separator).trim().toLowerCase();
+    final String suppliedValue = line.substring(separator + 1).trim();
     for (final String weekday in publicDealWeekdays) {
       if (suppliedDay == weekday.toLowerCase() ||
           suppliedDay == weekday.substring(0, 3).toLowerCase()) {
-        values[weekday] = line.substring(separator + 1).trim();
+        if (suppliedValue.isNotEmpty) values[weekday] = suppliedValue;
         break;
       }
     }
   }
+  if (values.isEmpty) return const <PublicDealOpeningHoursRow>[];
+
   return publicDealWeekdays
       .map((String weekday) => PublicDealOpeningHoursRow(
             weekday: weekday,

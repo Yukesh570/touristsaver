@@ -991,8 +991,71 @@ class _DetailsScreenState extends State<DetailsScreen> {
     return null;
   }
 
+  Widget _venueInfoHeader(String? websiteUrl) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            'Venue Info',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: _headingColor,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Sans',
+            ),
+          ),
+        ),
+        if (websiteUrl != null) ...[
+          SizedBox(width: 12.w),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => _openExternalUrl(websiteUrl),
+              child: Ink(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF48F100),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: const Color(0xFF111C44).withValues(alpha: 0.16),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF48F100).withValues(alpha: 0.26),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  'View Website',
+                  style: TextStyle(
+                    color: const Color(0xFF071126),
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'Sans',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _publicListingCard(MerchantDetailResModel merchantDetail) {
     final Data? merchant = merchantDetail.data;
+    final bool isPublicDealListing = _isPublicDealListing(merchant);
     final String? description =
         merchant?.merchantWebsiteInfo?.merchantDescription;
     final bool hasDescription =
@@ -1000,6 +1063,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final String? externalUrl = merchant?.externalUrl;
     final bool hasExternalUrl =
         externalUrl != null && externalUrl.trim().isNotEmpty;
+    final String? websiteUrl = isPublicDealListing
+        ? usableMerchantWebsite(merchant?.merchantWebsiteInfo?.websiteLink)
+        : null;
     final String ctaLabel =
         merchant?.externalUrlLabel?.trim().isNotEmpty == true
             ? merchant!.externalUrlLabel!.trim()
@@ -1072,20 +1138,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ],
             ),
             SizedBox(height: 15.h),
-            Text(
-              S.of(context).additionalInformation,
-              style: TextStyle(
-                color: _headingColor,
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'Sans',
-              ),
-            ),
+            isPublicDealListing
+                ? _venueInfoHeader(websiteUrl)
+                : Text(
+                    S.of(context).additionalInformation,
+                    style: TextStyle(
+                      color: _headingColor,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'Sans',
+                    ),
+                  ),
             SizedBox(height: 8.h),
             hasDescription
-                ? _descriptionHtml(description)
+                ? isPublicDealListing
+                    ? _venueInfoDescriptionHtml(description)
+                    : _descriptionHtml(description)
                 : NoMerchantCard(text: S.of(context).noMerchantDescription),
-            if (hasExternalUrl && !_isPublicDealListing(merchant)) ...[
+            if (hasExternalUrl && !isPublicDealListing) ...[
               SizedBox(height: 16.h),
               _primaryGradientButton(
                 label: ctaLabel,
@@ -1535,6 +1605,93 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
+  Widget _venueInfoDescriptionHtml(String description) {
+    const int collapsedLines = 7;
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final String lineAwareHtml = description
+            .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+            .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n');
+        final String plainText = HtmlParser.parseHTML(lineAwareHtml).text;
+        final TextPainter painter = TextPainter(
+          text: TextSpan(
+            text: plainText,
+            style: TextStyle(
+              fontSize: 14.sp,
+              height: 1.12,
+            ),
+          ),
+          maxLines: collapsedLines,
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final bool exceedsCollapsedLines = painter.didExceedMaxLines;
+
+        if (!exceedsCollapsedLines) {
+          return Html(
+            style: _compactDescriptionHtmlStyle,
+            data: description,
+            onLinkTap: (url, _, __) => _openHtmlLink(url),
+          );
+        }
+
+        return Column(
+          children: [
+            if (isExpand)
+              Html(
+                style: _compactDescriptionHtmlStyle,
+                data: description,
+                onLinkTap: (url, _, __) => _openHtmlLink(url),
+              )
+            else
+              Text(
+                plainText,
+                maxLines: collapsedLines,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _bodyColor,
+                  fontSize: 14.sp,
+                  height: 1.12,
+                ),
+              ),
+            SizedBox(height: 4.h),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isExpand = !isExpand;
+                });
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AutoSizeText(
+                    isExpand == false
+                        ? S.of(context).seeMore
+                        : S.of(context).seeLess,
+                    style: viewAllStyle.copyWith(
+                      color: _primaryBlue,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2.5),
+                    child: Icon(
+                      isExpand == false ? Icons.expand_more : Icons.expand_less,
+                      color: _primaryBlue,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   detailPage(MerchantDetailResModel merchantDetail) {
     //Getting address
     addressDetail = _merchantAddress(merchantDetail.data);
@@ -1544,6 +1701,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final String? publicDealPhone = isPublicDealListing
         ? usablePublicDealPhone(merchantDetail.data?.merchantPhoneNumber)
         : null;
+    final bool showOpeningHours = !isPublicDealListing ||
+        parsePublicDealOpeningHours(
+                merchantDetail.data?.merchantWebsiteInfo?.openingHourInfo)
+            .isNotEmpty;
 
     callNum() async {
       final String phone = publicDealPhone ??
@@ -1612,6 +1773,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     final bool isDiscountOfferListing =
         _isDiscountOfferListing(merchantDetail.data);
+    final bool usesStandardVenuePresentation =
+        usesStandardVenueInfoPresentation(
+            merchantDetail.data?.merchantListingType);
+    final String? venueWebsiteUrl = usesStandardVenuePresentation
+        ? usableMerchantWebsite(
+            merchantDetail.data?.merchantWebsiteInfo?.websiteLink)
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1619,23 +1787,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
         isDiscountOfferListing
             ? _memberOfferCard(merchantDetail)
             : _publicListingCard(merchantDetail),
-
-        SizedBox(height: 12.h),
-
+        if (!isPublicDealListing) SizedBox(height: 12.h),
         if (isDiscountOfferListing &&
             merchantDetail.data!.publishedDiningDealOffers.isNotEmpty) ...[
           _venueSpecialsSection(merchantDetail),
           SizedBox(height: 20.h),
         ],
-
-        // Additional Information
         if (isDiscountOfferListing) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: AutoSizeText(
-              S.of(context).additionalInformation,
-              style: topicStyle,
-            ),
+            child: _venueInfoHeader(venueWebsiteUrl),
           ),
           const SizedBox(height: 10),
           Center(
@@ -1673,7 +1834,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               horizontal: 14.w,
                               vertical: 12.h,
                             ),
-                            child: _descriptionHtml(
+                            child: _venueInfoDescriptionHtml(
                               merchantDetail.data!.merchantWebsiteInfo!
                                   .merchantDescription
                                   .toString(),
@@ -1683,20 +1844,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
           SizedBox(height: 14.h),
           _memberOfferActions(merchantDetail),
         ],
-
-        const SizedBox(height: 20),
-
-        // Contact
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: AutoSizeText(
-            S.of(context).contact,
-            style: topicStyle,
+        SizedBox(height: usesStandardVenuePresentation ? 16.h : 20.0),
+        if (!usesStandardVenuePresentation) ...[
+          // Contact
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: AutoSizeText(
+              S.of(context).contact,
+              style: topicStyle,
+            ),
           ),
-        ),
-
-        const SizedBox(height: 10),
-
+          const SizedBox(height: 10),
+        ],
         Center(
           child: Container(
             constraints: const BoxConstraints(
@@ -1718,92 +1877,94 @@ class _DetailsScreenState extends State<DetailsScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                //Opening Hour
-                // Opening Hours
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          isHoursExpanded = !isHoursExpanded;
-                        });
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.zero,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 1.0),
-                              child: _contactCircleIcon(
-                                Icons.access_time_filled,
+                if (showOpeningHours) ...[
+                  // Opening Hours
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            isHoursExpanded = !isHoursExpanded;
+                          });
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.zero,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1.0),
+                                child: _contactCircleIcon(
+                                  Icons.access_time_filled,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
+                              const SizedBox(width: 12),
 
-                            // Dynamic Header (Open/Closed)
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  isPublicDealListing
-                                      ? _buildPublicDealHoursHeader(
-                                          merchantDetail
-                                              .data
-                                              ?.merchantWebsiteInfo
-                                              ?.openingHourInfo)
-                                      : _buildDynamicHoursHeader(merchantDetail
-                                          .data
-                                          ?.merchantWebsiteInfo
-                                          ?.openingHourInfo),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isHoursExpanded
-                                        ? "Hide hours"
-                                        : "See more hours",
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14.sp,
+                              // Dynamic Header (Open/Closed)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    isPublicDealListing
+                                        ? _buildPublicDealHoursHeader(
+                                            merchantDetail
+                                                .data
+                                                ?.merchantWebsiteInfo
+                                                ?.openingHourInfo)
+                                        : _buildDynamicHoursHeader(
+                                            merchantDetail
+                                                .data
+                                                ?.merchantWebsiteInfo
+                                                ?.openingHourInfo),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      isHoursExpanded
+                                          ? "Hide hours"
+                                          : "See more hours",
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14.sp,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
 
-                            // Dropdown Chevron
-                            Icon(
-                              isHoursExpanded
-                                  ? Icons.keyboard_arrow_up
-                                  : Icons.keyboard_arrow_down,
-                              color: _primaryBlue,
-                            ),
-                          ],
+                              // Dropdown Chevron
+                              Icon(
+                                isHoursExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                color: _primaryBlue,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
 
-                    // Smooth Expanding List
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      child: isHoursExpanded
-                          ? Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 36.0,
-                                  bottom: 10.0), // Indents text to match header
-                              child: isPublicDealListing
-                                  ? _buildPublicDealOpeningHoursList(
-                                      merchantDetail.data?.merchantWebsiteInfo
-                                          ?.openingHourInfo)
-                                  : _buildOpeningHoursList(merchantDetail),
-                            )
-                          : const SizedBox(width: double.infinity, height: 0),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
+                      // Smooth Expanding List
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: isHoursExpanded
+                            ? Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 36.0,
+                                    bottom:
+                                        10.0), // Indents text to match header
+                                child: isPublicDealListing
+                                    ? _buildPublicDealOpeningHoursList(
+                                        merchantDetail.data?.merchantWebsiteInfo
+                                            ?.openingHourInfo)
+                                    : _buildOpeningHoursList(merchantDetail),
+                              )
+                            : const SizedBox(width: double.infinity, height: 0),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Row(
                   children: [
                     _contactCircleIcon(Icons.directions_outlined),
@@ -1945,159 +2106,164 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 //     ),
                 //   ],
                 // ),
-                const SizedBox(height: 25),
-                //Facebook
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: merchantDetail.data?.merchantWebsiteInfo == null
-                          ? () {
-                              dialogInfo(S.of(context).noFacebookLink);
-                            }
-                          : merchantDetail.data?.merchantWebsiteInfo
-                                      ?.facebookLink ==
-                                  ''
-                              ? () {
-                                  dialogInfo(S.of(context).noFacebookLink);
-                                }
-                              : merchantDetail.data?.merchantWebsiteInfo
+                if (!isPublicDealListing) ...[
+                  const SizedBox(height: 25),
+                  // Facebook / Instagram / Website / Email
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: merchantDetail.data?.merchantWebsiteInfo == null
+                            ? () {
+                                dialogInfo(S.of(context).noFacebookLink);
+                              }
+                            : merchantDetail.data?.merchantWebsiteInfo
+                                        ?.facebookLink ==
+                                    ''
+                                ? () {
+                                    dialogInfo(S.of(context).noFacebookLink);
+                                  }
+                                : merchantDetail.data?.merchantWebsiteInfo
+                                            ?.facebookLink !=
+                                        null
+                                    ? openFacebook
+                                    : () {
+                                        dialogInfo(
+                                            S.of(context).noFacebookLink);
+                                      },
+                        child: Column(
+                          children: [
+                            _contactCircleIcon(
+                              FontAwesomeIcons.facebookF,
+                              enabled: merchantDetail.data?.merchantWebsiteInfo
                                           ?.facebookLink !=
-                                      null
-                                  ? openFacebook
-                                  : () {
-                                      dialogInfo(S.of(context).noFacebookLink);
-                                    },
-                      child: Column(
-                        children: [
-                          _contactCircleIcon(
-                            FontAwesomeIcons.facebookF,
-                            enabled: merchantDetail.data?.merchantWebsiteInfo
-                                        ?.facebookLink !=
-                                    '' &&
-                                merchantDetail.data?.merchantWebsiteInfo
-                                        ?.facebookLink !=
-                                    null,
-                            size: 50,
-                            iconSize: 24,
-                          ),
-                          const SizedBox(height: 10),
-                          AutoSizeText(S.of(context).facebook,
-                              style: dopdownTextStyle),
-                        ],
+                                      '' &&
+                                  merchantDetail.data?.merchantWebsiteInfo
+                                          ?.facebookLink !=
+                                      null,
+                              size: 50,
+                              iconSize: 24,
+                            ),
+                            const SizedBox(height: 10),
+                            AutoSizeText(S.of(context).facebook,
+                                style: dopdownTextStyle),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    //Instagram
-                    GestureDetector(
-                      onTap: merchantDetail.data?.merchantWebsiteInfo == null
-                          ? () {
-                              dialogInfo(S.of(context).noInstagramLink);
-                            }
-                          : merchantDetail.data?.merchantWebsiteInfo
-                                      ?.instagramLink ==
-                                  ''
-                              ? () {
-                                  dialogInfo(S.of(context).noInstagramLink);
-                                }
-                              : merchantDetail.data?.merchantWebsiteInfo
+                      //Instagram
+                      GestureDetector(
+                        onTap: merchantDetail.data?.merchantWebsiteInfo == null
+                            ? () {
+                                dialogInfo(S.of(context).noInstagramLink);
+                              }
+                            : merchantDetail.data?.merchantWebsiteInfo
+                                        ?.instagramLink ==
+                                    ''
+                                ? () {
+                                    dialogInfo(S.of(context).noInstagramLink);
+                                  }
+                                : merchantDetail.data?.merchantWebsiteInfo
+                                            ?.instagramLink !=
+                                        null
+                                    ? openInstagram
+                                    : () {
+                                        dialogInfo(
+                                            S.of(context).noInstagramLink);
+                                      },
+                        child: Column(
+                          children: [
+                            _contactCircleIcon(
+                              FontAwesomeIcons.instagram,
+                              enabled: merchantDetail.data?.merchantWebsiteInfo
                                           ?.instagramLink !=
-                                      null
-                                  ? openInstagram
-                                  : () {
-                                      dialogInfo(S.of(context).noInstagramLink);
-                                    },
-                      child: Column(
-                        children: [
-                          _contactCircleIcon(
-                            FontAwesomeIcons.instagram,
-                            enabled: merchantDetail.data?.merchantWebsiteInfo
-                                        ?.instagramLink !=
-                                    '' &&
-                                merchantDetail.data?.merchantWebsiteInfo
-                                        ?.instagramLink !=
-                                    null,
-                            size: 50,
-                            iconSize: 25,
-                          ),
-                          const SizedBox(height: 10),
-                          AutoSizeText(S.of(context).instagram,
-                              style: dopdownTextStyle),
-                        ],
+                                      '' &&
+                                  merchantDetail.data?.merchantWebsiteInfo
+                                          ?.instagramLink !=
+                                      null,
+                              size: 50,
+                              iconSize: 25,
+                            ),
+                            const SizedBox(height: 10),
+                            AutoSizeText(S.of(context).instagram,
+                                style: dopdownTextStyle),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    //Website
-                    GestureDetector(
-                      onTap: merchantDetail.data?.merchantWebsiteInfo == null
-                          ? () {
-                              dialogInfo(S.of(context).noWebsiteLink);
-                            }
-                          : merchantDetail
-                                      .data?.merchantWebsiteInfo?.websiteLink ==
-                                  ''
-                              ? () {
-                                  dialogInfo(S.of(context).noWebsiteLink);
-                                }
-                              : merchantDetail.data?.merchantWebsiteInfo
+                      //Website
+                      GestureDetector(
+                        onTap: merchantDetail.data?.merchantWebsiteInfo == null
+                            ? () {
+                                dialogInfo(S.of(context).noWebsiteLink);
+                              }
+                            : merchantDetail.data?.merchantWebsiteInfo
+                                        ?.websiteLink ==
+                                    ''
+                                ? () {
+                                    dialogInfo(S.of(context).noWebsiteLink);
+                                  }
+                                : merchantDetail.data?.merchantWebsiteInfo
+                                            ?.websiteLink !=
+                                        null
+                                    ? openWeb
+                                    : () {
+                                        dialogInfo(S.of(context).noWebsiteLink);
+                                      },
+                        child: Column(
+                          children: [
+                            _contactCircleIcon(
+                              Icons.language,
+                              enabled: merchantDetail.data?.merchantWebsiteInfo
                                           ?.websiteLink !=
-                                      null
-                                  ? openWeb
-                                  : () {
-                                      dialogInfo(S.of(context).noWebsiteLink);
-                                    },
-                      child: Column(
-                        children: [
-                          _contactCircleIcon(
-                            Icons.language,
-                            enabled: merchantDetail.data?.merchantWebsiteInfo
-                                        ?.websiteLink !=
-                                    '' &&
-                                merchantDetail.data?.merchantWebsiteInfo
-                                        ?.websiteLink !=
-                                    null,
-                            size: 50,
-                            iconSize: 27,
-                          ),
-                          const SizedBox(height: 10),
-                          AutoSizeText(S.of(context).website,
-                              style: dopdownTextStyle),
-                        ],
+                                      '' &&
+                                  merchantDetail.data?.merchantWebsiteInfo
+                                          ?.websiteLink !=
+                                      null,
+                              size: 50,
+                              iconSize: 27,
+                            ),
+                            const SizedBox(height: 10),
+                            AutoSizeText(S.of(context).website,
+                                style: dopdownTextStyle),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    //Email
-                    GestureDetector(
-                      onTap: merchantDetail.data?.merchantEmail == null
-                          ? () {
-                              dialogInfo(S.of(context).noEmail);
-                            }
-                          : merchantDetail.data?.merchantEmail == ''
-                              ? () {
-                                  dialogInfo(S.of(context).noEmail);
-                                }
-                              : merchantDetail.data?.merchantEmail != null
-                                  ? openEmail
-                                  : () {
-                                      dialogInfo(S.of(context).noEmail);
-                                    },
-                      child: Column(
-                        children: [
-                          _contactCircleIcon(
-                            Icons.email_outlined,
-                            enabled: merchantDetail.data?.merchantEmail != '' &&
-                                merchantDetail.data?.merchantEmail != null,
-                            size: 50,
-                            iconSize: 27,
-                          ),
-                          const SizedBox(height: 10),
-                          AutoSizeText(S.of(context).emailA,
-                              style: dopdownTextStyle),
-                        ],
+                      //Email
+                      GestureDetector(
+                        onTap: merchantDetail.data?.merchantEmail == null
+                            ? () {
+                                dialogInfo(S.of(context).noEmail);
+                              }
+                            : merchantDetail.data?.merchantEmail == ''
+                                ? () {
+                                    dialogInfo(S.of(context).noEmail);
+                                  }
+                                : merchantDetail.data?.merchantEmail != null
+                                    ? openEmail
+                                    : () {
+                                        dialogInfo(S.of(context).noEmail);
+                                      },
+                        child: Column(
+                          children: [
+                            _contactCircleIcon(
+                              Icons.email_outlined,
+                              enabled: merchantDetail.data?.merchantEmail !=
+                                      '' &&
+                                  merchantDetail.data?.merchantEmail != null,
+                              size: 50,
+                              iconSize: 27,
+                            ),
+                            const SizedBox(height: 10),
+                            AutoSizeText(S.of(context).emailA,
+                                style: dopdownTextStyle),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
                 //  // Facebook
                 //   Row(
                 //     children: [
