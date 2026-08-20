@@ -15,6 +15,15 @@ class PremiumWelcomeRecognition {
   final bool proudlySupportsSource;
 }
 
+bool shouldLoadLegacyMerchantAttribution({
+  required String? codeOwnerType,
+  required int? codeOwnerId,
+  required String? assignedToName,
+}) =>
+    codeOwnerType?.trim().toLowerCase() == 'merchant' &&
+    codeOwnerId != null &&
+    assignedToName?.trim().isNotEmpty != true;
+
 class MembershipOfferRecognition {
   Future<PremiumWelcomeRecognition> fromCurrentMember() async {
     try {
@@ -34,8 +43,11 @@ class MembershipOfferRecognition {
     );
     String? sourceName = offer.assignedToName;
 
-    if (offer.codeOwnerType?.trim().toLowerCase() == 'merchant' &&
-        offer.codeOwnerId != null) {
+    if (shouldLoadLegacyMerchantAttribution(
+      codeOwnerType: offer.codeOwnerType,
+      codeOwnerId: offer.codeOwnerId,
+      assignedToName: sourceName,
+    )) {
       final now = DateTime.now();
       final merchant = await DioDetail().getMerchantDetail(
         id: offer.codeOwnerId!,
