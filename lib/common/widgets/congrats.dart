@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_variables.dart';
 import '../models/premium_welcome_copy.dart';
+import '../models/social_media_link.dart';
+import '../services/social_media_link_service.dart';
 
 class CongratsScreen extends StatefulWidget {
   static const String routeName = '/congrats-screen';
@@ -13,6 +17,7 @@ class CongratsScreen extends StatefulWidget {
   final bool isComplimentary;
   final String? sourceName;
   final bool proudlySupportsSource;
+  final Future<List<SocialMediaLink>> Function()? socialLinksLoader;
 
   const CongratsScreen({
     super.key,
@@ -21,6 +26,7 @@ class CongratsScreen extends StatefulWidget {
     this.isComplimentary = false,
     this.sourceName,
     this.proudlySupportsSource = false,
+    this.socialLinksLoader,
   });
 
   @override
@@ -34,6 +40,16 @@ class _CongratsScreenState extends State<CongratsScreen> {
   static const Color _headingColor = Color(0xFF111C44);
   static const Color _bodyColor = Color(0xFF61708A);
   static const Color _borderColor = Color(0xFFE2E8F3);
+  Future<List<SocialMediaLink>>? _socialLinks;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.communityWelcome && widget.isComplimentary) {
+      _socialLinks =
+          (widget.socialLinksLoader ?? SocialMediaLinkService().getActive)();
+    }
+  }
 
   double get _creditAmount =>
       double.tryParse(widget.piiinkCredit.replaceAll(',', '').trim()) ?? 0;
@@ -58,6 +74,22 @@ class _CongratsScreenState extends State<CongratsScreen> {
                 _activationHeaderImage(),
                 SizedBox(height: 18.h),
                 _successCard(),
+                if (_socialLinks != null) ...[
+                  SizedBox(height: 16.h),
+                  FutureBuilder<List<SocialMediaLink>>(
+                    future: _socialLinks,
+                    builder: (context, snapshot) {
+                      final links = snapshot.data ?? const <SocialMediaLink>[];
+                      return shouldShowComplimentarySocialLinks(
+                        communityWelcome: widget.communityWelcome,
+                        isComplimentary: widget.isComplimentary,
+                        links: links,
+                      )
+                          ? _socialLinksCard(links)
+                          : const SizedBox.shrink();
+                    },
+                  ),
+                ],
                 SizedBox(height: 22.h),
                 _startExploringButton(),
               ],
@@ -66,6 +98,71 @@ class _CongratsScreenState extends State<CongratsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _socialLinksCard(List<SocialMediaLink> links) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(18.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Follow TouristSaver',
+            style: GoogleFonts.nunito(
+              color: _headingColor,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Stay inspired with more travel ideas, experiences and savings.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+              color: _bodyColor,
+              fontSize: 13.5.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: links
+                .map((link) => Tooltip(
+                      message: link.displayName,
+                      child: IconButton.outlined(
+                        onPressed: () => launchUrl(
+                          Uri.parse(link.url),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                        icon: FaIcon(_socialIcon(link.platform)),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _socialIcon(String platform) {
+    switch (platform.trim().toLowerCase()) {
+      case 'facebook':
+        return FontAwesomeIcons.facebookF;
+      case 'instagram':
+        return FontAwesomeIcons.instagram;
+      case 'x':
+        return FontAwesomeIcons.xTwitter;
+      default:
+        return FontAwesomeIcons.link;
+    }
   }
 
   Widget _activationHeaderImage() {

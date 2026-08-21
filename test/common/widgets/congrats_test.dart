@@ -19,13 +19,13 @@ void main() {
     );
   });
 
-  test('thanks a known source for a standard membership', () {
+  test('recognises an introducer for a paid membership', () {
     expect(
       premiumWelcomeMessage(
         isComplimentary: false,
         sourceName: 'Community Club',
       ),
-      'Your 12-month Premium Membership is now active, with thanks to Community Club.',
+      'You joined TouristSaver through Community Club.\n\nYour 12-month Premium Membership is now active.',
     );
   });
 

@@ -61,6 +61,7 @@ const locationMerchantUrl = '/merchant/merchantForApp/getMerchantByLocation';
 const getAllMemberCategoriesUrl =
     '/merchant/merchantCategory/getAllParentCategoryForApp';
 const appVersionLogUrl = '/globalSetting/appVersionLog/getLatestOne';
+const activeSocialMediaLinks = '/globalSetting/socialMediaLinks/active';
 //---------------------------....working api============//
 const patchChoosenLanguage = '/member/general/changeAppLang';
 const getActiveLang = '/country/getActivelang';

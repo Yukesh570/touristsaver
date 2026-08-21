@@ -496,9 +496,13 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     }
   }
 
-  Future<void> _navigateToActivationSuccess({String creditAmount = '0'}) async {
-    final recognition =
-        await MembershipOfferRecognition().fromCodeData(widget.premiumData);
+  Future<void> _navigateToActivationSuccess({
+    String creditAmount = '0',
+    dynamic confirmedRecognitionData,
+  }) async {
+    final recognition = await MembershipOfferRecognition().fromCodeData(
+      confirmedRecognitionData ?? widget.premiumData,
+    );
     if (!mounted) return;
     context.pushReplacementNamed(
       'congrats-screen',
@@ -679,6 +683,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         // pageless confirmation route, so the membership page is never shown.
         await _navigateToActivationSuccess(
           creditAmount: _selectedPackageCreditAmount(),
+          confirmedRecognitionData: confirmation.data?.toJson(),
         );
       } else {
         setState(() {

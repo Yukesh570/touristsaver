@@ -444,6 +444,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
           .trim(),
     ]);
     final String? membershipStatus = _firstNotEmpty([results?.memberType]);
+    final premiumAttribution = userProfile.data?.multiUsePremiumAttribution;
     final String? memberSince = results?.createdAt == null
         ? null
         : DateFormat('MMMM yyyy').format(results!.createdAt!);
@@ -458,6 +459,13 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
             email: _displayValue(results?.email),
             phone: phone,
             membershipStatus: membershipStatus,
+            premiumCode: membershipStatus?.trim().toLowerCase() == 'premium'
+                ? _firstNotEmpty([premiumAttribution?.code])
+                : null,
+            appWelcomeGreeting:
+                membershipStatus?.trim().toLowerCase() == 'premium'
+                    ? _firstNotEmpty([premiumAttribution?.appWelcomeGreeting])
+                    : null,
             memberSince: memberSince,
             isEmailVerified: isEmailVerified,
           ),
@@ -666,6 +674,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     required String email,
     required String? phone,
     required String? membershipStatus,
+    required String? premiumCode,
+    required String? appWelcomeGreeting,
     required String? memberSince,
     required bool isEmailVerified,
   }) {
@@ -750,6 +760,10 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
               icon: Icons.workspace_premium_outlined,
               label: 'Membership status',
               value: _friendlyStatus(membershipStatus),
+              secondaryValues: [
+                if (premiumCode != null) 'Code: $premiumCode',
+                if (appWelcomeGreeting != null) appWelcomeGreeting,
+              ],
             ),
           if (memberSince != null)
             _identityRow(
@@ -772,6 +786,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     required IconData icon,
     required String label,
     required String value,
+    List<String> secondaryValues = const [],
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
@@ -802,6 +817,18 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
                     height: 1.25,
                   ),
                 ),
+                for (final secondaryValue in secondaryValues) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    secondaryValue,
+                    style: const TextStyle(
+                      color: _profileMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

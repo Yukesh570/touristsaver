@@ -197,6 +197,7 @@ class Data {
   final String? issuerType;
   final DiscoveryMembershipContext? discoveryMembership;
   final Results? results;
+  final MultiUsePremiumAttribution? multiUsePremiumAttribution;
 
   Data({
     this.status,
@@ -206,6 +207,7 @@ class Data {
     this.issuerType,
     this.discoveryMembership,
     this.results,
+    this.multiUsePremiumAttribution,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -218,6 +220,10 @@ class Data {
             DiscoveryMembershipContext.fromRegistrationJson(json),
         results:
             json["results"] == null ? null : Results.fromJson(json["results"]),
+        multiUsePremiumAttribution: json["multiUsePremiumAttribution"] == null
+            ? null
+            : MultiUsePremiumAttribution.fromJson(
+                Map<String, dynamic>.from(json["multiUsePremiumAttribution"])),
       );
 
   Map<String, dynamic> toJson() => {
@@ -228,6 +234,25 @@ class Data {
         "issuerType": issuerType,
         "discoveryMembership": discoveryMembership?.toJson(),
         "results": results?.toJson(),
+        "multiUsePremiumAttribution": multiUsePremiumAttribution?.toJson(),
+      };
+}
+
+class MultiUsePremiumAttribution {
+  const MultiUsePremiumAttribution({this.code, this.appWelcomeGreeting});
+
+  final String? code;
+  final String? appWelcomeGreeting;
+
+  factory MultiUsePremiumAttribution.fromJson(Map<String, dynamic> json) =>
+      MultiUsePremiumAttribution(
+        code: json['code']?.toString(),
+        appWelcomeGreeting: json['appWelcomeGreeting']?.toString(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'code': code,
+        'appWelcomeGreeting': appWelcomeGreeting,
       };
 }
 

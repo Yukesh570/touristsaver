@@ -39,11 +39,19 @@ class Data {
   final String? accessToken;
   final MemberInfo? memberInfo;
   final UniversalWallet? universalWallet;
+  final String? assignedToName;
+  final String? codeOwnerType;
+  final int? codeOwnerId;
+  final String? recognitionStyle;
 
   Data({
     this.accessToken,
     this.memberInfo,
     this.universalWallet,
+    this.assignedToName,
+    this.codeOwnerType,
+    this.codeOwnerId,
+    this.recognitionStyle,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -54,12 +62,20 @@ class Data {
         universalWallet: json["universalWallet"] == null
             ? null
             : UniversalWallet.fromJson(json["universalWallet"]),
+        assignedToName: json["assignedToName"]?.toString(),
+        codeOwnerType: json["codeOwnerType"]?.toString(),
+        codeOwnerId: int.tryParse(json["codeOwnerId"]?.toString() ?? ''),
+        recognitionStyle: json["recognitionStyle"]?.toString(),
       );
 
   Map<String, dynamic> toJson() => {
         "accessToken": accessToken,
         "memberInfo": memberInfo?.toJson(),
         "universalWallet": universalWallet?.toJson(),
+        "assignedToName": assignedToName,
+        "codeOwnerType": codeOwnerType,
+        "codeOwnerId": codeOwnerId,
+        "recognitionStyle": recognitionStyle,
       };
 }
 

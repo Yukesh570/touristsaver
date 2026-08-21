@@ -18,5 +18,5 @@ String premiumWelcomeMessage({
 
   return proudlySupportsSource
       ? 'Your 12-month Premium Membership is now active, proudly supporting $normalizedSourceName.'
-      : 'Your 12-month Premium Membership is now active, with thanks to $normalizedSourceName.';
+      : 'You joined TouristSaver through $normalizedSourceName.\n\nYour 12-month Premium Membership is now active.';
 }
