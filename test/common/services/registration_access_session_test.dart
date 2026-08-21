@@ -137,25 +137,26 @@ void main() {
     );
   });
 
-  test('profile access allows only Premium or active Discovery', () {
+  test('profile access preserves the account for Premium or Discovery history',
+      () {
     expect(
       memberProfileAllowsAuthenticatedAccess(
         memberType: 'premium',
-        discoveryIsActive: false,
+        discoveryMembershipExists: false,
       ),
       isTrue,
     );
     expect(
       memberProfileAllowsAuthenticatedAccess(
         memberType: 'free',
-        discoveryIsActive: true,
+        discoveryMembershipExists: true,
       ),
       isTrue,
     );
     expect(
       memberProfileAllowsAuthenticatedAccess(
         memberType: 'free',
-        discoveryIsActive: false,
+        discoveryMembershipExists: false,
       ),
       isFalse,
     );

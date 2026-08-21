@@ -24,9 +24,10 @@ RegistrationAccessDecision registrationAccessDecision(
 
 bool memberProfileAllowsAuthenticatedAccess({
   required String? memberType,
-  required bool discoveryIsActive,
+  required bool discoveryMembershipExists,
 }) {
-  return memberType?.trim().toLowerCase() == 'premium' || discoveryIsActive;
+  return memberType?.trim().toLowerCase() == 'premium' ||
+      discoveryMembershipExists;
 }
 
 class RegistrationAccessSession {

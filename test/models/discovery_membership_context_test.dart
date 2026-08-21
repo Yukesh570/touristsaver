@@ -88,6 +88,32 @@ void main() {
       expect(membership?.inheritanceEnabled, isTrue);
     });
 
+    test('maps completed Discovery and its simple Premium continuation', () {
+      final membership = DiscoveryMembershipContext.fromJson({
+        'active': false,
+        'status': 'expired',
+        'endReason': 'period_expired',
+        'endedAt': '2026-08-14T00:00:00Z',
+        'entitlementId': 5790,
+        'savingsConsumedMinor': 18640,
+        'continuation': {
+          'eligible': true,
+          'status': 'offered',
+          'complimentary': false,
+          'membershipPackageId': 44,
+          'priceAmountMinor': 4900,
+          'currency': 'AUD',
+        },
+      });
+
+      expect(membership.isActive, isFalse);
+      expect(membership.status, 'expired');
+      expect(membership.endReason, 'period_expired');
+      expect(membership.effectiveSavingsConsumedAmount, 186.40);
+      expect(membership.continuation?.eligible, isTrue);
+      expect(membership.continuation?.displayPrice, r'A$49.00');
+    });
+
     test('round-trips safely through route extra', () {
       final original = DiscoveryMembershipContext(
         communityName: 'Local Group',

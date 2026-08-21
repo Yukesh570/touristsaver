@@ -27,6 +27,10 @@ class DiscoveryMembershipContext {
     this.inheritanceEnabled = false,
     this.maximumInvitationGeneration,
     this.generation = 0,
+    this.status,
+    this.endReason,
+    this.endedAt,
+    this.continuation,
   });
 
   final bool isActive;
@@ -51,6 +55,10 @@ class DiscoveryMembershipContext {
   final bool inheritanceEnabled;
   final int? maximumInvitationGeneration;
   final int generation;
+  final String? status;
+  final String? endReason;
+  final DateTime? endedAt;
+  final DiscoveryPremiumContinuation? continuation;
 
   String get displayCommunityName =>
       invitationName ??
@@ -120,6 +128,10 @@ class DiscoveryMembershipContext {
         'allowsMemberInvites': inheritanceEnabled,
         'maximumInvitationGeneration': maximumInvitationGeneration,
         'generation': generation,
+        'status': status,
+        'endReason': endReason,
+        'endedAt': endedAt?.toIso8601String(),
+        'continuation': continuation?.toJson(),
       };
 
   factory DiscoveryMembershipContext.fromRouteExtra(
@@ -208,6 +220,14 @@ class DiscoveryMembershipContext {
       maximumInvitationGeneration:
           _int(json, const ['maximumInvitationGeneration']),
       generation: _int(json, const ['invitationGeneration', 'generation']) ?? 0,
+      status: _string(json, const ['status']),
+      endReason: _string(json, const ['endReason']),
+      endedAt: _date(json, const ['endedAt']),
+      continuation: json['continuation'] is Map
+          ? DiscoveryPremiumContinuation.fromJson(
+              Map<String, dynamic>.from(json['continuation'] as Map),
+            )
+          : null,
     );
   }
 
@@ -290,6 +310,68 @@ class DiscoveryMembershipContext {
     }
     return null;
   }
+}
+
+class DiscoveryPremiumContinuation {
+  const DiscoveryPremiumContinuation({
+    required this.eligible,
+    required this.status,
+    required this.complimentary,
+    required this.membershipPackageId,
+    required this.priceAmountMinor,
+    required this.currency,
+  });
+
+  final bool eligible;
+  final String status;
+  final bool complimentary;
+  final int? membershipPackageId;
+  final int? priceAmountMinor;
+  final String? currency;
+
+  bool get accepted => status == 'accepted';
+
+  String get displayCurrency {
+    switch (currency) {
+      case 'AUD':
+        return r'A$';
+      case 'NZD':
+        return r'NZ$';
+      case 'USD':
+        return r'$';
+      default:
+        return currency ?? '';
+    }
+  }
+
+  String get displayPrice => complimentary
+      ? 'Complimentary'
+      : '$displayCurrency${((priceAmountMinor ?? 0) / 100).toStringAsFixed(2)}';
+
+  factory DiscoveryPremiumContinuation.fromJson(Map<String, dynamic> json) =>
+      DiscoveryPremiumContinuation(
+        eligible:
+            DiscoveryMembershipContext._bool(json, const ['eligible']) ?? false,
+        status: DiscoveryMembershipContext._string(json, const ['status']) ??
+            'not_offered',
+        complimentary:
+            DiscoveryMembershipContext._bool(json, const ['complimentary']) ??
+                false,
+        membershipPackageId: DiscoveryMembershipContext._int(
+            json, const ['membershipPackageId']),
+        priceAmountMinor:
+            DiscoveryMembershipContext._int(json, const ['priceAmountMinor']),
+        currency: DiscoveryMembershipContext._string(json, const ['currency']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'eligible': eligible,
+        'status': status,
+        'complimentary': complimentary,
+        'membershipPackageId': membershipPackageId,
+        'priceAmountMinor': priceAmountMinor,
+        'currency': currency,
+      };
 }
 
 class DiscoveryMembershipStore {

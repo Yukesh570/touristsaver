@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
@@ -26,7 +27,11 @@ import 'package:touristsaver/features/profile/bloc/user_profile_blocs.dart';
 import 'package:touristsaver/features/profile/bloc/user_profile_events.dart';
 import 'package:touristsaver/features/profile/bloc/user_profile_states.dart';
 import 'package:touristsaver/features/profile/services/dio_membership.dart';
+import 'package:touristsaver/features/discovery_membership/services/discovery_continuation_dio.dart';
+import 'package:touristsaver/features/top_up/services/top_up_dio.dart';
 import 'package:touristsaver/models/request/change_password_req.dart';
+import 'package:touristsaver/models/request/confirm_topup_req.dart';
+import 'package:touristsaver/models/response/confirm_topup_res.dart';
 import 'package:touristsaver/models/response/change_password_res.dart';
 import 'package:touristsaver/models/response/piiink_info_res.dart';
 import 'package:touristsaver/models/response/user_delete_res.dart';
@@ -102,6 +107,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   bool _isBiometricsSupported = true;
   String? _versionBuildLabel;
   DiscoveryMembershipContext? _discoveryMembership;
+  bool _continuationLoading = false;
 
   bool isHidden = true;
   bool isHidden1 = true;
@@ -147,6 +153,88 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     final membership = await const DiscoveryMembershipStore().read();
     if (!mounted) return;
     setState(() => _discoveryMembership = membership);
+  }
+
+  Future<void> _continueDiscoveryWithPremium(
+    DiscoveryMembershipContext membership,
+  ) async {
+    final int? entitlementId = membership.entitlementId;
+    if (entitlementId == null || _continuationLoading) return;
+    setState(() => _continuationLoading = true);
+    try {
+      final intent =
+          await DiscoveryContinuationDio().createPaymentIntent(entitlementId);
+      if (!mounted) return;
+      if (intent == null) {
+        GlobalSnackBar.showError(
+          context,
+          'We could not prepare your Premium continuation. Please try again.',
+        );
+        return;
+      }
+      if (intent.isFree || intent.completed) {
+        GlobalSnackBar.showSuccess(
+          context,
+          'Your Premium Membership is now active.',
+        );
+        setState(() {});
+        return;
+      }
+      final String? clientSecret = intent.clientSecret;
+      if (clientSecret == null || clientSecret.isEmpty) {
+        GlobalSnackBar.showError(context, 'Payment could not be prepared.');
+        return;
+      }
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'TouristSaver',
+          style: ThemeMode.light,
+        ),
+      );
+      await Stripe.instance.presentPaymentSheet();
+      final int secretIndex = clientSecret.indexOf('_secret_');
+      if (secretIndex <= 0) throw StateError('Invalid payment reference');
+      final confirmation = await DioTopUpStripe().confirmTopUp(
+        confirmTopUpReqModel: ConfirmTopUpReqModel(
+          paymentIntent: clientSecret.substring(0, secretIndex),
+          paymentIntentClientSecret: clientSecret,
+        ),
+      );
+      if (!mounted) return;
+      if (confirmation is ConfirmTopUpResModel &&
+          confirmation.status?.toLowerCase() == 'success') {
+        GlobalSnackBar.showSuccess(
+          context,
+          'Your Premium Membership is now active.',
+        );
+        setState(() {});
+      } else {
+        GlobalSnackBar.showError(
+          context,
+          'We could not confirm your Premium Membership. Please contact TouristSaver support before trying again.',
+        );
+      }
+    } on StripeException catch (error) {
+      if (!mounted) return;
+      if (error.error.code == FailureCode.Canceled) {
+        GlobalSnackBar.valid(context, 'Payment cancelled. No charge was made.');
+      } else {
+        GlobalSnackBar.showError(
+          context,
+          error.error.localizedMessage ?? 'Payment could not be completed.',
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        GlobalSnackBar.showError(
+          context,
+          'Payment could not be completed. Please try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _continuationLoading = false);
+    }
   }
 
   String? _firstNotEmpty(List<String?> values) {
@@ -470,10 +558,10 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
             isEmailVerified: isEmailVerified,
           ),
         ),
-        if (discoveryMembership?.isActive == true)
+        if (discoveryMembership != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
-            child: _discoveryMembershipCard(discoveryMembership!),
+            child: _discoveryMembershipCard(discoveryMembership),
           ),
         if (_showLaunchDeferredProfileSections) ...[
           _ProfileSection(
@@ -568,6 +656,11 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     final double? cap = membership.effectiveSavingsCapAmount;
     final String currency = membership.displayCurrency;
     final NumberFormat money = NumberFormat('#,##0.00');
+    final continuation = membership.continuation;
+    final String completionMessage =
+        membership.endReason == 'savings_cap_reached'
+            ? 'You have reached your Discovery savings limit.'
+            : 'Your Discovery Membership has ended.';
 
     return _ProfileCard(
       padding: const EdgeInsets.all(18),
@@ -604,7 +697,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
               ),
             ),
           ],
-          if (remainingDays != null) ...[
+          if (membership.isActive && remainingDays != null) ...[
             const SizedBox(height: 8),
             Text(
               'Days Remaining: $remainingDays',
@@ -612,6 +705,21 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
                 color: _profileNavy,
                 fontWeight: FontWeight.w700,
               ),
+            ),
+          ],
+          if (!membership.isActive) ...[
+            const SizedBox(height: 12),
+            Text(
+              completionMessage,
+              style: const TextStyle(
+                color: _profileNavy,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Your TouristSaver account remains active.',
+              style: TextStyle(color: _profileMuted),
             ),
           ],
           const SizedBox(height: 8),
@@ -622,48 +730,86 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                key: const Key('share-discovery-invitation'),
-                borderRadius: BorderRadius.circular(14),
-                onTap: () => context.pushNamed('memberReferral'),
-                child: Ink(
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_profileBrandBlue, _profileCtaCyan],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
+          if (membership.isActive) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  key: const Key('share-discovery-invitation'),
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => context.pushNamed('memberReferral'),
+                  child: Ink(
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [_profileBrandBlue, _profileCtaCyan],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.ios_share_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      SizedBox(width: 9),
-                      Text(
-                        'Share Your Invitation',
-                        style: TextStyle(
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.ios_share_rounded,
                           color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          size: 20,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 9),
+                        Text(
+                          'Share Your Invitation',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
+          if (!membership.isActive && continuation != null) ...[
+            const SizedBox(height: 16),
+            if (continuation.accepted)
+              const Text(
+                'Premium Membership activated',
+                style: TextStyle(
+                  color: Color(0xFF168A45),
+                  fontWeight: FontWeight.w900,
+                ),
+              )
+            else if (continuation.eligible)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  key: const Key('continue-discovery-with-premium'),
+                  onPressed: _continuationLoading
+                      ? null
+                      : () => _continueDiscoveryWithPremium(membership),
+                  style: styleMainButton,
+                  child: _continuationLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          continuation.complimentary
+                              ? 'Activate Complimentary Premium'
+                              : 'Continue with Premium for ${continuation.displayPrice}',
+                        ),
+                ),
+              ),
+          ],
         ],
       ),
     );

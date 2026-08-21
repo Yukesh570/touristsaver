@@ -51,6 +51,8 @@ const memPackageFree = '/membershipPackage/getOneForFreeBymember';
 const memPackageForMember = '/membershipPackage/getAllBymember';
 const singleMemPackageForMember = '/membershipPackage/getOneForTouristBymember';
 const stripePayConfirm = '/member/topup/stripe/confirmation';
+const discoveryContinuationPaymentIntent =
+    '/member/discovery/continuation/payment-intent';
 const verifyEmailUrl = '/member/general/sendEmailVerificationToken';
 const topUpHistory = '/transaction/membership/getByMember';
 const premiumTopUpHistory = '/memberPremiumCode/getByMember';

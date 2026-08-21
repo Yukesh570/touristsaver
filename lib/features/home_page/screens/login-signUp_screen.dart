@@ -541,8 +541,8 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
               value: countryOriginID.data!.results!.id.toString());
           membershipAllowsAccess = memberProfileAllowsAuthenticatedAccess(
             memberType: countryOriginID.data?.results?.memberType,
-            discoveryIsActive:
-                countryOriginID.data?.discoveryMembership?.isActive == true,
+            discoveryMembershipExists:
+                countryOriginID.data?.discoveryMembership != null,
           );
         } else {
           await RegistrationAccessSession.abandon();
