@@ -41,6 +41,7 @@ class ConfimrPaymentScreen extends StatefulWidget {
   final bool returnToSearch;
   final bool isProfileClaim;
   final bool initialRedemptionComplete;
+  final String? discoverySavingsMessage;
 
   const ConfimrPaymentScreen({
     super.key,
@@ -64,6 +65,7 @@ class ConfimrPaymentScreen extends StatefulWidget {
     this.returnToSearch = false,
     this.isProfileClaim = false,
     this.initialRedemptionComplete = false,
+    this.discoverySavingsMessage,
   });
 
   @override
@@ -255,6 +257,40 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
             ),
           ),
           SizedBox(height: 20.h),
+          if (widget.discoverySavingsMessage?.trim().isNotEmpty == true) ...[
+            Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF4FF),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: const Color(0xFFB9D8FF)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: _primaryBlue,
+                    size: 21.sp,
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      widget.discoverySavingsMessage!,
+                      style: TextStyle(
+                        color: _headingColor,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Sans',
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 18.h),
+          ],
           _summaryRow('Original Bill', _formatCurrency(_billAmount)),
           SizedBox(height: 12.h),
           _summaryRow(

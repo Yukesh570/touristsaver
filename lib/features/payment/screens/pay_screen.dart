@@ -289,6 +289,7 @@ class _PayScreenState extends State<PayScreen> {
             'discountedTransactionAmount':
                 data.discountedTransactionAmount.toString(),
             'totalPiiinkDiscount': data.totalPiiinkDiscount.toString(),
+            'discoverySavingsMessage': data.discoverySavingsAdjustment?.message,
             'logo': merchantLogo,
             'universalPiiinkOnHold':
                 data.universalPiiinkBalanceOnHold.toString(),
@@ -358,6 +359,7 @@ class _PayScreenState extends State<PayScreen> {
           'discountedTransactionAmount':
               data.discountedTransactionAmount.toString(),
           'totalPiiinkDiscount': data.totalPiiinkDiscount.toString(),
+          'discoverySavingsMessage': data.discoverySavingsAdjustment?.message,
           'logo': merchantLogo,
           'universalPiiinkOnHold': data.universalPiiinkBalanceOnHold.toString(),
           'merchantPiiinkOnHold': data.merchantPiiinkBalanceOnHold.toString(),

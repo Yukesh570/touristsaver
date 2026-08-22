@@ -530,6 +530,7 @@ final GoRouter goRouter = GoRouter(
             returnToSearch: args['returnToSearch'] == true,
             isProfileClaim: args['isProfileClaim'] == true,
             initialRedemptionComplete: args['isProfileClaimApplied'] == true,
+            discoverySavingsMessage: args['discoverySavingsMessage'],
           );
         }),
     //Bottom Navigation Bar

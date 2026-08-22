@@ -922,6 +922,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           'discountedTransactionAmount':
               data.discountedTransactionAmount.toString(),
           'totalPiiinkDiscount': data.totalPiiinkDiscount.toString(),
+          'discoverySavingsMessage': data.discoverySavingsAdjustment?.message,
           'logo': _merchantLogoFromDetail(merchant),
           'universalPiiinkOnHold': data.universalPiiinkBalanceOnHold.toString(),
           'merchantPiiinkOnHold': data.merchantPiiinkBalanceOnHold.toString(),

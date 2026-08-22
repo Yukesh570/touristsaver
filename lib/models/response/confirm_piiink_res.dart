@@ -47,6 +47,7 @@ class Data {
     this.hasMerchantPiiinks,
     this.terminalUserId,
     this.terminalId,
+    this.discoverySavingsAdjustment,
   });
 
   final MerchantInfo? merchantInfo;
@@ -63,6 +64,7 @@ class Data {
   final bool? hasMerchantPiiinks;
   final int? terminalUserId;
   final int? terminalId;
+  final DiscoverySavingsAdjustment? discoverySavingsAdjustment;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
         merchantInfo: json["merchantInfo"] == null
@@ -85,6 +87,11 @@ class Data {
         hasMerchantPiiinks: json["hasMerchantPiiinks"],
         terminalUserId: json["terminalUserId"],
         terminalId: json["terminalId"],
+        discoverySavingsAdjustment: json["discoverySavingsAdjustment"] == null
+            ? null
+            : DiscoverySavingsAdjustment.fromJson(
+                json["discoverySavingsAdjustment"],
+              ),
       );
 
   Map<String, dynamic> toJson() => {
@@ -103,6 +110,48 @@ class Data {
         "hasMerchantPiiinks": hasMerchantPiiinks,
         "terminalUserId": terminalUserId,
         "terminalId": terminalId,
+        "discoverySavingsAdjustment": discoverySavingsAdjustment?.toJson(),
+      };
+}
+
+class DiscoverySavingsAdjustment {
+  const DiscoverySavingsAdjustment({
+    required this.capped,
+    required this.normalSavingAmountMinor,
+    required this.allowedSavingAmountMinor,
+    required this.remainingBeforeAmountMinor,
+    required this.remainingAfterAmountMinor,
+    this.message,
+  });
+
+  final bool capped;
+  final int normalSavingAmountMinor;
+  final int allowedSavingAmountMinor;
+  final int? remainingBeforeAmountMinor;
+  final int? remainingAfterAmountMinor;
+  final String? message;
+
+  factory DiscoverySavingsAdjustment.fromJson(Map<String, dynamic> json) =>
+      DiscoverySavingsAdjustment(
+        capped: json["capped"] == true,
+        normalSavingAmountMinor:
+            (json["normalSavingAmountMinor"] as num?)?.toInt() ?? 0,
+        allowedSavingAmountMinor:
+            (json["allowedSavingAmountMinor"] as num?)?.toInt() ?? 0,
+        remainingBeforeAmountMinor:
+            (json["remainingBeforeAmountMinor"] as num?)?.toInt(),
+        remainingAfterAmountMinor:
+            (json["remainingAfterAmountMinor"] as num?)?.toInt(),
+        message: json["message"] as String?,
+      );
+
+  Map<String, dynamic> toJson() => {
+        "capped": capped,
+        "normalSavingAmountMinor": normalSavingAmountMinor,
+        "allowedSavingAmountMinor": allowedSavingAmountMinor,
+        "remainingBeforeAmountMinor": remainingBeforeAmountMinor,
+        "remainingAfterAmountMinor": remainingAfterAmountMinor,
+        "message": message,
       };
 }
 

@@ -234,6 +234,10 @@ class _DetailPayScreenState extends State<DetailPayScreen> {
                                                         .data!
                                                         .totalPiiinkDiscount
                                                         .toString(),
+                                                    'discoverySavingsMessage': res
+                                                        .data!
+                                                        .discoverySavingsAdjustment
+                                                        ?.message,
                                                     'logo': res
                                                                 .data!
                                                                 .merchantInfo

@@ -201,6 +201,8 @@ class _ManualCodeState extends State<ManualCode> {
         'discountedTransactionAmount':
             res.data!.discountedTransactionAmount.toString(),
         'totalPiiinkDiscount': res.data!.totalPiiinkDiscount.toString(),
+        'discoverySavingsMessage':
+            res.data!.discoverySavingsAdjustment?.message,
         'logo': res.data!.merchantInfo?.merchantImageInfo == null
             ? 'null'
             : res.data!.merchantInfo?.merchantImageInfo?.logoUrl ??
