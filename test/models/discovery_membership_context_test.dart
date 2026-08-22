@@ -114,6 +114,34 @@ void main() {
       expect(membership.continuation?.displayPrice, r'A$49.00');
     });
 
+    test(
+        'marks a confirmed Premium continuation accepted without losing attribution',
+        () {
+      final membership = DiscoveryMembershipContext.fromJson({
+        'active': false,
+        'status': 'consumed',
+        'entitlementId': 17,
+        'campaignName': 'South East Queensland Launch',
+        'invitationName': 'Friends of Backpackers',
+        'continuation': {
+          'eligible': true,
+          'status': 'offered',
+          'complimentary': false,
+          'membershipPackageId': 9,
+          'priceAmountMinor': 4900,
+          'currency': 'AUD',
+        },
+      });
+
+      final activated = membership.withAcceptedPremiumContinuation();
+
+      expect(activated.continuation?.accepted, isTrue);
+      expect(activated.continuation?.eligible, isFalse);
+      expect(activated.entitlementId, 17);
+      expect(activated.invitationName, 'Friends of Backpackers');
+      expect(activated.campaignName, 'South East Queensland Launch');
+    });
+
     test('round-trips safely through route extra', () {
       final original = DiscoveryMembershipContext(
         communityName: 'Local Group',

@@ -55,6 +55,20 @@ const Color _profileBrandBlue = Color(0xFF0009FE);
 const Color _profileCtaCyan = Color(0xFF18C6FF);
 const bool _showLaunchDeferredProfileSections = false;
 
+String? profileMembershipStatus({
+  required String? loadedStatus,
+  required bool premiumContinuationConfirmed,
+}) =>
+    premiumContinuationConfirmed ? 'premium' : loadedStatus;
+
+DiscoveryMembershipContext? profileDiscoveryMembership({
+  required DiscoveryMembershipContext? loadedMembership,
+  required bool premiumContinuationConfirmed,
+}) =>
+    premiumContinuationConfirmed
+        ? loadedMembership?.withAcceptedPremiumContinuation()
+        : loadedMembership;
+
 class _ProfileActionItem {
   const _ProfileActionItem({
     required this.title,
@@ -108,6 +122,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   String? _versionBuildLabel;
   DiscoveryMembershipContext? _discoveryMembership;
   bool _continuationLoading = false;
+  bool _premiumContinuationConfirmed = false;
+  late final UserProfileBloc _userProfileBloc;
 
   bool isHidden = true;
   bool isHidden1 = true;
@@ -134,6 +150,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _userProfileBloc = UserProfileBloc(_dioMembership)
+      ..add(LoadUserProfileEvent());
     fetchShowCharity();
     getPiiinkInfo();
     _loadVersionBuildInfo();
@@ -159,7 +177,11 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     DiscoveryMembershipContext membership,
   ) async {
     final int? entitlementId = membership.entitlementId;
-    if (entitlementId == null || _continuationLoading) return;
+    if (entitlementId == null ||
+        _continuationLoading ||
+        _premiumContinuationConfirmed) {
+      return;
+    }
     setState(() => _continuationLoading = true);
     try {
       final intent =
@@ -173,11 +195,12 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
         return;
       }
       if (intent.isFree || intent.completed) {
+        await _markPremiumContinuationActivated(membership);
+        if (!mounted) return;
         GlobalSnackBar.showSuccess(
           context,
           'Your Premium Membership is now active.',
         );
-        setState(() {});
         return;
       }
       final String? clientSecret = intent.clientSecret;
@@ -204,11 +227,12 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
       if (!mounted) return;
       if (confirmation is ConfirmTopUpResModel &&
           confirmation.status?.toLowerCase() == 'success') {
+        await _markPremiumContinuationActivated(membership);
+        if (!mounted) return;
         GlobalSnackBar.showSuccess(
           context,
           'Your Premium Membership is now active.',
         );
-        setState(() {});
       } else {
         GlobalSnackBar.showError(
           context,
@@ -235,6 +259,19 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     } finally {
       if (mounted) setState(() => _continuationLoading = false);
     }
+  }
+
+  Future<void> _markPremiumContinuationActivated(
+    DiscoveryMembershipContext membership,
+  ) async {
+    final activated = membership.withAcceptedPremiumContinuation();
+    await const DiscoveryMembershipStore().save(activated);
+    if (!mounted) return;
+    setState(() {
+      _premiumContinuationConfirmed = true;
+      _discoveryMembership = activated;
+    });
+    _userProfileBloc.add(LoadUserProfileEvent());
   }
 
   String? _firstNotEmpty(List<String?> values) {
@@ -418,6 +455,7 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   @override
   void dispose() {
     // ConnectivityCubit().close();
+    _userProfileBloc.close();
     super.dispose();
   }
 
@@ -483,10 +521,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
 
   //Membership
   memberShipBox() {
-    return BlocProvider(
-      lazy: false,
-      create: (context) =>
-          UserProfileBloc(_dioMembership)..add(LoadUserProfileEvent()),
+    return BlocProvider.value(
+      value: _userProfileBloc,
       child: BlocBuilder<UserProfileBloc, UserProfileState>(
         builder: (context, state) {
           if (state is UserProfileLoadingState) {
@@ -509,9 +545,13 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
   // Profile Section
   profileSection(UserProfileResModel userProfile) {
     final results = userProfile.data?.results;
-    final discoveryMembership =
-        userProfile.data?.discoveryMembership ?? _discoveryMembership;
+    final discoveryMembership = profileDiscoveryMembership(
+      loadedMembership:
+          userProfile.data?.discoveryMembership ?? _discoveryMembership,
+      premiumContinuationConfirmed: _premiumContinuationConfirmed,
+    );
     if (userProfile.data?.discoveryMembership != null &&
+        !_premiumContinuationConfirmed &&
         userProfile.data!.discoveryMembership != _discoveryMembership) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
@@ -531,7 +571,10 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
       '${results?.phoneNumberPrefix ?? ''} ${results?.phoneNumber ?? ''}'
           .trim(),
     ]);
-    final String? membershipStatus = _firstNotEmpty([results?.memberType]);
+    final String? membershipStatus = profileMembershipStatus(
+      loadedStatus: _firstNotEmpty([results?.memberType]),
+      premiumContinuationConfirmed: _premiumContinuationConfirmed,
+    );
     final premiumAttribution = userProfile.data?.multiUsePremiumAttribution;
     final String? memberSince = results?.createdAt == null
         ? null
@@ -805,29 +848,13 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
                 ),
               )
             else if (continuation.eligible)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  key: const Key('continue-discovery-with-premium'),
-                  onPressed: _continuationLoading
-                      ? null
-                      : () => _continueDiscoveryWithPremium(membership),
-                  style: styleMainButton,
-                  child: _continuationLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          continuation.complimentary
-                              ? 'Activate Complimentary Premium'
-                              : 'Continue with Premium for ${continuation.displayPrice}',
-                        ),
-                ),
+              DiscoveryPremiumContinuationButton(
+                key: const Key('continue-discovery-with-premium'),
+                loading: _continuationLoading,
+                onPressed: () => _continueDiscoveryWithPremium(membership),
+                label: continuation.complimentary
+                    ? 'Activate Complimentary Premium'
+                    : 'Continue with Premium for ${continuation.displayPrice}',
               ),
           ],
         ],
@@ -1877,6 +1904,69 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
           );
         });
       },
+    );
+  }
+}
+
+class DiscoveryPremiumContinuationButton extends StatelessWidget {
+  const DiscoveryPremiumContinuationButton({
+    super.key,
+    required this.label,
+    required this.loading,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool loading;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 54.h,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18.r),
+        gradient: const LinearGradient(
+          colors: [_profileBrandBlue, _profileCtaCyan],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _profileBrandBlue.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18.r),
+          onTap: loading ? null : onPressed,
+          child: Center(
+            child: loading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
+                  )
+                : Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -105,6 +105,19 @@ class DiscoveryMembershipContext {
 
   Map<String, dynamic> toRouteExtra() => toJson();
 
+  DiscoveryMembershipContext withAcceptedPremiumContinuation() {
+    final DiscoveryPremiumContinuation? current = continuation;
+    if (current == null || current.accepted) return this;
+    return DiscoveryMembershipContext.fromJson({
+      ...toJson(),
+      'continuation': {
+        ...current.toJson(),
+        'eligible': false,
+        'status': 'accepted',
+      },
+    });
+  }
+
   Map<String, dynamic> toJson() => {
         'isActive': isActive,
         'entitlementId': entitlementId,
