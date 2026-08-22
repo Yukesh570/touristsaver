@@ -657,6 +657,8 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
     final String currency = membership.displayCurrency;
     final NumberFormat money = NumberFormat('#,##0.00');
     final continuation = membership.continuation;
+    final String? invitationName = _firstNotEmpty([membership.invitationName]);
+    final String? campaignName = _firstNotEmpty([membership.campaignName]);
     final String completionMessage =
         membership.endReason == 'savings_cap_reached'
             ? 'You have reached your Discovery savings limit.'
@@ -683,6 +685,24 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
               ),
             ],
           ),
+          if (invitationName != null || campaignName != null) ...[
+            const SizedBox(height: 12),
+            if (invitationName != null)
+              Text(
+                'Invited by $invitationName',
+                style: const TextStyle(
+                  color: _profileNavy,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            if (campaignName != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Campaign: $campaignName',
+                style: const TextStyle(color: _profileMuted),
+              ),
+            ],
+          ],
           if (discovered != null || cap != null) ...[
             const SizedBox(height: 14),
             Text(

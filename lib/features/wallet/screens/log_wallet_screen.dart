@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/error.dart';
 import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
@@ -65,6 +66,20 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
   //For Sending the universal piiink as an argument
   double? sendUniPiiink;
   bool isLoading = false;
+  DiscoveryMembershipContext? _discoveryMembership;
+  DateTime? _premiumExpiryDate;
+
+  bool get _showDiscoverySavingsWording => usesDiscoverySavingsWording(
+        discoveryMembership: _discoveryMembership,
+        premiumExpiryDate: _premiumExpiryDate,
+      );
+
+  Future<void> _loadDiscoveryMembership() async {
+    final DiscoveryMembershipContext? membership =
+        await const DiscoveryMembershipStore().read();
+    if (!mounted) return;
+    setState(() => _discoveryMembership = membership);
+  }
 
   Future<void> getFreePiiinksInfo() async {
     GetFreePiinksResModel? getFreePiinksResModel = await DioWallet().getFree();
@@ -93,6 +108,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
       isTopUpOnRegister = getWallet!.data!.isTopUpOnRegister;
       canClaimFreePiiinks = getWallet.data!.canClaimFreePiiinks;
       isFreePiiinksProvided = getWallet.data!.isFreePiiinksProvided;
+      _premiumExpiryDate = getWallet.data!.premiumExpiryDate;
       isLoading = true;
     });
     return getWallet;
@@ -131,6 +147,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
 
   @override
   void initState() {
+    _loadDiscoveryMembership();
     getPaymentInfo();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       showReviewPopUp = await Pref().readBool(key: showReview) ?? false;
@@ -267,7 +284,9 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
               ),
               SizedBox(height: 12.h),
               Text(
-                'Premium Savings',
+                _showDiscoverySavingsWording
+                    ? 'Discovery Savings'
+                    : 'Premium Savings',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: _headingColor,
@@ -292,7 +311,9 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
               ),
               SizedBox(height: 10.h),
               Text(
-                'Your TouristSaver Premium Membership savings achieved so far.',
+                _showDiscoverySavingsWording
+                    ? 'Your TouristSaver Discovery Membership savings achieved so far.'
+                    : 'Your TouristSaver Premium Membership savings achieved so far.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: _bodyColor,

@@ -139,5 +139,43 @@ void main() {
       expect(membership.daysRemaining(now: DateTime(2026, 7, 12)), 8);
       expect(membership.daysRemaining(now: DateTime(2026, 7, 21)), 0);
     });
+
+    test(
+        'uses Discovery savings wording through completion until Premium activation',
+        () {
+      const active =
+          DiscoveryMembershipContext(isActive: true, status: 'active');
+      const completed = DiscoveryMembershipContext(
+        isActive: false,
+        status: 'consumed',
+        endReason: 'savings_cap_reached',
+      );
+      final now = DateTime.utc(2026, 8, 22);
+
+      expect(
+        usesDiscoverySavingsWording(
+          discoveryMembership: active,
+          premiumExpiryDate: null,
+          now: now,
+        ),
+        isTrue,
+      );
+      expect(
+        usesDiscoverySavingsWording(
+          discoveryMembership: completed,
+          premiumExpiryDate: null,
+          now: now,
+        ),
+        isTrue,
+      );
+      expect(
+        usesDiscoverySavingsWording(
+          discoveryMembership: completed,
+          premiumExpiryDate: now.add(const Duration(days: 365)),
+          now: now,
+        ),
+        isFalse,
+      );
+    });
   });
 }

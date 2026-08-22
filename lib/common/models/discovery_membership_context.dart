@@ -312,6 +312,16 @@ class DiscoveryMembershipContext {
   }
 }
 
+bool usesDiscoverySavingsWording({
+  required DiscoveryMembershipContext? discoveryMembership,
+  required DateTime? premiumExpiryDate,
+  DateTime? now,
+}) {
+  final bool hasActivePremium =
+      premiumExpiryDate?.isAfter(now ?? DateTime.now()) ?? false;
+  return discoveryMembership != null && !hasActivePremium;
+}
+
 class DiscoveryPremiumContinuation {
   const DiscoveryPremiumContinuation({
     required this.eligible,
