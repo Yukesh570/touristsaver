@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
@@ -27,11 +26,8 @@ import 'package:touristsaver/features/profile/bloc/user_profile_blocs.dart';
 import 'package:touristsaver/features/profile/bloc/user_profile_events.dart';
 import 'package:touristsaver/features/profile/bloc/user_profile_states.dart';
 import 'package:touristsaver/features/profile/services/dio_membership.dart';
-import 'package:touristsaver/features/discovery_membership/services/discovery_continuation_dio.dart';
-import 'package:touristsaver/features/top_up/services/top_up_dio.dart';
+import 'package:touristsaver/features/discovery_membership/services/discovery_premium_continuation_flow.dart';
 import 'package:touristsaver/models/request/change_password_req.dart';
-import 'package:touristsaver/models/request/confirm_topup_req.dart';
-import 'package:touristsaver/models/response/confirm_topup_res.dart';
 import 'package:touristsaver/models/response/change_password_res.dart';
 import 'package:touristsaver/models/response/piiink_info_res.dart';
 import 'package:touristsaver/models/response/user_delete_res.dart';
@@ -183,82 +179,28 @@ class _LogProfileScreenState extends State<LogProfileScreen> {
       return;
     }
     setState(() => _continuationLoading = true);
-    try {
-      final intent =
-          await DiscoveryContinuationDio().createPaymentIntent(entitlementId);
+    final result =
+        await const DiscoveryPremiumContinuationFlow().continueWith(membership);
+    if (!mounted) return;
+    if (result.status == DiscoveryContinuationStatus.activated) {
+      await _markPremiumContinuationActivated(membership);
       if (!mounted) return;
-      if (intent == null) {
-        GlobalSnackBar.showError(
-          context,
-          'We could not prepare your Premium continuation. Please try again.',
-        );
-        return;
-      }
-      if (intent.isFree || intent.completed) {
-        await _markPremiumContinuationActivated(membership);
-        if (!mounted) return;
-        GlobalSnackBar.showSuccess(
-          context,
-          'Your Premium Membership is now active.',
-        );
-        return;
-      }
-      final String? clientSecret = intent.clientSecret;
-      if (clientSecret == null || clientSecret.isEmpty) {
-        GlobalSnackBar.showError(context, 'Payment could not be prepared.');
-        return;
-      }
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: 'TouristSaver',
-          style: ThemeMode.light,
-        ),
+      GlobalSnackBar.showSuccess(
+        context,
+        'Your Premium Membership is now active.',
       );
-      await Stripe.instance.presentPaymentSheet();
-      final int secretIndex = clientSecret.indexOf('_secret_');
-      if (secretIndex <= 0) throw StateError('Invalid payment reference');
-      final confirmation = await DioTopUpStripe().confirmTopUp(
-        confirmTopUpReqModel: ConfirmTopUpReqModel(
-          paymentIntent: clientSecret.substring(0, secretIndex),
-          paymentIntentClientSecret: clientSecret,
-        ),
+    } else if (result.status == DiscoveryContinuationStatus.cancelled) {
+      GlobalSnackBar.valid(
+        context,
+        result.message ?? 'Payment cancelled. No charge was made.',
       );
-      if (!mounted) return;
-      if (confirmation is ConfirmTopUpResModel &&
-          confirmation.status?.toLowerCase() == 'success') {
-        await _markPremiumContinuationActivated(membership);
-        if (!mounted) return;
-        GlobalSnackBar.showSuccess(
-          context,
-          'Your Premium Membership is now active.',
-        );
-      } else {
-        GlobalSnackBar.showError(
-          context,
-          'We could not confirm your Premium Membership. Please contact TouristSaver support before trying again.',
-        );
-      }
-    } on StripeException catch (error) {
-      if (!mounted) return;
-      if (error.error.code == FailureCode.Canceled) {
-        GlobalSnackBar.valid(context, 'Payment cancelled. No charge was made.');
-      } else {
-        GlobalSnackBar.showError(
-          context,
-          error.error.localizedMessage ?? 'Payment could not be completed.',
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        GlobalSnackBar.showError(
-          context,
-          'Payment could not be completed. Please try again.',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _continuationLoading = false);
+    } else {
+      GlobalSnackBar.showError(
+        context,
+        result.message ?? 'Payment could not be completed. Please try again.',
+      );
     }
+    if (mounted) setState(() => _continuationLoading = false);
   }
 
   Future<void> _markPremiumContinuationActivated(

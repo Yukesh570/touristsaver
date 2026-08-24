@@ -34,7 +34,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
   //For Sorting
-  List<String> sort = ['Sort by Alphabetical', 'Sort by Premium Savings'];
+  List<String> sort = ['Sort by Alphabetical', 'Sort by Savings'];
   String selectedWalletType = 'Merchant';
   String sortBy = 'Sort by Alphabetical';
 
@@ -224,7 +224,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
                       Padding(
                         padding: EdgeInsets.fromLTRB(16.w, 6.h, 16.w, 2.h),
                         child: AutoSizeText(
-                          'Premium Savings by merchant helps you track the value unlocked through your membership.',
+                          'Savings by merchant help you track the total value received through your membership.',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -261,7 +261,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
                                   child: AutoSizeText(
                                     e == 'Sort by Alphabetical'
                                         ? S.of(context).sortByAlphabetical
-                                        : 'Sort by Premium Savings',
+                                        : 'Sort by Savings',
                                     style: _dropdownTextStyle(),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -336,7 +336,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
       title: const Padding(
         padding: EdgeInsets.symmetric(horizontal: 4),
         child: AutoSizeText(
-          'Merchant Premium Savings',
+          'Merchant Savings',
           maxLines: 1,
           minFontSize: 14,
           textAlign: TextAlign.center,
@@ -593,7 +593,7 @@ class _MerchantWalletScreenState extends State<MerchantWalletScreen> {
                 ),
                 const SizedBox(height: 2),
                 AutoSizeText(
-                  'Premium Savings',
+                  'Savings',
                   maxLines: 1,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -731,7 +731,7 @@ class _MerchantCreditsEmptyState extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'Merchant Premium Savings not available',
+            'Merchant savings not available',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: _walletNavy,
@@ -743,7 +743,7 @@ class _MerchantCreditsEmptyState extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           Text(
-            'Shop with participating merchants to start building merchant-specific Premium Savings.',
+            'Shop with participating merchants to start building merchant-specific savings.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: _walletMuted,

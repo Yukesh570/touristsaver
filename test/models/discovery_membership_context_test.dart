@@ -204,6 +204,25 @@ void main() {
         ),
         isFalse,
       );
+      final converted = DiscoveryMembershipContext.fromJson({
+        ...completed.toJson(),
+        'continuation': {
+          'eligible': false,
+          'status': 'accepted',
+          'complimentary': false,
+          'membershipPackageId': 9,
+          'priceAmountMinor': 4900,
+          'currency': 'AUD',
+        },
+      });
+      expect(
+        usesDiscoverySavingsWording(
+          discoveryMembership: converted,
+          premiumExpiryDate: null,
+          now: now,
+        ),
+        isFalse,
+      );
     });
   });
 }

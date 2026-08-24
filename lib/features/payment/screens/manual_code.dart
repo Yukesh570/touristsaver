@@ -8,6 +8,7 @@ import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
 import 'package:touristsaver/constants/fixed_decimal.dart';
+import 'package:touristsaver/features/discovery_membership/widgets/discovery_savings_limit_sheet.dart';
 import 'package:touristsaver/features/payment/services/dio_payment.dart';
 import 'package:touristsaver/models/error_res.dart';
 import 'package:touristsaver/models/request/confirm_piiink_req.dart';
@@ -214,7 +215,12 @@ class _ManualCodeState extends State<ManualCode> {
             res.data!.merchantPiiinkBalanceOnHold.toString(),
       });
     } else if (res is ErrorResModel) {
-      GlobalSnackBar.showError(context, res.message ?? '');
+      final bool handled = await showDiscoverySavingsLimitSheetForResponse(
+        context: context,
+        response: res,
+      );
+      if (!mounted) return;
+      if (!handled) GlobalSnackBar.showError(context, res.message ?? '');
     } else {
       GlobalSnackBar.showError(context, S.of(context).somethingWentWrong);
     }

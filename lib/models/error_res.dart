@@ -12,18 +12,21 @@ String errorResModelToJson(ErrorResModel data) => json.encode(data.toJson());
 class ErrorResModel {
   ErrorResModel({
     this.status,
+    this.code,
     this.error,
     this.message,
     this.stack,
   });
 
   final dynamic status;
+  final String? code;
   final Error? error;
   final String? message;
   final String? stack;
 
   factory ErrorResModel.fromJson(Map<String, dynamic> json) => ErrorResModel(
         status: json["status"],
+        code: json["code"]?.toString(),
         error: json["error"] == null ? null : Error.fromJson(json["error"]),
         message: json["message"],
         stack: json["stack"],
@@ -31,6 +34,7 @@ class ErrorResModel {
 
   Map<String, dynamic> toJson() => {
         "status": status,
+        "code": code,
         "error": error?.toJson(),
         "message": message,
         "stack": stack,

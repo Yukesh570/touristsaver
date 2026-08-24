@@ -28,6 +28,7 @@ import 'package:touristsaver/features/details/models/public_deal_presentation.da
 import 'package:touristsaver/features/details/screens/carousel_widget.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
 import 'package:touristsaver/features/details/services/fav_or_not.dart';
+import 'package:touristsaver/features/discovery_membership/widgets/discovery_savings_limit_sheet.dart';
 import 'package:touristsaver/features/payment/services/dio_payment.dart';
 import 'package:touristsaver/models/error_res.dart';
 import 'package:touristsaver/models/request/apply_piiink_by_merchant_req.dart';
@@ -943,6 +944,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
     setState(() {
       _isVerifyingMemberDiscount = false;
     });
+
+    if (await showDiscoverySavingsLimitSheetForResponse(
+      context: context,
+      response: res,
+    )) {
+      return;
+    }
+    if (!mounted) return;
 
     GlobalSnackBar.showError(
       context,

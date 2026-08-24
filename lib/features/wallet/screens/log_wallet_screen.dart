@@ -16,6 +16,8 @@ import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
 import 'package:touristsaver/constants/style.dart';
 import 'package:touristsaver/features/connectivity/cubit/internet_cubit.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
+import 'package:touristsaver/features/discovery_membership/services/discovery_premium_continuation_flow.dart';
+import 'package:touristsaver/features/profile/services/dio_membership.dart';
 import 'package:touristsaver/features/transaction/services/dio_transaction.dart';
 import 'package:touristsaver/features/wallet/services/dio_wallet.dart';
 import 'package:touristsaver/models/response/detail_res.dart' as detail;
@@ -33,6 +35,14 @@ import '../../connectivity/screens/connectivity.dart';
 import '../../merchant/services/dio_reviews.dart';
 import '../../payment/services/dio_payment.dart';
 import 'package:touristsaver/generated/l10n.dart';
+
+String savingsHeadline({required bool usesDiscoveryWording}) =>
+    usesDiscoveryWording ? 'Discovery Savings' : 'TouristSaver Savings';
+
+String savingsProgressDescription({required bool usesDiscoveryWording}) =>
+    usesDiscoveryWording
+        ? 'Your TouristSaver Discovery Membership savings achieved so far.'
+        : 'Your TouristSaver Membership savings achieved so far.';
 
 class LogWalletScreen extends StatefulWidget {
   static const String routeName = '/wallet-screen';
@@ -68,6 +78,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
   bool isLoading = false;
   DiscoveryMembershipContext? _discoveryMembership;
   DateTime? _premiumExpiryDate;
+  bool _continuationLoading = false;
 
   bool get _showDiscoverySavingsWording => usesDiscoverySavingsWording(
         discoveryMembership: _discoveryMembership,
@@ -75,10 +86,45 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
       );
 
   Future<void> _loadDiscoveryMembership() async {
+    final storedMembership = await const DiscoveryMembershipStore().read();
+    final profile = await DioMemberShip().getUserProfile();
     final DiscoveryMembershipContext? membership =
-        await const DiscoveryMembershipStore().read();
+        profile?.data?.discoveryMembership ?? storedMembership;
+    if (profile?.data?.discoveryMembership != null) {
+      await const DiscoveryMembershipStore().save(membership!);
+    }
     if (!mounted) return;
     setState(() => _discoveryMembership = membership);
+  }
+
+  Future<void> _continueDiscoveryWithPremium() async {
+    final membership = _discoveryMembership;
+    if (membership == null || _continuationLoading) return;
+    setState(() => _continuationLoading = true);
+    final result =
+        await const DiscoveryPremiumContinuationFlow().continueWith(membership);
+    if (!mounted) return;
+    if (result.status == DiscoveryContinuationStatus.activated) {
+      final activated = membership.withAcceptedPremiumContinuation();
+      await const DiscoveryMembershipStore().save(activated);
+      if (!mounted) return;
+      setState(() => _discoveryMembership = activated);
+      GlobalSnackBar.showSuccess(
+        context,
+        'Your Premium Membership is now active.',
+      );
+    } else if (result.status == DiscoveryContinuationStatus.cancelled) {
+      GlobalSnackBar.valid(
+        context,
+        result.message ?? 'Payment cancelled. No charge was made.',
+      );
+    } else {
+      GlobalSnackBar.showError(
+        context,
+        result.message ?? 'Payment could not be completed. Please try again.',
+      );
+    }
+    if (mounted) setState(() => _continuationLoading = false);
   }
 
   Future<void> getFreePiiinksInfo() async {
@@ -222,6 +268,17 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _premiumSavingsHeroCard(),
+            if (_discoveryMembership?.isActive == false &&
+                _discoveryMembership?.continuation?.accepted != true) ...[
+              SizedBox(height: 16.h),
+              DiscoveryMembershipCompletionCard(
+                membership: _discoveryMembership!,
+                loading: _continuationLoading,
+                onContinue: _discoveryMembership!.continuation?.eligible == true
+                    ? _continueDiscoveryWithPremium
+                    : null,
+              ),
+            ],
             SizedBox(height: 16.h),
             _recentSavingsSection(),
             SizedBox(height: 16.h),
@@ -284,9 +341,9 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
               ),
               SizedBox(height: 12.h),
               Text(
-                _showDiscoverySavingsWording
-                    ? 'Discovery Savings'
-                    : 'Premium Savings',
+                savingsHeadline(
+                  usesDiscoveryWording: _showDiscoverySavingsWording,
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: _headingColor,
@@ -311,9 +368,9 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
               ),
               SizedBox(height: 10.h),
               Text(
-                _showDiscoverySavingsWording
-                    ? 'Your TouristSaver Discovery Membership savings achieved so far.'
-                    : 'Your TouristSaver Premium Membership savings achieved so far.',
+                savingsProgressDescription(
+                  usesDiscoveryWording: _showDiscoverySavingsWording,
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: _bodyColor,
@@ -337,11 +394,11 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
         children: [
           _sectionHeader(
             icon: Icons.info_outline,
-            title: 'Premium Membership value',
+            title: 'How Your Savings Work',
           ),
           SizedBox(height: 12.h),
           Text(
-            'Premium Savings tracks the value you unlock when participating merchants approve TouristSaver discounts.',
+            'TouristSaver Savings are the value you receive when participating merchants apply your member discount.',
             style: _bodyTextStyle(),
           ),
           SizedBox(height: 14.h),
@@ -712,11 +769,11 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
         children: [
           _sectionHeader(
             icon: Icons.storefront_outlined,
-            title: 'Merchant Premium Savings',
+            title: 'View Merchant Savings',
           ),
           SizedBox(height: 10.h),
           Text(
-            'See the Premium Savings connected to participating merchants.',
+            'See the total savings made from your membership.',
             style: _bodyTextStyle(),
           ),
           SizedBox(height: 14.h),
@@ -761,7 +818,7 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
             ),
             _moreOptionTile(
               icon: Icons.savings_outlined,
-              label: 'Premium Savings activity',
+              label: 'Savings activity',
               onTap: () => context.pushNamed('top_up_history'),
             ),
           ],
@@ -979,16 +1036,16 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
               children: [
                 _sectionHeader(
                   icon: Icons.info_outline,
-                  title: 'Premium Savings',
+                  title: 'How Your Savings Work',
                 ),
                 SizedBox(height: 14.h),
                 Text(
-                  'Premium Savings shows the total value you have saved with TouristSaver participating merchants.',
+                  'TouristSaver Savings show the total value you have saved with participating merchants.',
                   style: _bodyTextStyle(),
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  'When a discount is redeemed, the saved amount contributes to your Premium Savings total.',
+                  'When a discount is redeemed, the saved amount contributes to your total TouristSaver Savings.',
                   style: _bodyTextStyle(),
                 ),
                 SizedBox(height: 12.h),
@@ -1201,6 +1258,151 @@ class _LogWalletScreenState extends State<LogWalletScreen> {
         }
       });
     }
+  }
+}
+
+class DiscoveryMembershipCompletionCard extends StatelessWidget {
+  const DiscoveryMembershipCompletionCard({
+    super.key,
+    required this.membership,
+    required this.loading,
+    this.onContinue,
+  });
+
+  final DiscoveryMembershipContext membership;
+  final bool loading;
+  final VoidCallback? onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final double? saved = membership.effectiveSavingsConsumedAmount;
+    final continuation = membership.continuation;
+    final String? continuationLabel = continuation?.eligible == true
+        ? continuation!.complimentary
+            ? 'Activate Complimentary Premium'
+            : 'Continue with Premium for ${continuation.displayPrice}'
+        : null;
+
+    return Container(
+      key: const Key('discovery-membership-completion-card'),
+      width: double.infinity,
+      padding: EdgeInsets.all(20.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22.r),
+        border: Border.all(color: const Color(0xFFCAE0FF)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0009FE).withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44.r,
+                height: 44.r,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF4FF),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Icon(
+                  Icons.celebration_rounded,
+                  color: const Color(0xFF0009FE),
+                  size: 25.r,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  'You’ve completed your Discovery Membership',
+                  style: TextStyle(
+                    color: const Color(0xFF111C44),
+                    fontSize: 18.sp,
+                    height: 1.2,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'Sans',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (saved != null) ...[
+            SizedBox(height: 14.h),
+            Text(
+              'You’ve enjoyed ${membership.displayCurrency}${NumberFormat('#,##0.00').format(saved)} in TouristSaver savings.',
+              style: TextStyle(
+                color: const Color(0xFF111C44),
+                fontSize: 15.sp,
+                height: 1.4,
+                fontWeight: FontWeight.w800,
+                fontFamily: 'Sans',
+              ),
+            ),
+          ],
+          SizedBox(height: 8.h),
+          Text(
+            continuationLabel != null
+                ? 'Keep saving with a full Premium Membership.'
+                : 'Your Discovery Membership is complete. Your TouristSaver account remains active.',
+            style: TextStyle(
+              color: const Color(0xFF61708A),
+              fontSize: 14.sp,
+              height: 1.4,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Sans',
+            ),
+          ),
+          if (continuationLabel != null && onContinue != null) ...[
+            SizedBox(height: 18.h),
+            Container(
+              height: 52.h,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0009FE), Color(0xFF18C6FF)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(17.r),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  key: const Key('continue-premium-from-savings'),
+                  onTap: loading ? null : onContinue,
+                  borderRadius: BorderRadius.circular(17.r),
+                  child: Center(
+                    child: loading
+                        ? const SizedBox(
+                            width: 23,
+                            height: 23,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          )
+                        : Text(
+                            continuationLabel,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 

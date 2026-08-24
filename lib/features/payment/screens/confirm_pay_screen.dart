@@ -11,6 +11,7 @@ import 'package:touristsaver/common/widgets/custom_app_bar.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
 import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
 import 'package:touristsaver/constants/helper.dart';
+import 'package:touristsaver/features/discovery_membership/widgets/discovery_savings_limit_sheet.dart';
 import 'package:touristsaver/features/payment/services/dio_payment.dart';
 import 'package:touristsaver/models/error_res.dart';
 import 'package:touristsaver/models/request/apply_piiink_by_merchant_req.dart';
@@ -146,29 +147,44 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
           ),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 28.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _merchantPresentationCard(),
-                SizedBox(height: 14.h),
-                isLoading
-                    ? TouristSaverLoadingView(height: 54.h, spinnerSize: 24)
-                    : _GradientButton(
-                        label: 'Close',
-                        onTap: _completeAndFinish,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  key: const Key('claim-completion-content-scroll'),
+                  padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 12.h),
+                  child: _merchantPresentationCard(),
+                ),
+              ),
+              Container(
+                key: const Key('claim-completion-actions'),
+                padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 16.h),
+                decoration: const BoxDecoration(
+                  color: _screenBackground,
+                  border: Border(top: BorderSide(color: _borderColor)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    isLoading
+                        ? TouristSaverLoadingView(height: 54.h, spinnerSize: 24)
+                        : _GradientButton(
+                            label: 'Close',
+                            onTap: _completeAndFinish,
+                          ),
+                    if (!_redemptionComplete) ...[
+                      SizedBox(height: 10.h),
+                      _OutlinedButton(
+                        label: 'Edit Bill Amount',
+                        icon: Icons.edit_outlined,
+                        onTap: _editBillAmount,
                       ),
-                if (!_redemptionComplete) ...[
-                  SizedBox(height: 12.h),
-                  _OutlinedButton(
-                    label: 'Edit Bill Amount',
-                    icon: Icons.edit_outlined,
-                    onTap: _editBillAmount,
-                  ),
-                ],
-              ],
-            ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -242,17 +258,6 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 5.h),
-                Text(
-                  'Cashier enters this amount into the EFTPOS terminal.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _bodyColor,
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Sans',
-                  ),
-                ),
               ],
             ),
           ),
@@ -293,11 +298,23 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
           ],
           _summaryRow('Original Bill', _formatCurrency(_billAmount)),
           SizedBox(height: 12.h),
-          _summaryRow(
-            'You Save',
-            '${_formatCurrency(_memberSavings)} (${_numberFormat.format(_discountPercent)}%)',
-            savings: true,
-          ),
+          if (widget.discoverySavingsMessage?.trim().isNotEmpty == true) ...[
+            _summaryRow(
+              'Merchant offer',
+              '${_numberFormat.format(_discountPercent)}%',
+            ),
+            SizedBox(height: 12.h),
+            _summaryRow(
+              'Discovery Saving',
+              _formatCurrency(_memberSavings),
+              savings: true,
+            ),
+          ] else
+            _summaryRow(
+              'You Save',
+              '${_formatCurrency(_memberSavings)} (${_numberFormat.format(_discountPercent)}%)',
+              savings: true,
+            ),
           SizedBox(height: 16.h),
           Text(
             'Show this screen to the cashier.',
@@ -448,13 +465,20 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       _markRedemptionComplete();
       onSuccess();
     } else {
+      setState(() {
+        isLoading = false;
+      });
+      if (await showDiscoverySavingsLimitSheetForResponse(
+        context: context,
+        response: res,
+      )) {
+        return;
+      }
+      if (!mounted) return;
       GlobalSnackBar.showError(
         context,
         _responseMessage(res) ?? 'The discount could not be redeemed.',
       );
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -484,13 +508,20 @@ class _ConfimrPaymentScreenState extends State<ConfimrPaymentScreen> {
       _markRedemptionComplete();
       onSuccess();
     } else {
+      setState(() {
+        isLoading = false;
+      });
+      if (await showDiscoverySavingsLimitSheetForResponse(
+        context: context,
+        response: res,
+      )) {
+        return;
+      }
+      if (!mounted) return;
       GlobalSnackBar.showError(
         context,
         _responseMessage(res) ?? 'The discount could not be redeemed.',
       );
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 

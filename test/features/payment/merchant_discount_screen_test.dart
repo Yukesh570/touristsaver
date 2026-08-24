@@ -53,6 +53,7 @@ void main() {
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: const Size(390, 844),
+        minTextAdapt: true,
         builder: (context, child) => const MaterialApp(
           home: ConfimrPaymentScreen(
             merchantId: 42,
@@ -87,11 +88,15 @@ void main() {
     expect(find.text(r'A$65.00'), findsOneWidget);
     expect(find.text('Original Bill'), findsOneWidget);
     expect(find.text(r'A$70.00'), findsOneWidget);
-    expect(find.text('You Save'), findsOneWidget);
-    expect(find.text(r'A$5.00 (10%)'), findsOneWidget);
+    expect(find.text('Merchant offer'), findsOneWidget);
+    expect(find.text('10%'), findsOneWidget);
+    expect(find.text('Discovery Saving'), findsOneWidget);
+    expect(find.text(r'A$5.00'), findsOneWidget);
+    expect(find.text('You Save'), findsNothing);
+    expect(find.text(r'A$5.00 (10%)'), findsNothing);
     expect(
       find.text('Cashier enters this amount into the EFTPOS terminal.'),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.text('Show this screen to the cashier.'), findsOneWidget);
     expect(
@@ -115,5 +120,55 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('keeps claim actions accessible with a long Discovery message',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    AppVariables.currency = r'A$';
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        minTextAdapt: true,
+        builder: (_, __) => const MaterialApp(
+          home: ConfimrPaymentScreen(
+            merchantId: 42,
+            merchantName: 'A Merchant With A Longer Display Name',
+            totalAmount: '200.00',
+            discountedTransactionAmount: '185.00',
+            totalPiiinkDiscount: '15.00',
+            merchantDiscountPercentage: '10',
+            merchantRebateToMember: '0',
+            qrCode: 'TEST-MERCHANT-QR',
+            hasMerchantPiiinks: 'false',
+            hasUniversalPiiinks: 'true',
+            universalPiiinkBalance: '100',
+            merchantPiiinkBalance: '0',
+            universalPiiinkOnHold: '0',
+            merchantPiiinkOnHold: '0',
+            logo: null,
+            discoverySavingsMessage:
+                'Your Discovery Membership had A\$15.00 savings remaining. '
+                'This purchase would normally save you A\$20.00, so your '
+                'Discovery saving for this transaction is limited to A\$15.00. '
+                'This deliberately long explanation verifies that the content '
+                'can scroll without moving the actions outside the viewport.',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('claim-completion-content-scroll')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('claim-completion-actions')), findsOneWidget);
+    expect(find.text('Close').hitTestable(), findsOneWidget);
+    expect(find.text('Edit Bill Amount').hitTestable(), findsOneWidget);
   });
 }

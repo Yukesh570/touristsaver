@@ -65,7 +65,7 @@ void main() {
       expect(request.toJson()['residentialPostalCode'], isNull);
     });
 
-    test('sends one canonical registrationCode without competing fields', () {
+    test('keeps member referral alongside canonical registrationCode', () {
       final request = RegisterReqModel(
         smsotp: '123456',
         charityId: null,
@@ -94,7 +94,7 @@ void main() {
       expect(json['issuerCode'], isNull);
       expect(json['memberPremiumCode'], isNull);
       expect(json['discoveryInvitationCode'], isNull);
-      expect(json['memberReferralCode'], isNull);
+      expect(json['memberReferralCode'], 'LEGACY-MEMBER');
     });
   });
 

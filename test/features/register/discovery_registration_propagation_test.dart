@@ -7,6 +7,7 @@ import 'package:touristsaver/models/request/register_req.dart';
 
 void main() {
   const registrationCode = '333BUTTERFLY';
+  const memberReferralCode = '6857934071233187';
 
   test('retains one canonical Discovery code through registration contracts',
       () {
@@ -16,6 +17,7 @@ void main() {
       'ref_type': 'campaign_invitation',
       'registrationCode': registrationCode,
       'ref_code': registrationCode,
+      'memberReferralCode': memberReferralCode,
       'campaign': 'Blue Butterfly Launch Gold Coast',
       'invitationName': 'Carrara Markets - July 2026',
     });
@@ -31,10 +33,16 @@ void main() {
       membershipCountry.registrationQueryParameters['discoveryInvitationCode'],
       isEmpty,
     );
+    expect(
+      membershipCountry.registrationQueryParameters['memberReferralCode'],
+      memberReferralCode,
+    );
 
     final register = RegisterScreen(
       registrationCode:
           membershipCountry.registrationQueryParameters['registrationCode'],
+      memberReferralCode:
+          membershipCountry.registrationQueryParameters['memberReferralCode'],
       membershipCountryId: 3,
       membershipCountryLocked: true,
     );
@@ -57,7 +65,7 @@ void main() {
       premium: 'null',
       discoveryInvitationCode: 'null',
       registrationCode: register.registrationCode!,
-      referralCode: 'null',
+      referralCode: register.memberReferralCode!,
       phoneVerifiedBy: 'sms',
       charityID: 0,
     );
@@ -88,6 +96,7 @@ void main() {
 
     final json = request.toJson();
     expect(json['registrationCode'], registrationCode);
+    expect(json['memberReferralCode'], memberReferralCode);
     expect(json['discoveryInvitationCode'], isNull);
     expect(json['memberPremiumCode'], isNull);
   });

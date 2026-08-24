@@ -332,7 +332,9 @@ bool usesDiscoverySavingsWording({
 }) {
   final bool hasActivePremium =
       premiumExpiryDate?.isAfter(now ?? DateTime.now()) ?? false;
-  return discoveryMembership != null && !hasActivePremium;
+  return discoveryMembership != null &&
+      discoveryMembership.continuation?.accepted != true &&
+      !hasActivePremium;
 }
 
 class DiscoveryPremiumContinuation {

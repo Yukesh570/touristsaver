@@ -96,6 +96,44 @@ void main() {
       expect(referral.hasDiscoveryCodeDiscrepancy, isFalse);
     });
 
+    test('keeps canonical Discovery and member referral attribution separate',
+        () {
+      final referral = BranchRegistrationReferral.fromPayload({
+        '+clicked_branch_link': true,
+        'feature': 'discovery-membership',
+        'ref_type': 'campaign_invitation',
+        'registrationCode': 'LOVEYOU2',
+        'ref_code': 'LOVEYOU2',
+        'memberReferralCode': '6857934071233187',
+        'campaign': 'South East Queensland Launch',
+        'communityGroupPublicId': 'backpackers-public-id',
+        'assignmentPublicId': 'assignment-8-public-id',
+        'invitationPublicId': 'friends-of-backpackers-public-id',
+      });
+
+      expect(referral.type, BranchReferralType.discoveryInvitation);
+      expect(referral.discoveryInvitationCode, 'LOVEYOU2');
+      expect(referral.memberReferralCode, '6857934071233187');
+      expect(referral.campaign, 'South East Queensland Launch');
+      expect(referral.communityGroupPublicId, 'backpackers-public-id');
+      expect(referral.assignmentPublicId, 'assignment-8-public-id');
+      expect(referral.invitationPublicId, 'friends-of-backpackers-public-id');
+      expect(registrationQueryParametersFor(referral), {
+        'issuercode': '',
+        'memberReferralCode': '6857934071233187',
+        'memberPremiumCode': '',
+        'discoveryInvitationCode': '',
+        'registrationCode': 'LOVEYOU2',
+        'recognizedDiscoveryInvitation': 'true',
+      });
+
+      final restored = BranchRegistrationReferral.fromJson(referral.toJson());
+      expect(restored.type, BranchReferralType.discoveryInvitation);
+      expect(restored.discoveryInvitationCode, 'LOVEYOU2');
+      expect(restored.memberReferralCode, '6857934071233187');
+      expect(restored.campaign, 'South East Queensland Launch');
+    });
+
     test('uses ref_code as a legacy Discovery fallback', () {
       final referral = BranchRegistrationReferral.fromPayload({
         '+clicked_branch_link': true,
@@ -343,6 +381,7 @@ void main() {
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
         'registrationCode': '',
+        'recognizedDiscoveryInvitation': '',
       });
     });
 
@@ -357,6 +396,7 @@ void main() {
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
         'registrationCode': '',
+        'recognizedDiscoveryInvitation': '',
       });
     });
 
@@ -372,6 +412,7 @@ void main() {
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
         'registrationCode': 'GUSG2026',
+        'recognizedDiscoveryInvitation': 'true',
       });
     });
 
@@ -382,6 +423,7 @@ void main() {
         'memberPremiumCode': '',
         'discoveryInvitationCode': '',
         'registrationCode': '',
+        'recognizedDiscoveryInvitation': '',
       });
     });
 

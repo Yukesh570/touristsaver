@@ -38,12 +38,31 @@ import '../../../common/app_variables.dart';
 import '../../../common/widgets/dropdown_button_widget.dart';
 import '../../../models/request/nearby_req.dart';
 import '../../../models/response/country_wise_prefix_res_model.dart';
-import '../../../models/response/sms_validation_res_model.dart';
 import '../../charity/services/dio_charity.dart';
 import '../../connectivity/screens/connectivity.dart';
 import '../../connectivity/screens/connectivity_screen.dart';
 import '../../profile/widget/info_popup.dart';
 import 'package:touristsaver/generated/l10n.dart';
+
+bool isRegistrationPhoneStructurallyValid({
+  required String? phonePrefix,
+  required String phoneNumber,
+}) =>
+    phonePrefix?.trim().isNotEmpty == true && phoneNumber.trim().length >= 7;
+
+bool shouldShowRegistrationPromoCodePanel({
+  required bool recognizedDiscoveryInvitation,
+  required RegistrationCodeResolution? resolution,
+  required bool validationFailed,
+}) =>
+    validationFailed ||
+    (!recognizedDiscoveryInvitation && resolution?.isDiscovery != true);
+
+const String unavailableInvitationRecoveryMessage =
+    'That invitation is no longer available, but your registration details are safe. You can continue without it or enter another promo or invitation code below.';
+
+bool shouldRecoverUnavailableInvitationOnRegistrationForm(String path) =>
+    path == RegisterScreen.routeName;
 
 class RegisterScreen extends StatefulWidget {
   static const String routeName = '/register';
@@ -52,6 +71,7 @@ class RegisterScreen extends StatefulWidget {
   final String? memberPremiumCode;
   final String? discoveryInvitationCode;
   final String? registrationCode;
+  final bool discoveryInvitationRecognized;
   final int? membershipCountryId;
   final bool membershipCountryLocked;
 
@@ -62,6 +82,7 @@ class RegisterScreen extends StatefulWidget {
     this.memberPremiumCode,
     this.discoveryInvitationCode,
     this.registrationCode,
+    this.discoveryInvitationRecognized = false,
     this.membershipCountryId,
     this.membershipCountryLocked = false,
   });
@@ -90,7 +111,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController residenceCountrySearchController =
       TextEditingController();
 
-  final TextEditingController otpSearchController = TextEditingController();
   late final LocationAllBloc _locationAllBloc;
   bool _locationBlocReady = false;
 
@@ -108,6 +128,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _currentRegistrationCode;
   RegistrationCodeResolution? _currentRegistrationCodeResolution;
   bool _registrationCodeValidationFailed = false;
+  bool _showUnavailableInvitationInfo = false;
+  late bool _linkedDiscoveryInvitationRecognized;
+  StreamSubscription<void>? _unavailableInvitationSubscription;
+
+  bool get _hasRecognizedDiscoveryInvitation =>
+      !shouldShowRegistrationPromoCodePanel(
+        recognizedDiscoveryInvitation: _linkedDiscoveryInvitationRecognized,
+        resolution: _currentRegistrationCodeResolution,
+        validationFailed: _registrationCodeValidationFailed,
+      );
 
   static const Color _primaryBlue = Color(0xFF0009FE);
   static const Color _ctaCyan = Color(0xFF18C6FF);
@@ -128,9 +158,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int? selectedStateID;
   String? selectedPhonePrefix;
   String? selectedPhonePrefixKey;
-  String? previousPhonePrefix;
-  String? selectedSmsValType;
-  String? smsOtpMedium;
   String? selectedCharity;
   int? selectedCharityID;
   String? slugg;
@@ -167,12 +194,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
     return nearByCharityListResModel;
-  }
-
-  Future<SmsValidationModel?>? otpTypeList;
-  Future<SmsValidationModel?> getOtpTypeDropDown() async {
-    SmsValidationModel? smsValidationModel = await DioRegister().getOtpType();
-    return smsValidationModel;
   }
 
   Future<void> getAppSlugs(String? slugg) async {
@@ -240,8 +261,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void initState() {
+    _linkedDiscoveryInvitationRecognized = widget.discoveryInvitationRecognized;
     firstNameController.addListener(_handleFirstNameChanged);
     lastNameController.addListener(_handleLastNameChanged);
+    _unavailableInvitationSubscription = BranchReferralService
+        .unavailableInvitationLinks
+        .listen((_) => _consumeUnavailableInvitationNotice());
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       phonePrefixList = getPhonePrefix();
       residenceCountryOptionsList = DioRegister().residenceCountries();
@@ -251,6 +276,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       premiumController.text = widget.memberPremiumCode ?? '';
       _currentRegistrationCode = _nonEmptyCode(widget.registrationCode) ??
           _nonEmptyCode(widget.discoveryInvitationCode);
+      _consumeUnavailableInvitationNotice();
       setState(() {});
     });
     super.initState();
@@ -301,6 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _unavailableInvitationSubscription?.cancel();
     _locationAllBloc.close();
     firstNameController.removeListener(_handleFirstNameChanged);
     lastNameController.removeListener(_handleLastNameChanged);
@@ -317,8 +344,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
     referralCodeController.dispose();
     phonePrefixSearchController.dispose();
     residenceCountrySearchController.dispose();
-    otpSearchController.dispose();
     super.dispose();
+  }
+
+  void _consumeUnavailableInvitationNotice() {
+    if (!mounted ||
+        !BranchReferralService.takePendingUnavailableInvitationNotice()) {
+      return;
+    }
+    _recoverFromUnavailableLinkedInvitation();
+  }
+
+  void _recoverFromUnavailableLinkedInvitation() {
+    setState(() {
+      isLoading = false;
+      _linkedDiscoveryInvitationRecognized = false;
+      _currentRegistrationCode = null;
+      _currentRegistrationCodeResolution = null;
+      _registrationCodeValidationFailed = false;
+      _showUnavailableInvitationInfo = true;
+      _isPromoExpanded = true;
+    });
+  }
+
+  Widget _unavailableInvitationInfo() {
+    return Container(
+      key: const Key('unavailable-invitation-recovery-info'),
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E8),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFF0D38A)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: const Color(0xFF9A6700),
+            size: 21.sp,
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              unavailableInvitationRecoveryMessage,
+              style: TextStyle(
+                color: const Color(0xFF5A4A12),
+                fontSize: 13.sp,
+                height: 1.4,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _appliedAttributionLabel(String text) {
@@ -870,7 +951,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         selectedPhonePrefixKey = key;
                         phonePrefixSearchController.clear();
                       });
-                      otpTypeList = getOtpTypeDropDown();
                     },
                     value: _selectedPrefixKey(prefixItems),
                   ),
@@ -1035,7 +1115,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         selectedCountry = country.countryName ?? 'Australia';
         selectedCountryID = country.id;
         selectedCountryShortName = country.countryShortName ?? 'AU';
-        previousPhonePrefix = country.phonePrefix;
         return selectedCountryID != null;
       }
     }
@@ -1159,22 +1238,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
         isLoading = false;
       });
       return;
-    } else if (selectedPhonePrefix == null) {
-      GlobalSnackBar.valid(context, S.of(context).pleaseSelectPhonePrefix);
-      setState(() {
-        isLoading = false;
-      });
-      return;
-    } else if (mobileNumberController.text.isEmpty) {
-      GlobalSnackBar.valid(
-          context, S.of(context).pleaseFillCorrectMobileNumber);
-      setState(() {
-        isLoading = false;
-      });
-      return;
-    } else if (mobileNumberController.text.trim().length < 7) {
-      GlobalSnackBar.valid(
-          context, S.of(context).phoneNumberShouldBeAtLeast7Digits);
+    } else if (!isRegistrationPhoneStructurallyValid(
+      phonePrefix: selectedPhonePrefix,
+      phoneNumber: mobileNumberController.text,
+    )) {
+      final String message = selectedPhonePrefix?.trim().isNotEmpty != true
+          ? S.of(context).pleaseSelectPhonePrefix
+          : mobileNumberController.text.isEmpty
+              ? S.of(context).pleaseFillCorrectMobileNumber
+              : S.of(context).phoneNumberShouldBeAtLeast7Digits;
+      GlobalSnackBar.valid(context, message);
       setState(() {
         isLoading = false;
       });
@@ -1202,14 +1275,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         context,
         'Postal code is not required for your residence country.',
       );
-      setState(() {
-        isLoading = false;
-      });
-      return;
-    } else if ((previousPhonePrefix != selectedPhonePrefix) &&
-        selectedSmsValType == null) {
-      GlobalSnackBar.valid(
-          context, S.of(context).pleaseSelectSMSvalidationType);
       setState(() {
         isLoading = false;
       });
@@ -1487,128 +1552,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       obscureText: _isHidden1,
                                     ),
 
-                                    previousPhonePrefix != selectedPhonePrefix
-                                        ? Column(children: [
-                                            const SizedBox(height: 15),
-                                            AutoSizeText(
-                                              'Your mobile country code differs from your membership country.',
-                                              style: noteTextStyle,
-                                            ),
-                                            const SizedBox(height: 15),
-                                            // Select SMS service
-                                            FutureBuilder<SmsValidationModel?>(
-                                                future: otpTypeList,
-                                                builder: (context, snapshot) {
-                                                  if (snapshot.hasError) {
-                                                    return _placeholderField(
-                                                        S.of(context).error);
-                                                  } else if (!snapshot
-                                                      .hasData) {
-                                                    return _placeholderField(S
-                                                        .of(context)
-                                                        .pleaseWaitD);
-                                                  } else {
-                                                    return Container(
-                                                      height: 50.h,
-                                                      width: double.infinity,
-                                                      decoration: BoxDecoration(
-                                                        color: GlobalColors
-                                                            .paleGray,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                      ),
-                                                      child: snapshot.data!
-                                                              .data!.isEmpty
-                                                          ? Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      top: 15.0,
-                                                                      left:
-                                                                          25.0,
-                                                                      right:
-                                                                          25.0),
-                                                              child:
-                                                                  AutoSizeText(
-                                                                S
-                                                                    .of(context)
-                                                                    .noSmsTypeAvailable,
-                                                                // 'No Sms Type Available',
-                                                                style: locationStyle.copyWith(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500),
-                                                              ),
-                                                            )
-                                                          : DropdownButtonWidget(
-                                                              label:
-                                                                  'SMS verification method',
-                                                              searchController:
-                                                                  otpSearchController,
-                                                              fillColor:
-                                                                  Colors.white,
-                                                              borderColor:
-                                                                  _fieldBorder,
-                                                              borderRadius:
-                                                                  12.r,
-                                                              iconColor:
-                                                                  _primaryBlue,
-                                                              hintStyle:
-                                                                  _dropdownHintStyle,
-                                                              items: snapshot
-                                                                  .data!.data!
-                                                                  .map((e) {
-                                                                return DropdownMenuItem(
-                                                                  value: e
-                                                                      .mediumDisplayName,
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: const EdgeInsets
-                                                                        .only(
-                                                                        left:
-                                                                            25),
-                                                                    child: Text(
-                                                                      e.mediumDisplayName
-                                                                          .toString(),
-                                                                      style:
-                                                                          dopdownTextStyle,
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              }).toList(),
-                                                              onChanged:
-                                                                  (newVal) async {
-                                                                setState(() {
-                                                                  selectedSmsValType =
-                                                                      newVal
-                                                                          as String;
-                                                                });
-                                                                final smsID = snapshot
-                                                                    .data!.data!
-                                                                    .firstWhere((element) =>
-                                                                        element
-                                                                            .mediumDisplayName ==
-                                                                        selectedSmsValType);
-                                                                smsOtpMedium =
-                                                                    smsID
-                                                                        .medium;
-                                                              },
-                                                              value:
-                                                                  selectedSmsValType,
-                                                            ),
-                                                    );
-                                                  }
-                                                }),
-                                            const SizedBox(
-                                              height: 10,
-                                            )
-                                          ])
-                                        : const SizedBox(),
-
                                     SizedBox(height: 22.h),
-                                    _promoCodeSection(),
-                                    const SizedBox(height: 15),
+                                    if (_showUnavailableInvitationInfo) ...[
+                                      _unavailableInvitationInfo(),
+                                      SizedBox(height: 12.h),
+                                    ],
+                                    if (!_hasRecognizedDiscoveryInvitation) ...[
+                                      _promoCodeSection(),
+                                      const SizedBox(height: 15),
+                                    ],
 
                                     if (_currentRegistrationCode != null &&
                                         !_registrationCodeValidationFailed)
@@ -2130,23 +2082,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
         if (!mounted) return;
       }
-      GlobalSnackBar.showError(
-        context,
-        registrationCodeValidationMessage(
-          resolution,
-          manuallyEntered: manuallyEntered,
-        ),
-      );
-      setState(() {
-        isLoading = false;
-        if (shouldClearPending) {
-          _currentRegistrationCode = null;
-          _currentRegistrationCodeResolution = null;
-          _registrationCodeValidationFailed = false;
-        } else {
+      if (shouldClearPending) {
+        _recoverFromUnavailableLinkedInvitation();
+      } else {
+        GlobalSnackBar.showError(
+          context,
+          registrationCodeValidationMessage(
+            resolution,
+            manuallyEntered: manuallyEntered,
+          ),
+        );
+        setState(() {
+          isLoading = false;
           _registrationCodeValidationFailed = true;
-        }
-      });
+        });
+      }
       return;
     }
 
@@ -2212,6 +2162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _currentRegistrationCode = codeToResolve;
     _currentRegistrationCodeResolution = resolution;
     _registrationCodeValidationFailed = false;
+    _showUnavailableInvitationInfo = false;
     final application = RegistrationCodeApplication.fromResolution(
       code: codeToResolve,
       resolution: resolution,
@@ -2368,7 +2319,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       phoneOtpReq: PhoneOtpReq(
         phoneNumberPrefix: selectedPhonePrefix,
         phoneNumber: mobileNumberController.text.trim(),
-        phoneVerifiedBy: smsOtpMedium ?? 'sms',
+        phoneVerifiedBy: 'sms',
         email: emailController.text.trim(),
         countryId: selectedCountryID!,
         appSign: getAsign,
@@ -2391,7 +2342,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'email': emailController.text.trim(),
           'password': passwordController.text.trim(),
           'phonePrefix': selectedPhonePrefix,
-          'phoneVerifiedBy': smsOtpMedium ?? 'sms',
+          'phoneVerifiedBy': 'sms',
           'confirmPassword': confirmPassowrdController.text.trim(),
           'phNum': mobileNumberController.text.trim(),
           'residenceCountryReferenceId': selectedResidenceCountryID,

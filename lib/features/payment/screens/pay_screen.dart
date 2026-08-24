@@ -21,6 +21,7 @@ import 'package:touristsaver/common/widgets/touristsaver_loading_view.dart';
 import 'package:touristsaver/constants/global_colors.dart';
 import 'package:touristsaver/features/connectivity/cubit/internet_cubit.dart';
 import 'package:touristsaver/features/details/services/dio_detail.dart';
+import 'package:touristsaver/features/discovery_membership/widgets/discovery_savings_limit_sheet.dart';
 import 'package:touristsaver/features/payment/services/dio_payment.dart';
 import 'package:touristsaver/models/response/is_pay_enable_res.dart';
 
@@ -314,7 +315,11 @@ class _PayScreenState extends State<PayScreen> {
         isLoading = false;
       });
       if (!mounted) return;
-      // context.pop();
+      final bool handled = await showDiscoverySavingsLimitSheetForResponse(
+        context: context,
+        response: res,
+      );
+      if (!mounted || handled) return;
       return GlobalSnackBar.showError(context, res.message.toString());
     } else {
       setState(() {
@@ -381,7 +386,11 @@ class _PayScreenState extends State<PayScreen> {
         isMerchantQrLoading = false;
       });
       if (!mounted) return;
-      // context.pop();
+      final bool handled = await showDiscoverySavingsLimitSheetForResponse(
+        context: context,
+        response: res,
+      );
+      if (!mounted || handled) return;
       return GlobalSnackBar.showError(context, res.message.toString());
     } else {
       setState(() {

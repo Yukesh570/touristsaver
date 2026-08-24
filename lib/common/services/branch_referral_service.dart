@@ -80,6 +80,7 @@ class BranchRegistrationReferral {
         (registrationCode != null || refCode != null)) {
       return BranchRegistrationReferral(
         discoveryInvitationCode: registrationCode ?? refCode,
+        memberReferralCode: _nonEmptyString(data['memberReferralCode']),
         campaign: _nonEmptyString(data['campaign']) ??
             _nonEmptyString(data['~campaign']),
         invitationName: _nonEmptyString(data['invitationName']),
@@ -152,6 +153,7 @@ class BranchRegistrationReferral {
 
   Map<String, dynamic> toJson() => {
         'discoveryInvitationCode': discoveryInvitationCode,
+        'memberReferralCode': memberReferralCode,
         'campaign': campaign,
         'invitationName': invitationName,
         'campaignPublicId': campaignPublicId,
@@ -170,6 +172,7 @@ class BranchRegistrationReferral {
     );
     return BranchRegistrationReferral(
       discoveryInvitationCode: _nonEmptyString(json['discoveryInvitationCode']),
+      memberReferralCode: _nonEmptyString(json['memberReferralCode']),
       campaign: _nonEmptyString(json['campaign']),
       invitationName: _nonEmptyString(json['invitationName']),
       campaignPublicId: _nonEmptyString(json['campaignPublicId']),
@@ -221,6 +224,8 @@ Map<String, String> registrationQueryParametersFor(
     'registrationCode': referral?.isDiscoveryInvitation == true
         ? referral?.discoveryInvitationCode ?? ''
         : '',
+    'recognizedDiscoveryInvitation':
+        referral?.isDiscoveryInvitation == true ? 'true' : '',
   };
 }
 

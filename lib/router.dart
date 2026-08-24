@@ -351,6 +351,9 @@ final GoRouter goRouter = GoRouter(
             state.uri.queryParameters['discoveryInvitationCode'] ?? '';
         final registrationCode =
             state.uri.queryParameters['registrationCode'] ?? '';
+        final discoveryInvitationRecognized =
+            state.uri.queryParameters['recognizedDiscoveryInvitation'] ==
+                'true';
         final membershipCountryId = int.tryParse(
             state.uri.queryParameters['membershipCountryId'] ?? '');
         return RegisterScreen(
@@ -359,6 +362,7 @@ final GoRouter goRouter = GoRouter(
           memberPremiumCode: memberPremiumCode,
           discoveryInvitationCode: discoveryInvitationCode,
           registrationCode: registrationCode,
+          discoveryInvitationRecognized: discoveryInvitationRecognized,
           membershipCountryId: membershipCountryId,
           membershipCountryLocked: membershipCountryId != null,
         );

@@ -23,6 +23,7 @@ import 'package:touristsaver/features/profile/bloc/user_profile_blocs.dart';
 import 'package:touristsaver/features/profile/services/dio_membership.dart';
 import 'package:touristsaver/features/more_offers/services/dio_more_offer.dart';
 import 'package:touristsaver/features/profile/services/dio_profile.dart';
+import 'package:touristsaver/features/register/screens/register_screen.dart';
 import 'package:touristsaver/features/terms_conditions/services/dio_agreement.dart';
 import 'package:touristsaver/features/top_up/services/top_up_dio.dart';
 import 'package:touristsaver/features/transaction/services/dio_transaction.dart';
@@ -134,12 +135,14 @@ class _MyAppState extends State<MyApp> {
 
   void _showUnavailableInvitationLink() {
     if (!_routerReady || !mounted) return;
+    final path = goRouter.routerDelegate.currentConfiguration.uri.path;
+    if (shouldRecoverUnavailableInvitationOnRegistrationForm(path)) return;
     final context = navigatorKey.currentContext;
     if (context == null ||
         !BranchReferralService.takePendingUnavailableInvitationNotice()) {
       return;
     }
-    GlobalSnackBar.showError(
+    GlobalSnackBar.valid(
       context,
       unavailableInvitationLinkMessage,
     );

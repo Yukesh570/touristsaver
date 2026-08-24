@@ -83,11 +83,8 @@ class RegisterReqModel {
           : discoveryInvitationCode == 'null'
               ? null
               : discoveryInvitationCode,
-      "memberReferralCode": canonicalRegistrationCode != null
-          ? null
-          : memberReferralCode == 'null'
-              ? null
-              : memberReferralCode,
+      "memberReferralCode":
+          memberReferralCode == 'null' ? null : memberReferralCode,
       if (canonicalRegistrationCode != null)
         "registrationCode": canonicalRegistrationCode,
     };
