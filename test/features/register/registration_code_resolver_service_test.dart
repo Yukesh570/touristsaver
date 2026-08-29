@@ -76,4 +76,47 @@ void main() {
     expect(resolution.valid, isFalse);
     expect(resolution.backendReached, isFalse);
   });
+
+  test('claims canonical Discovery membership with authenticated code only',
+      () async {
+    late RequestOptions captured;
+    final dio = Dio(BaseOptions(baseUrl: 'https://staging.example/api/'));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          captured = options;
+          handler.resolve(
+            Response<Map<String, dynamic>>(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'status': 'success',
+                'data': {
+                  'discoveryMembership': {
+                    'active': true,
+                    'status': 'active',
+                    'entitlementId': 42,
+                    'campaignId': 7,
+                    'campaignName': 'Wings of Discovery',
+                    'currency': 'AUD',
+                    'savingsCapAmountMinor': 2500,
+                    'savingsConsumedMinor': 0,
+                  },
+                },
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final result = await DioRegister(authenticatedClient: dio)
+        .claimDiscoveryRegistrationCode(code: ' wings2026 ');
+
+    expect(captured.path, '/member/discovery/claim-registration-code');
+    expect(captured.data, {'code': 'wings2026'});
+    expect(result.isSuccess, isTrue);
+    expect(result.membership?.entitlementId, 42);
+    expect(result.membership?.campaignName, 'Wings of Discovery');
+  });
 }

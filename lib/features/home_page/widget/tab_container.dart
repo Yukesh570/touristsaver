@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math' as math;
 
+const Color memberCategoryIconColor = Color(0xFFd81b60);
+
 class TabContainer extends StatelessWidget {
   // final IconData? icon;
   final String? icon;
@@ -37,7 +39,7 @@ class TabContainer extends StatelessWidget {
                 child: icon!.isEmpty || icon == null
                     ? CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: const Color(0xFFF146EA),
+                        color: memberCategoryIconColor,
                       )
                     : SvgPicture.network(
                         icon!,
@@ -48,9 +50,9 @@ class TabContainer extends StatelessWidget {
                         placeholderBuilder: (context) =>
                             CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: const Color(0xFFF146EA),
+                          color: memberCategoryIconColor,
                         ),
-                        color: const Color(0xFFF146EA),
+                        color: memberCategoryIconColor,
                         fit: BoxFit.contain,
                       )),
           ),

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:touristsaver/constants/helper.dart';
 import 'package:touristsaver/constants/url_end_point.dart';
 import 'package:touristsaver/common/models/registration_code_resolution.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
 import 'package:touristsaver/models/error_res.dart';
 import 'package:touristsaver/models/request/confirm_topup_req.dart';
 import 'package:touristsaver/models/request/premium_validity_req.dart';
@@ -26,10 +27,52 @@ import '../../../models/response/country_wise_prefix_res_model.dart';
 import '../../../models/response/sms_validation_res_model.dart';
 
 class DioRegister {
-  DioRegister({Dio? registrationCodeClient})
-      : _registrationCodeClient = registrationCodeClient;
+  DioRegister({Dio? registrationCodeClient, Dio? authenticatedClient})
+      : _registrationCodeClient = registrationCodeClient,
+        _authenticatedClient = authenticatedClient;
 
   final Dio? _registrationCodeClient;
+  final Dio? _authenticatedClient;
+
+  Future<DiscoveryRegistrationCodeClaimResult> claimDiscoveryRegistrationCode({
+    required String code,
+  }) async {
+    try {
+      final Dio dio = _authenticatedClient ?? await getClient();
+      final Response<dynamic> response = await dio.post(
+        discoveryRegistrationCodeClaim,
+        data: {'code': code.trim()},
+      );
+      final dynamic body = response.data is String
+          ? jsonDecode(response.data as String)
+          : response.data;
+      final dynamic data = body is Map ? body['data'] : null;
+      final dynamic membership =
+          data is Map ? data['discoveryMembership'] : null;
+      if (membership is Map) {
+        return DiscoveryRegistrationCodeClaimResult.success(
+          DiscoveryMembershipContext.fromJson(
+            Map<String, dynamic>.from(membership),
+          ),
+        );
+      }
+      return const DiscoveryRegistrationCodeClaimResult.failure(
+        'Discovery membership could not be activated. Please try again.',
+      );
+    } on DioException catch (error) {
+      final dynamic body = error.response?.data is String
+          ? jsonDecode(error.response?.data as String)
+          : error.response?.data;
+      final message = body is Map ? body['message']?.toString() : null;
+      return DiscoveryRegistrationCodeClaimResult.failure(
+        _discoveryClaimMessage(message),
+      );
+    } catch (_) {
+      return const DiscoveryRegistrationCodeClaimResult.failure(
+        'The invitation service is unavailable. Please check your connection and try again.',
+      );
+    }
+  }
 
   Future<RegistrationCodeResolution> resolveRegistrationCode({
     required String code,
@@ -312,4 +355,44 @@ class DioRegister {
   //     return null;
   //   }
   // }
+}
+
+class DiscoveryRegistrationCodeClaimResult {
+  const DiscoveryRegistrationCodeClaimResult._({
+    this.membership,
+    this.errorMessage,
+  });
+
+  const DiscoveryRegistrationCodeClaimResult.failure(String message)
+      : this._(errorMessage: message);
+
+  factory DiscoveryRegistrationCodeClaimResult.success(
+    DiscoveryMembershipContext membership,
+  ) =>
+      DiscoveryRegistrationCodeClaimResult._(membership: membership);
+
+  final DiscoveryMembershipContext? membership;
+  final String? errorMessage;
+
+  bool get isSuccess => membership != null;
+}
+
+String _discoveryClaimMessage(String? reason) {
+  final resolution = RegistrationCodeResolution(
+    valid: false,
+    category: RegistrationCodeCategory.campaignInvitation,
+    reason: reason,
+  );
+  switch (reason?.trim().toUpperCase()) {
+    case 'DISCOVERY_REQUIRES_FREE_MEMBER':
+      return 'Discovery invitations are only available to Free members.';
+    case 'DISCOVERY_ENTITLEMENT_ALREADY_EXISTS':
+      return 'A Discovery membership is already linked to this account.';
+    case 'DISCOVERY_ENTITLEMENT_ALREADY_ENDED':
+      return 'This Discovery invitation has already been used by this account.';
+    case 'PREMIUM_PURCHASE_IN_PROGRESS_OR_COMPLETED':
+      return 'A Premium membership purchase is already in progress. Please complete or allow it to expire before applying Discovery.';
+    default:
+      return registrationCodeErrorMessage(resolution);
+  }
 }

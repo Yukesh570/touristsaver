@@ -32,21 +32,29 @@ class Data {
     this.premiumCodeIsPaid,
     this.membershipPackageId,
     this.piiinksAmount,
+    this.discount,
+    this.isGiveaway,
   });
 
   final bool? premiumCodeIsPaid;
   final int? membershipPackageId;
   final double? piiinksAmount;
+  final num? discount;
+  final bool? isGiveaway;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
         premiumCodeIsPaid: json["premiumCodeIsPaid"],
         membershipPackageId: json["membershipPackageId"],
-        piiinksAmount: json["piiinksAmount"],
+        piiinksAmount: (json["piiinksAmount"] as num?)?.toDouble(),
+        discount: json["discount"],
+        isGiveaway: json["isGiveaway"],
       );
 
   Map<String, dynamic> toJson() => {
         "premiumCodeIsPaid": premiumCodeIsPaid,
         "membershipPackageId": membershipPackageId,
         "piiinksAmount": piiinksAmount,
+        "discount": discount,
+        "isGiveaway": isGiveaway,
       };
 }

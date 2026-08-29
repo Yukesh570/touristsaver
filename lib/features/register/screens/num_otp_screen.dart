@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:touristsaver/constants/member_otp.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -100,7 +101,7 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
   }
 
   setTimer1() {
-    var duration = const Duration(minutes: 2);
+    const duration = Duration(minutes: memberRegistrationOtpExpiryMinutes);
     return Timer(duration, recieveResponseFromTimer1);
   }
 
@@ -330,7 +331,7 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                       child: Column(
                         children: [
                           Text(
-                            'Your verification code will expire in 10 minutes.',
+                            'Your verification code will expire in $memberRegistrationOtpExpiryMinutes minutes.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: _headlineColor,

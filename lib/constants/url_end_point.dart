@@ -53,6 +53,8 @@ const singleMemPackageForMember = '/membershipPackage/getOneForTouristBymember';
 const stripePayConfirm = '/member/topup/stripe/confirmation';
 const discoveryContinuationPaymentIntent =
     '/member/discovery/continuation/payment-intent';
+const discoveryRegistrationCodeClaim =
+    '/member/discovery/claim-registration-code';
 const verifyEmailUrl = '/member/general/sendEmailVerificationToken';
 const topUpHistory = '/transaction/membership/getByMember';
 const premiumTopUpHistory = '/memberPremiumCode/getByMember';

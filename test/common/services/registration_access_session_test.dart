@@ -46,6 +46,17 @@ void main() {
     expect(await Pref().readData(key: saveToken), 'confirmed-token');
   });
 
+  test('closing post-OTP checkout preserves the created Free member session',
+      () async {
+    await RegistrationAccessSession.begin('registration-token');
+
+    await preserveRegistrationCheckoutAsFreeMember();
+
+    expect(RegistrationAccessSession.isPending, isFalse);
+    expect(AppVariables.accessToken, 'registration-token');
+    expect(await Pref().readData(key: saveToken), 'registration-token');
+  });
+
   test('cancelled registration clears memory and persisted access', () async {
     await RegistrationAccessSession.begin('registration-token');
 

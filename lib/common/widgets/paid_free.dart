@@ -4,7 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/models/discovery_membership_context.dart';
+import 'package:touristsaver/common/models/registration_code_resolution.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
+import 'package:touristsaver/common/services/branch_referral_service.dart';
 import 'package:touristsaver/common/services/membership_offer_recognition.dart';
 import 'package:touristsaver/common/services/registration_access_session.dart';
 import 'package:touristsaver/common/services/dio_common.dart';
@@ -16,8 +19,7 @@ import 'package:touristsaver/constants/decimal_remove.dart';
 import 'package:touristsaver/constants/number_formatter.dart';
 import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
-import 'package:touristsaver/constants/style.dart';
-import 'package:touristsaver/features/profile/widget/info_popup.dart';
+import 'package:touristsaver/features/register/services/dio_register.dart';
 import 'package:touristsaver/features/top_up/bloc/mem_pack_bloc.dart';
 import 'package:touristsaver/features/top_up/bloc/mem_pack_event.dart';
 import 'package:touristsaver/features/top_up/bloc/mem_pack_state.dart';
@@ -59,7 +61,8 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
 
   // For Loading part
   bool isAppliedLoading = false;
-  double? piiinkCre;
+  String? _codeMessage;
+  bool _codeMessageIsError = false;
 
   // Premium data mapping
   dynamic premiumData;
@@ -70,9 +73,16 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      countryId = await Pref().readData(key: saveCountryID);
+      if (widget.pendingRegistrationAccess) {
+        await preserveRegistrationCheckoutAsFreeMember();
+      }
+      final savedCountryId = await Pref().readData(key: saveCountryID);
+      if (!mounted) return;
+      setState(() => countryId = savedCountryId?.toString());
     });
     super.initState();
+    premiumController.text =
+        widget.initialOfferContext?.memberPremiumCode ?? '';
     fetchMemberPremiumGetOne();
 
     fetchRegistrationImage();
@@ -146,188 +156,254 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
       }
     }
 
-    final initialPackageId = widget.initialOfferContext?.packageId;
-    if (initialPackageId != null && memPackAll.data != null) {
+    final premiumMap = premiumData is Map
+        ? Map<String, dynamic>.from(premiumData as Map)
+        : const <String, dynamic>{};
+    final selectedPackageId = int.tryParse(
+      (premiumMap['membershipPackageId'] ??
+              premiumMap['packageId'] ??
+              widget.initialOfferContext?.packageId ??
+              '')
+          .toString(),
+    );
+    if (selectedPackageId != null && memPackAll.data != null) {
       final matchingPremiumIndices = premiumIndices
-          .where((index) => memPackAll.data![index].id == initialPackageId)
+          .where((index) => memPackAll.data![index].id == selectedPackageId)
           .toList();
       if (matchingPremiumIndices.isNotEmpty) {
         premiumIndices = matchingPremiumIndices;
       }
     }
-    return ListView.separated(
-      separatorBuilder: (context, index) {
-        return const SizedBox(height: 20);
-      },
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      // 👉 2. Only build items for the premium packages we found
-      itemCount: premiumIndices.length,
-      itemBuilder: (context, index) {
-        // 👉 3. Grab the original index so TopUpWidget still reads the correct data
-        int realIndex = premiumIndices[index];
-        return TopUpWidget(
-          memPackAll: memPackAll,
-          index: realIndex,
-          showHeader: index == 0,
-          countryID: countryId,
-          premiumData: premiumData,
-          pendingRegistrationAccess: widget.pendingRegistrationAccess,
-          registrationImageUrl: registrationImageUrl, // Pass it here!
-        );
-      },
+    return Column(
+      children: [
+        _checkoutCodeEntry(),
+        ListView.separated(
+          separatorBuilder: (context, index) => const SizedBox(height: 20),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: premiumIndices.length,
+          itemBuilder: (context, index) {
+            final realIndex = premiumIndices[index];
+            return TopUpWidget(
+              memPackAll: memPackAll,
+              index: realIndex,
+              showHeader: index == 0,
+              countryID: countryId,
+              premiumData: premiumData,
+              pendingRegistrationAccess: widget.pendingRegistrationAccess,
+              registrationImageUrl: registrationImageUrl,
+            );
+          },
+        ),
+      ],
     );
   }
 
-  applyPremium() async {
+  Future<void> _applyCheckoutCode() async {
+    final code = premiumController.text.trim().toUpperCase();
+    if (code.isEmpty) {
+      setState(() {
+        _codeMessage = 'Enter a promo or invitation code.';
+        _codeMessageIsError = true;
+      });
+      return;
+    }
     setState(() {
       isAppliedLoading = true;
+      _codeMessage = null;
     });
-    if (premiumController.text.isEmpty) {
-      setState(() {
-        isAppliedLoading = false;
-      });
-      GlobalSnackBar.valid(context, S.of(context).pleaseEnterThePremiumCode);
-      return;
-    } else {
-      var firstCheckPremium = await DioTopUpStripe().premiumTopupValidity(
-        premiumTopUpReqModel: PremiumTopUpReqModel(
-          memberPremiumCode: premiumController.text.trim(),
-        ),
+
+    final premiumValidity = await DioTopUpStripe().premiumTopupValidity(
+      premiumTopUpReqModel: PremiumTopUpReqModel(memberPremiumCode: code),
+    );
+    if (premiumValidity is PremiumValidityResModel &&
+        premiumValidity.status == 'success') {
+      final applyResult = await DioTopUpStripe().checkPremiumCodeTopUp(
+        premiumTopUpReqModel: PremiumTopUpReqModel(memberPremiumCode: code),
       );
-      if (firstCheckPremium is PremiumValidityResModel) {
-        if (firstCheckPremium.status == 'success') {
-          var applyRes = await DioTopUpStripe().checkPremiumCodeTopUp(
-            premiumTopUpReqModel: PremiumTopUpReqModel(
-              memberPremiumCode: premiumController.text.trim(),
-            ),
-          );
-          if (!mounted) return;
-          if (applyRes is PremiumTopUpFreeResModel) {
-            if (applyRes.status == 'success') {
-              setState(() {
-                piiinkCre =
-                    double.parse(applyRes.data!.piiinksAmount.toString());
-                isAppliedLoading = false;
-                premiumController.clear();
-              });
-              giveAwayPopUp();
-            } else {
-              setState(() {
-                isAppliedLoading = false;
-              });
-              invalidCode();
-              return;
-            }
-          } else if (applyRes is PremiumTopUpPaidResModel) {
-            setState(() {
-              piiinkCre = applyRes.data?.piiinksAmount;
-              isAppliedLoading = false;
-              premiumController.clear();
-            });
-            giveAwayPopUp();
-            return;
-          } else {
-            setState(() {
-              isAppliedLoading = false;
-            });
-            invalidCode();
-            return;
-          }
-        } else {
-          setState(() {
-            isAppliedLoading = false;
-          });
-          invalidCode();
-        }
-      } else {
+      if (!mounted) return;
+      if (applyResult is PremiumTopUpPaidResModel &&
+          applyResult.status == 'success' &&
+          applyResult.data != null) {
+        final data = applyResult.data!;
         setState(() {
+          premiumData = {
+            'memberPremiumCode': code,
+            'discount': data.discount?.toString(),
+            'packageId': data.membershipPackageId,
+            'membershipPackageId': data.membershipPackageId,
+            'premiumCodeIsPaid': true,
+            'isGiveaway': data.isGiveaway == true,
+          };
           isAppliedLoading = false;
+          _codeMessage = data.discount == null
+              ? 'Promo code applied.'
+              : '${data.discount}% Premium discount applied.';
+          _codeMessageIsError = false;
         });
-        invalidCode();
+        return;
       }
+      if (applyResult is PremiumTopUpFreeResModel &&
+          applyResult.status == 'success') {
+        final confirmed = await _backendConfirmsActivePremium();
+        if (!mounted) return;
+        if (confirmed) {
+          await preserveRegistrationCheckoutAsFreeMember();
+          if (!mounted) return;
+          context.pushReplacementNamed(
+            'congrats-screen',
+            pathParameters: {
+              'piiinkCredit':
+                  applyResult.data?.piiinksAmount?.toString() ?? '0',
+            },
+            extra: const {
+              'communityWelcome': true,
+              'isComplimentary': true,
+            },
+          );
+          return;
+        }
+      }
+      _showCodeError(
+          'Premium membership could not be activated. Please try again.');
+      return;
+    }
+
+    final parsedCountryId = int.tryParse(countryId ?? '');
+    if (parsedCountryId == null) {
+      _showCodeError(
+          'Your membership country could not be confirmed. Please try again.');
+      return;
+    }
+    final resolution = await DioRegister().resolveRegistrationCode(
+      code: code,
+      countryId: parsedCountryId,
+    );
+    if (!mounted) return;
+    if (!resolution.valid || !resolution.isDiscovery) {
+      _showCodeError(registrationCodeErrorMessage(resolution));
+      return;
+    }
+    final claim =
+        await DioRegister().claimDiscoveryRegistrationCode(code: code);
+    if (!mounted) return;
+    if (!claim.isSuccess) {
+      _showCodeError(
+          claim.errorMessage ?? 'Discovery membership could not be activated.');
+      return;
+    }
+    final membership = claim.membership!;
+    await preserveRegistrationCheckoutAsFreeMember();
+    await const DiscoveryMembershipStore().save(membership);
+    await BranchReferralService.clearPendingDiscoveryReferral(code: code);
+    if (!mounted) return;
+    context.pushReplacementNamed(
+      'discovery-membership-welcome',
+      extra: membership.toRouteExtra(),
+    );
+  }
+
+  Future<bool> _backendConfirmsActivePremium() async {
+    try {
+      final wallet = await DioWallet().getUniverslUserWallet();
+      final expiry = wallet?.data?.premiumExpiryDate;
+      return expiry != null && expiry.isAfter(DateTime.now());
+    } catch (_) {
+      return false;
     }
   }
 
-  giveAwayPopUp() {
-    return showGeneralDialog(
-      barrierLabel: 'Label',
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.5),
-      transitionDuration: const Duration(milliseconds: 300),
-      context: context,
-      pageBuilder: (context, anim1, anim2) {
-        return Align(
-          alignment: Alignment.center,
-          child: InfoPopUp(
-            textAlign: TextAlign.center,
-            title: S
-                .of(context)
-                .congratulationXTouristSaversHasBeenAddedToYourWallet
-                .replaceAll(
-                    '&X', removeTrailingZero(numFormatter.format(piiinkCre))),
-            onOk: () {
-              context.pop();
-              context.pop();
-            },
-          ),
-        );
-      },
-      transitionBuilder: (context, anim1, anim2, child) {
-        return SlideTransition(
-          position: Tween(begin: const Offset(0, 1), end: const Offset(0, 0))
-              .animate(anim1),
-          child: child,
-        );
-      },
-    );
+  void _showCodeError(String message) {
+    if (!mounted) return;
+    setState(() {
+      isAppliedLoading = false;
+      _codeMessage = message;
+      _codeMessageIsError = true;
+    });
   }
 
-  invalidCode() {
-    return showGeneralDialog(
-      barrierLabel: 'Label',
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.5),
-      transitionDuration: const Duration(milliseconds: 300),
-      context: context,
-      pageBuilder: (context, anim1, anim2) {
-        return Align(
-          alignment: Alignment.center,
-          child: InfoPopUp(
-            title: S.of(context).premiumCodeIsNotValid,
-            image: 'assets/images/oops.png',
-            onOk: () {
-              context.pop();
-            },
-          ),
-        );
-      },
-      transitionBuilder: (context, anim1, anim2, child) {
-        return SlideTransition(
-          position: Tween(begin: const Offset(0, 1), end: const Offset(0, 0))
-              .animate(anim1),
-          child: child,
-        );
-      },
-    );
-  }
-
-  applyButton({required Widget widget, required VoidCallback onPressed}) {
-    return Container(
-      decoration:
-          BoxDecoration(borderRadius: BorderRadius.circular(10), boxShadow: [
-        BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.2),
-            blurRadius: 4,
-            spreadRadius: 1,
-            offset: const Offset(2, 2))
-      ]),
-      width: MediaQuery.of(context).size.width / 4.6,
-      height: 45.h,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: styleMainButton,
-        child: widget,
+  Widget _checkoutCodeEntry() {
+    const border = Color(0xFFE2E8F3);
+    const heading = Color(0xFF111C44);
+    const blue = Color(0xFF0009FE);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
+      child: Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Have a promo or invitation code?',
+              style: GoogleFonts.nunito(
+                color: heading,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: premiumController,
+                    textCapitalization: TextCapitalization.characters,
+                    enabled: !isAppliedLoading,
+                    decoration: InputDecoration(
+                      hintText: 'Enter code',
+                      isDense: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: const BorderSide(color: border),
+                      ),
+                    ),
+                    onSubmitted: (_) => _applyCheckoutCode(),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                SizedBox(
+                  height: 48.h,
+                  child: ElevatedButton(
+                    onPressed: isAppliedLoading ? null : _applyCheckoutCode,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: blue,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: isAppliedLoading
+                        ? SizedBox(
+                            width: 18.r,
+                            height: 18.r,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Apply'),
+                  ),
+                ),
+              ],
+            ),
+            if (_codeMessage != null) ...[
+              SizedBox(height: 8.h),
+              Text(
+                _codeMessage!,
+                style: GoogleFonts.nunito(
+                  color: _codeMessageIsError
+                      ? const Color(0xFFB42318)
+                      : const Color(0xFF087A55),
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -340,8 +416,10 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
       canPop: !widget.pendingRegistrationAccess,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop && widget.pendingRegistrationAccess) {
-          await RegistrationAccessSession.abandon();
-          if (context.mounted) context.goNamed('intro-screen');
+          await preserveRegistrationCheckoutAsFreeMember();
+          if (context.mounted) {
+            context.goNamed('bottom-bar', pathParameters: {'page': '0'});
+          }
         }
       },
       child: Scaffold(
@@ -362,8 +440,10 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
             ),
             onPressed: () async {
               if (widget.pendingRegistrationAccess) {
-                await RegistrationAccessSession.abandon();
-                if (context.mounted) context.goNamed('intro-screen');
+                await preserveRegistrationCheckoutAsFreeMember();
+                if (context.mounted) {
+                  context.goNamed('bottom-bar', pathParameters: {'page': '0'});
+                }
                 return;
               }
               context.push('/log-profile');
@@ -518,10 +598,12 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     );
   }
 
-  Future<void> _exitPendingRegistrationAfterFailure() async {
+  Future<void> _recoverAsFreeMemberAfterCheckoutFailure() async {
     if (!widget.pendingRegistrationAccess) return;
-    await RegistrationAccessSession.abandon();
-    if (mounted) context.goNamed('intro-screen');
+    await preserveRegistrationCheckoutAsFreeMember();
+    if (mounted) {
+      context.goNamed('bottom-bar', pathParameters: {'page': '0'});
+    }
   }
 
   Future<bool> _backendConfirmsActivePremium() async {
@@ -546,7 +628,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         context,
         'Complimentary membership could not be confirmed. Please log in and try again.',
       );
-      await _exitPendingRegistrationAfterFailure();
+      await _recoverAsFreeMemberAfterCheckoutFailure();
       return;
     }
     bool isLoggedIn = RegistrationAccessSession.apiToken?.isNotEmpty == true;
@@ -618,7 +700,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       if (res is! TopUpStripeResModel) {
         setState(() => isLoading = false);
         GlobalSnackBar.showError(context, S.of(context).serverError);
-        await _exitPendingRegistrationAfterFailure();
+        await _recoverAsFreeMemberAfterCheckoutFailure();
         return;
       }
 
@@ -641,7 +723,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
             context,
             'Membership activation could not be confirmed. Please try again.',
           );
-          await _exitPendingRegistrationAfterFailure();
+          await _recoverAsFreeMemberAfterCheckoutFailure();
         }
         return;
       }
@@ -690,7 +772,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
           isLoading = false;
         });
         _dismissPaymentConfirmation(paymentContext);
-        await _exitPendingRegistrationAfterFailure();
+        await _recoverAsFreeMemberAfterCheckoutFailure();
       }
     } catch (_) {
       if (mounted) {
@@ -698,7 +780,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         _dismissPaymentConfirmation(paymentContext);
         GlobalSnackBar.showError(context, S.of(context).stripePaymentFail);
       }
-      await _exitPendingRegistrationAfterFailure();
+      await _recoverAsFreeMemberAfterCheckoutFailure();
     }
   }
 

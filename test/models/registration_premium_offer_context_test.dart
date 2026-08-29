@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/models/response/register_res.dart';
+import 'package:touristsaver/models/response/pre_topup_paid_res.dart'
+    as checkout;
 
 void main() {
   group('registration premium offer payment handoff', () {
@@ -55,6 +57,24 @@ void main() {
       expect(preview.discountAmount, closeTo(19.80, 0.001));
       expect(preview.payableAmount, closeTo(79.20, 0.001));
       expect(preview.memberPremiumCodeForPaymentIntent, 'SAVER20');
+    });
+
+    test('checkout Premium response retains discount and package details', () {
+      final response = checkout.PremiumTopUpPaidResModel.fromJson({
+        'status': 'success',
+        'data': {
+          'premiumCodeIsPaid': true,
+          'membershipPackageId': 9,
+          'piiinksAmount': 0,
+          'discount': 20,
+          'isGiveaway': false,
+        },
+      });
+
+      expect(response.data?.premiumCodeIsPaid, isTrue);
+      expect(response.data?.membershipPackageId, 9);
+      expect(response.data?.discount, 20);
+      expect(response.data?.isGiveaway, isFalse);
     });
 
     test('100% complimentary code does not enter paid PaymentIntent path', () {

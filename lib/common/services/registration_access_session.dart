@@ -87,6 +87,9 @@ class RegistrationAccessSession {
   }
 }
 
+Future<void> preserveRegistrationCheckoutAsFreeMember({Pref? pref}) =>
+    RegistrationAccessSession.grant(pref: pref);
+
 bool isAuthoritativePaidMembershipConfirmation(
   ConfirmTopUpResModel? confirmation, {
   DateTime? now,
