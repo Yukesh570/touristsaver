@@ -15,8 +15,6 @@ import 'package:touristsaver/common/widgets/custom_loader.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
 import 'package:touristsaver/common/widgets/error.dart';
 import 'package:touristsaver/common/widgets/not_available.dart';
-import 'package:touristsaver/constants/decimal_remove.dart';
-import 'package:touristsaver/constants/number_formatter.dart';
 import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
 import 'package:touristsaver/features/register/services/dio_register.dart';
@@ -63,6 +61,8 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
   bool isAppliedLoading = false;
   String? _codeMessage;
   bool _codeMessageIsError = false;
+  String _enteredPromoCode = '';
+  String _appliedPromoCode = '';
 
   // Premium data mapping
   dynamic premiumData;
@@ -73,16 +73,17 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (widget.pendingRegistrationAccess) {
-        await preserveRegistrationCheckoutAsFreeMember();
-      }
       final savedCountryId = await Pref().readData(key: saveCountryID);
       if (!mounted) return;
       setState(() => countryId = savedCountryId?.toString());
     });
     super.initState();
-    premiumController.text =
-        widget.initialOfferContext?.memberPremiumCode ?? '';
+    final initialCode = widget.initialOfferContext?.hasCode == true
+        ? widget.initialOfferContext!.memberPremiumCode.trim().toUpperCase()
+        : '';
+    _enteredPromoCode = initialCode;
+    _appliedPromoCode = initialCode;
+    premiumController.text = initialCode;
     fetchMemberPremiumGetOne();
 
     fetchRegistrationImage();
@@ -135,8 +136,15 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
       var res = await DioCommon().getdiscountInmemberPremiumCode();
       if (res != null && res['status'] == "Success") {
         if (!mounted) return;
+        final restoredPremiumData = res['data'];
+        final restoredCode = restoredAppliedPromoCode(restoredPremiumData);
         setState(() {
-          premiumData = res['data'];
+          premiumData = restoredPremiumData;
+          if (restoredCode.isNotEmpty) {
+            _enteredPromoCode = restoredCode;
+            _appliedPromoCode = restoredCode;
+            premiumController.text = restoredCode;
+          }
         });
       }
     } catch (e) {
@@ -176,7 +184,11 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
     }
     return Column(
       children: [
-        _checkoutCodeEntry(),
+        _checkoutCodeEntry(
+          package: premiumIndices.isEmpty
+              ? null
+              : memPackAll.data![premiumIndices.first],
+        ),
         ListView.separated(
           separatorBuilder: (context, index) => const SizedBox(height: 20),
           shrinkWrap: true,
@@ -235,10 +247,10 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
             'premiumCodeIsPaid': true,
             'isGiveaway': data.isGiveaway == true,
           };
+          _enteredPromoCode = code;
+          _appliedPromoCode = code;
           isAppliedLoading = false;
-          _codeMessage = data.discount == null
-              ? 'Promo code applied.'
-              : '${data.discount}% Premium discount applied.';
+          _codeMessage = null;
           _codeMessageIsError = false;
         });
         return;
@@ -248,7 +260,9 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
         final confirmed = await _backendConfirmsActivePremium();
         if (!mounted) return;
         if (confirmed) {
-          await preserveRegistrationCheckoutAsFreeMember();
+          await RegistrationAccessSession.grant(
+            reason: RegistrationAccessGrantReason.complimentaryPremiumConfirmed,
+          );
           if (!mounted) return;
           context.pushReplacementNamed(
             'congrats-screen',
@@ -293,7 +307,9 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
       return;
     }
     final membership = claim.membership!;
-    await preserveRegistrationCheckoutAsFreeMember();
+    await RegistrationAccessSession.grant(
+      reason: RegistrationAccessGrantReason.discoveryConfirmed,
+    );
     await const DiscoveryMembershipStore().save(membership);
     await BranchReferralService.clearPendingDiscoveryReferral(code: code);
     if (!mounted) return;
@@ -322,10 +338,39 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
     });
   }
 
-  Widget _checkoutCodeEntry() {
+  CheckoutPromoState _promoStateFor(Datum? package) {
+    final regularPrice = package?.packageFee ?? 0;
+    final preview = membershipOfferPaymentPreview(
+      originalAmount: regularPrice,
+      premiumData: premiumData is Map ? premiumData as Map : null,
+    );
+    return CheckoutPromoState(
+      enteredPromoCode: _enteredPromoCode,
+      appliedPromoCode: _appliedPromoCode,
+      regularPrice: regularPrice,
+      discountAmount: preview.discountAmount,
+      finalPayableAmount: preview.payableAmount,
+    );
+  }
+
+  String _formatCheckoutAmount(double amount, Datum? package) {
+    final symbol = package?.packageCurrencySymbol?.trim().isNotEmpty == true
+        ? package!.packageCurrencySymbol!.trim()
+        : AppVariables.currency ?? r'$';
+    return formatCheckoutMembershipAmount(
+      amount: amount,
+      currencySymbol: symbol,
+      currencyName: package?.packageCurrencyName ?? '',
+    );
+  }
+
+  Widget _checkoutCodeEntry({required Datum? package}) {
     const border = Color(0xFFE2E8F3);
     const heading = Color(0xFF111C44);
     const blue = Color(0xFF0009FE);
+    const success = Color(0xFF087A55);
+    final promoState = _promoStateFor(package);
+    final enableApply = promoState.enableApply && !isAppliedLoading;
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
       child: Container(
@@ -339,9 +384,11 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Have a promo or invitation code?',
+              promoState.hasAppliedPromo
+                  ? 'Promo code ${promoState.applied.toUpperCase()} applied ✓'
+                  : 'Have a promo or invitation code?',
               style: GoogleFonts.nunito(
-                color: heading,
+                color: promoState.hasAppliedPromo ? success : heading,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w800,
               ),
@@ -358,22 +405,35 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
                     decoration: InputDecoration(
                       hintText: 'Enter code',
                       isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 9.h,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.r),
                         borderSide: const BorderSide(color: border),
                       ),
                     ),
-                    onSubmitted: (_) => _applyCheckoutCode(),
+                    onChanged: (value) {
+                      setState(() {
+                        _enteredPromoCode = value;
+                        _codeMessage = null;
+                        _codeMessageIsError = false;
+                      });
+                    },
+                    onSubmitted:
+                        enableApply ? (_) => _applyCheckoutCode() : null,
                   ),
                 ),
                 SizedBox(width: 10.w),
                 SizedBox(
-                  height: 48.h,
+                  height: 36.h,
                   child: ElevatedButton(
-                    onPressed: isAppliedLoading ? null : _applyCheckoutCode,
+                    onPressed: enableApply ? _applyCheckoutCode : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: blue,
                       foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 15.w),
                     ),
                     child: isAppliedLoading
                         ? SizedBox(
@@ -402,6 +462,41 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
                 ),
               ),
             ],
+            if (promoState.hasAppliedPromo) ...[
+              SizedBox(height: 14.h),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(14.r),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F8FF),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: const Color(0xFFD6EAFB)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Premium Membership: ${_formatCheckoutAmount(promoState.finalPayableAmount, package)}',
+                      style: GoogleFonts.nunito(
+                        color: heading,
+                        fontSize: 25.sp,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 5.h),
+                    Text(
+                      'You save ${_formatCheckoutAmount(promoState.discountAmount, package)} off the regular ${_formatCheckoutAmount(promoState.regularPrice, package)} price.',
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFF61708A),
+                        fontSize: 13.5.sp,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -416,9 +511,9 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
       canPop: !widget.pendingRegistrationAccess,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop && widget.pendingRegistrationAccess) {
-          await preserveRegistrationCheckoutAsFreeMember();
+          await RegistrationAccessSession.abandon();
           if (context.mounted) {
-            context.goNamed('bottom-bar', pathParameters: {'page': '0'});
+            context.goNamed('login');
           }
         }
       },
@@ -440,9 +535,9 @@ class _PaidFreeScreenState extends State<PaidFreeScreen> {
             ),
             onPressed: () async {
               if (widget.pendingRegistrationAccess) {
-                await preserveRegistrationCheckoutAsFreeMember();
+                await RegistrationAccessSession.abandon();
                 if (context.mounted) {
-                  context.goNamed('bottom-bar', pathParameters: {'page': '0'});
+                  context.goNamed('login');
                 }
                 return;
               }
@@ -598,14 +693,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
     );
   }
 
-  Future<void> _recoverAsFreeMemberAfterCheckoutFailure() async {
-    if (!widget.pendingRegistrationAccess) return;
-    await preserveRegistrationCheckoutAsFreeMember();
-    if (mounted) {
-      context.goNamed('bottom-bar', pathParameters: {'page': '0'});
-    }
-  }
-
   Future<bool> _backendConfirmsActivePremium() async {
     try {
       final wallet = await DioWallet().getUniverslUserWallet();
@@ -628,7 +715,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         context,
         'Complimentary membership could not be confirmed. Please log in and try again.',
       );
-      await _recoverAsFreeMemberAfterCheckoutFailure();
       return;
     }
     bool isLoggedIn = RegistrationAccessSession.apiToken?.isNotEmpty == true;
@@ -700,7 +786,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       if (res is! TopUpStripeResModel) {
         setState(() => isLoading = false);
         GlobalSnackBar.showError(context, S.of(context).serverError);
-        await _recoverAsFreeMemberAfterCheckoutFailure();
+        _dismissPaymentConfirmation(paymentContext);
         return;
       }
 
@@ -711,7 +797,10 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         if (!mounted) return;
         if (complimentaryActivationConfirmed) {
           if (widget.pendingRegistrationAccess) {
-            await RegistrationAccessSession.grant();
+            await RegistrationAccessSession.grant(
+              reason:
+                  RegistrationAccessGrantReason.complimentaryPremiumConfirmed,
+            );
           }
           _dismissPaymentConfirmation(paymentContext);
           await _navigateToActivationSuccess(
@@ -723,7 +812,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
             context,
             'Membership activation could not be confirmed. Please try again.',
           );
-          await _recoverAsFreeMemberAfterCheckoutFailure();
         }
         return;
       }
@@ -757,6 +845,7 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       if (confirmation != null) {
         if (widget.pendingRegistrationAccess) {
           await RegistrationAccessSession.grant(
+            reason: RegistrationAccessGrantReason.premiumPaymentConfirmed,
             authoritativeToken: confirmation.data?.accessToken,
           );
         }
@@ -772,7 +861,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
           isLoading = false;
         });
         _dismissPaymentConfirmation(paymentContext);
-        await _recoverAsFreeMemberAfterCheckoutFailure();
       }
     } catch (_) {
       if (mounted) {
@@ -780,7 +868,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
         _dismissPaymentConfirmation(paymentContext);
         GlobalSnackBar.showError(context, S.of(context).stripePaymentFail);
       }
-      await _recoverAsFreeMemberAfterCheckoutFailure();
     }
   }
 
@@ -844,21 +931,13 @@ class _TopUpWidgetState extends State<TopUpWidget> {
       originalAmount: originalFee,
       premiumData: widget.premiumData is Map ? widget.premiumData as Map : null,
     );
-    final double discountPercent = paymentPreview.discountPercent;
-    final double discountAmount = paymentPreview.discountAmount;
     final double finalFee = paymentPreview.payableAmount;
 
-    final originalPriceText =
-        _formatMembershipAmount(originalFee, currency, currencyName);
-    final discountAmountText =
-        "-${_formatMembershipAmount(discountAmount, currency, currencyName)}";
     final amountPayableText =
         _formatMembershipAmount(finalFee, currency, currencyName);
 
     final bool isFreeMembership =
         premiumOffer?.isComplimentaryMembership ?? false;
-    final bool hasPartialDiscount =
-        discountPercent > 0 && discountPercent < 100;
     final String buttonLabel = "Continue";
     final bool showValueSections = widget.showHeader || isFreeMembership;
 
@@ -882,12 +961,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
           ] else
             SizedBox(height: 18.h),
           _membershipCard(
-            originalPriceText: originalPriceText,
-            discountAmountText: discountAmountText,
-            amountPayableText: amountPayableText,
-            discountPercent: discountPercent,
-            isFreeMembership: isFreeMembership,
-            hasPartialDiscount: hasPartialDiscount,
             buttonLabel: buttonLabel,
             onPressed: isFreeMembership
                 ? _handleFreeMemberShip
@@ -1174,12 +1247,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
   }
 
   Widget _membershipCard({
-    required String originalPriceText,
-    required String discountAmountText,
-    required String amountPayableText,
-    required double discountPercent,
-    required bool isFreeMembership,
-    required bool hasPartialDiscount,
     required String buttonLabel,
     required VoidCallback onPressed,
   }) {
@@ -1206,14 +1273,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
               height: 1.4,
             ),
           ),
-          SizedBox(height: 18.h),
-          _membershipPriceSummary(
-            originalPriceText: originalPriceText,
-            discountAmountText: discountAmountText,
-            amountPayableText: amountPayableText,
-            discountPercent: discountPercent,
-            showDiscount: hasPartialDiscount || isFreeMembership,
-          ),
           SizedBox(height: 16.h),
           _benefitSummary(),
           SizedBox(height: 16.h),
@@ -1223,49 +1282,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
             label: buttonLabel,
             isLoading: isLoading,
             onPressed: onPressed,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _membershipPriceSummary({
-    required String originalPriceText,
-    required String discountAmountText,
-    required String amountPayableText,
-    required double discountPercent,
-    required bool showDiscount,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(14.r),
-      decoration: BoxDecoration(
-        color: _screenBackground,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: _borderColor),
-      ),
-      child: Column(
-        children: [
-          _priceRow(
-            label: "Membership Price",
-            value: originalPriceText,
-          ),
-          if (showDiscount) ...[
-            SizedBox(height: 8.h),
-            _priceRow(
-              label:
-                  "Premium Code Discount (${removeTrailingZero(numFormatter.format(discountPercent))}% off)",
-              value: discountAmountText,
-              valueColor: _primaryBlue,
-            ),
-          ],
-          SizedBox(height: 12.h),
-          Divider(height: 1, color: _borderColor),
-          SizedBox(height: 12.h),
-          _priceRow(
-            label: "Amount Payable",
-            value: amountPayableText,
-            valueColor: _headingColor,
-            isLarge: true,
           ),
         ],
       ),
@@ -1307,44 +1323,6 @@ class _TopUpWidgetState extends State<TopUpWidget> {
               fontSize: 13.5.sp,
               fontWeight: FontWeight.w800,
               height: 1.3,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _priceRow({
-    required String label,
-    required String value,
-    Color? valueColor,
-    bool strikeThrough = false,
-    bool isLarge = false,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: GoogleFonts.nunito(
-              color: _bodyColor,
-              fontSize: 13.5.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: GoogleFonts.nunito(
-              color: valueColor ?? _bodyColor,
-              fontSize: isLarge ? 22.sp : 14.sp,
-              fontWeight: isLarge ? FontWeight.w900 : FontWeight.w800,
-              decoration: strikeThrough
-                  ? TextDecoration.lineThrough
-                  : TextDecoration.none,
             ),
           ),
         ),

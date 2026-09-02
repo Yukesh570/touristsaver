@@ -6,6 +6,14 @@ const String phonePrefix = 'phonePrefix';
 const String isShownRegLog = 'isShownRegLog';
 // Save Token
 const String saveToken = 'token';
+const String pendingRegistrationAccessTokenKey =
+    'pendingRegistrationAccessToken';
+const String pendingRegistrationPhonePrefixKey =
+    'pendingRegistrationPhonePrefix';
+const String pendingRegistrationPhoneNumberKey =
+    'pendingRegistrationPhoneNumber';
+const String pendingRegistrationEmailKey = 'pendingRegistrationEmail';
+const String confirmedMemberEntitlementKey = 'confirmedMemberEntitlement';
 //Issuer Type
 const String issuerType = 'issuerType';
 

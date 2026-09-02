@@ -832,8 +832,8 @@ class _LoginScreenState extends State<LoginScreen> {
               value: countryOriginID.data!.results!.id.toString());
           membershipAllowsAccess = memberProfileAllowsAuthenticatedAccess(
             memberType: countryOriginID.data?.results?.memberType,
-            discoveryMembershipExists:
-                countryOriginID.data?.discoveryMembership != null,
+            discoveryMembershipActive:
+                countryOriginID.data?.discoveryMembership?.isActive == true,
           );
         } else {
           await RegistrationAccessSession.abandon();
@@ -870,6 +870,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
         if (membershipAllowsAccess) {
           await RegistrationAccessSession.grant(
+            reason: RegistrationAccessGrantReason.backendProfileConfirmed,
             authoritativeToken: loginToken,
           );
           AppVariables.initNotifications = true;

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/models/merchant_summary.dart';
 import 'package:touristsaver/common/models/registration_premium_offer_context.dart';
 import 'package:touristsaver/common/models/discovery_membership_context.dart';
+import 'package:touristsaver/common/app_variables.dart';
+import 'package:touristsaver/common/services/registration_access_session.dart';
 import 'package:touristsaver/common/widgets/bottom_navigation_bar.dart';
 import 'package:touristsaver/common/widgets/congrats.dart';
 import 'package:touristsaver/common/widgets/paid_free.dart';
@@ -52,6 +54,8 @@ import 'package:touristsaver/features/top_up/screens/top_up_screen.dart';
 import 'package:touristsaver/features/transfer_piiinks/screens/transfer_piiinks.dart';
 import 'package:touristsaver/features/wallet/screens/wallet_screen.dart';
 import 'package:touristsaver/splash_screen.dart';
+import 'package:touristsaver/constants/pref.dart';
+import 'package:touristsaver/constants/pref_key.dart';
 import 'features/about/screens/about_screen.dart';
 import 'features/home_page/screens/location_searched.dart';
 import 'features/home_page/widget/choose_on_map.dart';
@@ -60,9 +64,35 @@ import 'features/top_up/screens/top_up_history.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+Future<String?> memberAccessRedirect(
+  BuildContext context,
+  GoRouterState state, {
+  Pref? pref,
+}) async {
+  final storage = pref ?? Pref();
+  final path = state.uri.path;
+  await RegistrationAccessSession.restorePending(pref: storage);
+
+  final checkoutRedirect = pendingRegistrationRedirect(
+    isPending: RegistrationAccessSession.isPending,
+    path: path,
+  );
+  if (checkoutRedirect != null) return checkoutRedirect;
+
+  final persistedToken = (await storage.readData(key: saveToken))?.trim();
+  if (persistedToken?.isNotEmpty == true && path != '/') {
+    final entitlementConfirmed =
+        await storage.readBool(key: confirmedMemberEntitlementKey) == true;
+    final hydrated = AppVariables.accessToken == persistedToken;
+    if (!entitlementConfirmed || !hydrated) return '/';
+  }
+  return null;
+}
+
 /// The route configuration.
 final GoRouter goRouter = GoRouter(
   navigatorKey: navigatorKey,
+  redirect: memberAccessRedirect,
   routes: <RouteBase>[
     //Splash Screen
     // GoRoute(
@@ -432,8 +462,10 @@ final GoRouter goRouter = GoRouter(
             : null;
         return PaidFreeScreen(
           initialOfferContext: initialOfferContext,
-          pendingRegistrationAccess: extra is Map<String, dynamic> &&
-              extra['pendingRegistrationAccess'] == true,
+          pendingRegistrationAccess: (extra is Map<String, dynamic> &&
+                  extra['pendingRegistrationAccess'] == true) ||
+              state.uri.queryParameters['checkout'] == '1' ||
+              RegistrationAccessSession.isPending,
         );
       },
     ),

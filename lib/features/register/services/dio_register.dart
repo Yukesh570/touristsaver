@@ -5,6 +5,7 @@ import 'package:touristsaver/constants/helper.dart';
 import 'package:touristsaver/constants/url_end_point.dart';
 import 'package:touristsaver/common/models/registration_code_resolution.dart';
 import 'package:touristsaver/common/models/discovery_membership_context.dart';
+import 'package:touristsaver/common/models/registration_credential_check.dart';
 import 'package:touristsaver/models/error_res.dart';
 import 'package:touristsaver/models/request/confirm_topup_req.dart';
 import 'package:touristsaver/models/request/premium_validity_req.dart';
@@ -175,7 +176,7 @@ class DioRegister {
   }
 
   // Checks email and phone no
-  Future<bool?> checkEmailAndPhoneNo(
+  Future<RegistrationCredentialCheckResult?> checkEmailAndPhoneNo(
       {required EmailMemberOtpReqModel emailmemberOtpReqModel}) async {
     try {
       Dio dio = await getClientNoToken();
@@ -183,7 +184,9 @@ class DioRegister {
         checkEmailAndPhoneNoUrl,
         data: emailmemberOtpReqModel.toJson(),
       );
-      return response.data["data"];
+      return RegistrationCredentialCheckResult.fromApiData(
+        response.data["data"],
+      );
     } catch (e) {
       return null;
     }

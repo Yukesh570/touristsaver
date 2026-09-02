@@ -124,4 +124,110 @@ void main() {
       expect(preview.memberPremiumCodeForPaymentIntent, isNull);
     });
   });
+
+  group('checkout promo presentation state', () {
+    test('restores the applied code from authenticated checkout context', () {
+      expect(
+        restoredAppliedPromoCode(const {
+          'memberPremiumCode': ' saver50 ',
+          'discount': '50.50505051',
+          'membershipPackageId': 9,
+        }),
+        'SAVER50',
+      );
+      expect(restoredAppliedPromoCode(null), isEmpty);
+    });
+
+    test('registration promo is already applied and cannot be reapplied', () {
+      const state = CheckoutPromoState(
+        enteredPromoCode: ' SAVER50 ',
+        appliedPromoCode: 'saver50',
+        regularPrice: 99,
+        discountAmount: 50,
+        finalPayableAmount: 49,
+      );
+
+      expect(state.hasEnteredCode, isTrue);
+      expect(state.hasAppliedPromo, isTrue);
+      expect(state.promoChanged, isFalse);
+      expect(state.enableApply, isFalse);
+    });
+
+    test('editing enables Apply and restoring the code disables it', () {
+      const changed = CheckoutPromoState(
+        enteredPromoCode: 'NEWCODE',
+        appliedPromoCode: 'SAVER50',
+        regularPrice: 99,
+        discountAmount: 50,
+        finalPayableAmount: 49,
+      );
+      const restored = CheckoutPromoState(
+        enteredPromoCode: ' saver50 ',
+        appliedPromoCode: 'SAVER50',
+        regularPrice: 99,
+        discountAmount: 50,
+        finalPayableAmount: 49,
+      );
+
+      expect(changed.enableApply, isTrue);
+      expect(restored.enableApply, isFalse);
+    });
+
+    test('empty input disables Apply and a first code enables it', () {
+      const empty = CheckoutPromoState(
+        enteredPromoCode: '  ',
+        appliedPromoCode: '',
+        regularPrice: 99,
+        discountAmount: 0,
+        finalPayableAmount: 99,
+      );
+      const firstCode = CheckoutPromoState(
+        enteredPromoCode: 'SAVER50',
+        appliedPromoCode: '',
+        regularPrice: 99,
+        discountAmount: 0,
+        finalPayableAmount: 99,
+      );
+
+      expect(empty.enableApply, isFalse);
+      expect(firstCode.enableApply, isTrue);
+    });
+
+    test('raw percentage precision renders as customer-facing money', () {
+      final preview = membershipOfferPaymentPreview(
+        originalAmount: 99,
+        premiumData: const {
+          'memberPremiumCode': 'SAVER50',
+          'premiumCodeIsPaid': true,
+          'isGiveaway': false,
+          'discount': '50.50505051',
+        },
+      );
+
+      expect(
+        formatCheckoutMembershipAmount(
+          amount: preview.originalAmount,
+          currencySymbol: r'A$',
+          currencyName: 'AUD',
+        ),
+        r'A$99.00 AUD',
+      );
+      expect(
+        formatCheckoutMembershipAmount(
+          amount: preview.discountAmount,
+          currencySymbol: r'A$',
+          currencyName: 'AUD',
+        ),
+        r'A$50.00 AUD',
+      );
+      expect(
+        formatCheckoutMembershipAmount(
+          amount: preview.payableAmount,
+          currencySymbol: r'A$',
+          currencyName: 'AUD',
+        ),
+        r'A$49.00 AUD',
+      );
+    });
+  });
 }

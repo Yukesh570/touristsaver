@@ -121,7 +121,7 @@ class _MoreOffersScreenState extends State<MoreOffersScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Discounts may change by day and time. TouristSaver checks the current offer when you scan the merchant QR.',
+            'Discounts may change by day and time. TouristSaver checks the current offer when you tap the Claim Discount button.',
             style: TextStyle(
               color: _bodyColor,
               fontSize: 14.sp,

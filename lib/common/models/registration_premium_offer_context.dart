@@ -95,6 +95,47 @@ class MembershipOfferPaymentPreview {
   final bool isComplimentary;
 }
 
+class CheckoutPromoState {
+  const CheckoutPromoState({
+    required this.enteredPromoCode,
+    required this.appliedPromoCode,
+    required this.regularPrice,
+    required this.discountAmount,
+    required this.finalPayableAmount,
+  });
+
+  final String enteredPromoCode;
+  final String appliedPromoCode;
+  final double regularPrice;
+  final double discountAmount;
+  final double finalPayableAmount;
+
+  String get entered => enteredPromoCode.trim();
+  String get applied => appliedPromoCode.trim();
+  bool get hasEnteredCode => entered.isNotEmpty;
+  bool get hasAppliedPromo => applied.isNotEmpty;
+  bool get promoChanged => entered.toUpperCase() != applied.toUpperCase();
+  bool get enableApply => hasEnteredCode && (!hasAppliedPromo || promoChanged);
+}
+
+String restoredAppliedPromoCode(dynamic premiumData) {
+  if (premiumData is! Map) return '';
+  return premiumData['memberPremiumCode']?.toString().trim().toUpperCase() ??
+      '';
+}
+
+String formatCheckoutMembershipAmount({
+  required double amount,
+  required String currencySymbol,
+  String currencyName = '',
+}) {
+  final amountText = '$currencySymbol${amount.toStringAsFixed(2)}';
+  final normalizedCurrencyName = currencyName.trim();
+  return normalizedCurrencyName.isEmpty
+      ? amountText
+      : '$amountText $normalizedCurrencyName';
+}
+
 MembershipOfferPaymentPreview membershipOfferPaymentPreview({
   required double originalAmount,
   required Map<dynamic, dynamic>? premiumData,

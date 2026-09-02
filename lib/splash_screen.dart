@@ -5,10 +5,13 @@ import 'package:touristsaver/constants/pref.dart';
 import 'package:touristsaver/constants/pref_key.dart';
 import 'package:touristsaver/constants/read_sms_otp.dart';
 import 'package:touristsaver/features/wallet/services/dio_wallet.dart';
+import 'package:touristsaver/features/profile/services/dio_membership.dart';
 import 'package:touristsaver/models/response/universal_get_my_wallet.dart';
+import 'package:touristsaver/models/response/user_detail_res.dart';
 
 import 'common/app_variables.dart';
 import 'common/services/branch_referral_service.dart';
+import 'common/services/registration_access_session.dart';
 
 String? acc;
 
@@ -40,6 +43,38 @@ Future<String?> hydratePersistedAccessToken(Pref pref) async {
   final String? token = await pref.readData(key: saveToken);
   AppVariables.accessToken = token;
   return token;
+}
+
+Future<PersistedMemberAccessDecision> resolvePersistedMemberAccess(
+  Pref pref, {
+  Future<UserProfileResModel?> Function()? loadProfile,
+}) async {
+  if (await RegistrationAccessSession.restorePending(pref: pref)) {
+    return PersistedMemberAccessDecision.checkoutRequired;
+  }
+
+  final token = await hydratePersistedAccessToken(pref);
+  if (token == null || token.trim().isEmpty) {
+    return PersistedMemberAccessDecision.loggedOut;
+  }
+
+  final profile = await (loadProfile ?? DioMemberShip().getUserProfile)();
+  final allowsAccess = profile != null &&
+      memberProfileAllowsAuthenticatedAccess(
+        memberType: profile.data?.results?.memberType,
+        discoveryMembershipActive:
+            profile.data?.discoveryMembership?.isActive == true,
+      );
+  if (allowsAccess) {
+    await RegistrationAccessSession.confirmPersistedAccess(token, pref: pref);
+    return PersistedMemberAccessDecision.allowed;
+  }
+
+  await RegistrationAccessSession.requireCheckoutForPersistedToken(
+    token,
+    pref: pref,
+  );
+  return PersistedMemberAccessDecision.checkoutRequired;
 }
 
 class _MySplashScreenState extends State<MySplashScreen> {
@@ -110,6 +145,13 @@ class _MySplashScreenState extends State<MySplashScreen> {
     );
   }
 
+  void showPremiumCheckout() {
+    context.pushReplacementNamed(
+      'paid-free',
+      queryParameters: const {'checkout': '1'},
+    );
+  }
+
   void showlogin() async {
     context.pushReplacementNamed(
       'login',
@@ -131,14 +173,16 @@ class _MySplashScreenState extends State<MySplashScreen> {
       if (notificationsCount != null && notificationsCount != 0) {
         AppVariables.notificationLabel.value = notificationsCount;
       }
-      String? token = await hydratePersistedAccessToken(pref);
-      bool isLoggedIn = token != null && token.isNotEmpty;
+      final accessDecision = await resolvePersistedMemberAccess(pref);
 
       // Wait splash time before deciding where to go
       Timer(Duration(seconds: splashtime), () async {
         if (!mounted) return;
-        if (isLoggedIn) {
+        if (accessDecision == PersistedMemberAccessDecision.allowed) {
           showBottomBar();
+        } else if (accessDecision ==
+            PersistedMemberAccessDecision.checkoutRequired) {
+          showPremiumCheckout();
         } else if (BranchReferralService.hasPendingRegistrationReferral) {
           showIntro();
         } else if (acc == 'true') {

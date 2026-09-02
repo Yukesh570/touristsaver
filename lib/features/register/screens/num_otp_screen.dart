@@ -483,6 +483,9 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                             }
                             await RegistrationAccessSession.begin(
                               registrationToken,
+                              phonePrefix: widget.phonePrefix,
+                              phoneNumber: widget.phNum,
+                              email: widget.email,
                             );
                             if (widget.registrationCode != 'null') {
                               await BranchReferralService
@@ -490,9 +493,9 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                                 code: widget.registrationCode,
                               );
                             }
-                            // The registration token remains memory-only until
-                            // Discovery, complimentary Premium, or paid Premium
-                            // access has been authoritatively confirmed.
+                            // The registration token remains checkout-only
+                            // until Discovery, complimentary Premium, or paid
+                            // Premium access is authoritatively confirmed.
                             await Pref().setBool(
                               key: 'showFreePiiinks',
                               value: res.data?.showFreePiiinks ?? false,
@@ -543,6 +546,8 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                               final confirmedDiscoveryMembership =
                                   discoveryMembership!;
                               await RegistrationAccessSession.grant(
+                                reason: RegistrationAccessGrantReason
+                                    .discoveryConfirmed,
                                 authoritativeToken: registrationToken,
                               );
                               await const DiscoveryMembershipStore()
@@ -561,6 +566,8 @@ class _NumberOTPScreenState extends State<NumberOTPScreen> with CodeAutoFill {
                                 RegistrationAccessDecision
                                     .complimentaryPremium) {
                               await RegistrationAccessSession.grant(
+                                reason: RegistrationAccessGrantReason
+                                    .complimentaryPremiumConfirmed,
                                 authoritativeToken: registrationToken,
                               );
                               final recognition =

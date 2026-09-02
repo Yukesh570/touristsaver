@@ -24,7 +24,7 @@ void main() {
     AppVariables.accessToken = null;
   });
 
-  test('ordinary registration token stays memory-only before payment',
+  test('ordinary registration token stays checkout-only before payment',
       () async {
     await RegistrationAccessSession.begin('registration-token');
 
@@ -32,12 +32,17 @@ void main() {
     expect(RegistrationAccessSession.apiToken, 'registration-token');
     expect(AppVariables.accessToken, isNull);
     expect(await Pref().readData(key: saveToken), isNull);
+    expect(
+      await Pref().readData(key: pendingRegistrationAccessTokenKey),
+      'registration-token',
+    );
   });
 
   test('confirmed paid membership promotes the registration token', () async {
     await RegistrationAccessSession.begin('registration-token');
 
     await RegistrationAccessSession.grant(
+      reason: RegistrationAccessGrantReason.premiumPaymentConfirmed,
       authoritativeToken: 'confirmed-token',
     );
 
@@ -46,15 +51,54 @@ void main() {
     expect(await Pref().readData(key: saveToken), 'confirmed-token');
   });
 
-  test('closing post-OTP checkout preserves the created Free member session',
+  test('closing post-OTP checkout never promotes the applicant token',
       () async {
-    await RegistrationAccessSession.begin('registration-token');
+    await RegistrationAccessSession.begin(
+      'registration-token',
+      phonePrefix: '+61',
+      phoneNumber: '0412 345 477',
+      email: 'pending@example.com',
+    );
 
-    await preserveRegistrationCheckoutAsFreeMember();
+    await RegistrationAccessSession.abandon();
 
-    expect(RegistrationAccessSession.isPending, isFalse);
-    expect(AppVariables.accessToken, 'registration-token');
-    expect(await Pref().readData(key: saveToken), 'registration-token');
+    expect(RegistrationAccessSession.apiToken, isNull);
+    expect(AppVariables.accessToken, isNull);
+    expect(await Pref().readData(key: saveToken), isNull);
+    expect(
+      await Pref().readData(key: pendingRegistrationAccessTokenKey),
+      isNull,
+    );
+    expect(
+      await RegistrationAccessSession.matchesPendingRegistrationCredentials(
+        phonePrefix: '+61',
+        phoneNumber: '0412345477',
+        email: '',
+      ),
+      isTrue,
+    );
+  });
+
+  test('confirmed entitlement clears pending registration identity', () async {
+    await RegistrationAccessSession.begin(
+      'registration-token',
+      phonePrefix: '+61',
+      phoneNumber: '0412345477',
+      email: 'pending@example.com',
+    );
+
+    await RegistrationAccessSession.grant(
+      reason: RegistrationAccessGrantReason.premiumPaymentConfirmed,
+    );
+
+    expect(
+      await RegistrationAccessSession.matchesPendingRegistrationCredentials(
+        phonePrefix: '+61',
+        phoneNumber: '0412345477',
+        email: 'pending@example.com',
+      ),
+      isFalse,
+    );
   });
 
   test('cancelled registration clears memory and persisted access', () async {
@@ -117,6 +161,25 @@ void main() {
     expect(await Pref().readData(key: saveToken), 'existing-token');
   });
 
+  test('pending checkout redirects protected routes and deep links', () {
+    expect(
+      pendingRegistrationRedirect(isPending: true, path: '/bottom-bar/0'),
+      '/paid-free?checkout=1',
+    );
+    expect(
+      pendingRegistrationRedirect(isPending: true, path: '/pay'),
+      '/paid-free?checkout=1',
+    );
+    expect(
+      pendingRegistrationRedirect(isPending: true, path: '/paid-free'),
+      isNull,
+    );
+    expect(
+      pendingRegistrationRedirect(isPending: true, path: '/video-screen'),
+      isNull,
+    );
+  });
+
   test('registration decisions keep Discovery and complimentary paths', () {
     expect(
       registrationAccessDecision(
@@ -146,28 +209,36 @@ void main() {
       ),
       RegistrationAccessDecision.paidConfirmationRequired,
     );
+    expect(
+      registrationAccessDecision(
+        registration.Data(
+          discoveryMembership:
+              const DiscoveryMembershipContext(isActive: false),
+        ),
+      ),
+      RegistrationAccessDecision.paidConfirmationRequired,
+    );
   });
 
-  test('profile access preserves the account for Premium or Discovery history',
-      () {
+  test('profile access requires Premium or active Discovery entitlement', () {
     expect(
       memberProfileAllowsAuthenticatedAccess(
         memberType: 'premium',
-        discoveryMembershipExists: false,
+        discoveryMembershipActive: false,
       ),
       isTrue,
     );
     expect(
       memberProfileAllowsAuthenticatedAccess(
         memberType: 'free',
-        discoveryMembershipExists: true,
+        discoveryMembershipActive: true,
       ),
       isTrue,
     );
     expect(
       memberProfileAllowsAuthenticatedAccess(
         memberType: 'free',
-        discoveryMembershipExists: false,
+        discoveryMembershipActive: false,
       ),
       isFalse,
     );

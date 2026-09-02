@@ -10,7 +10,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:touristsaver/common/models/registration_code_resolution.dart';
+import 'package:touristsaver/common/models/registration_credential_check.dart';
 import 'package:touristsaver/common/services/branch_referral_service.dart';
+import 'package:touristsaver/common/services/registration_access_session.dart';
 import 'package:touristsaver/common/widgets/custom_button.dart';
 import 'package:touristsaver/common/widgets/custom_loader.dart';
 import 'package:touristsaver/common/widgets/custom_snackbar.dart';
@@ -2304,12 +2306,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
     if (!mounted) return false;
-    if (res == true) {
-      GlobalSnackBar.showError(
-          context, S.of(context).emailOrPhoneNumberAlreadyExists);
+    if (res?.exists == true) {
+      final locallyKnownPending =
+          await RegistrationAccessSession.matchesPendingRegistrationCredentials(
+        phonePrefix: selectedPhonePrefix!,
+        phoneNumber: mobileNumberController.text.trim(),
+        email: emailController.text.trim(),
+      );
+      if (!mounted) return true;
+      if (res!.registrationIncomplete || locallyKnownPending) {
+        await _showRegistrationContinuationDialog();
+      } else {
+        GlobalSnackBar.showError(
+            context, S.of(context).emailOrPhoneNumberAlreadyExists);
+      }
       return true;
     } else {
-      return res;
+      return res?.exists;
+    }
+  }
+
+  Future<void> _showRegistrationContinuationDialog() async {
+    final maskedMobile = maskRegistrationMobile(
+      mobileNumberController.text.trim(),
+    );
+    final shouldSignIn = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Registration already started'),
+            content: Text(
+              'You’ve already started joining TouristSaver. Continue your registration by signing in with the mobile ending $maskedMobile.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Not now'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Sign in to continue'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (shouldSignIn && mounted) {
+      context.goNamed('login');
     }
   }
 
